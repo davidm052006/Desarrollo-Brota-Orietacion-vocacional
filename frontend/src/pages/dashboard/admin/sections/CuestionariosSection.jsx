@@ -32,7 +32,9 @@ function FormCampos({ f, setF }) {
   );
 }
 
-export default function CuestionariosSection() {
+// onVerPreguntas: función que llega desde AdminPanel — navega a la sección
+// Preguntas dejando pre-seleccionado el cuestionario de la fila (filtroC).
+export default function CuestionariosSection({ onVerPreguntas }) {
   const [cuestionarios, setCuestionarios] = useState([]);
   const [loading, setLoading]             = useState(true);
 
@@ -51,7 +53,7 @@ export default function CuestionariosSection() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchCuestionarios(); }, []);
+  useEffect(() => { fetchCuestionarios(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   const abrirEditar = (c) => {
     setForm({ nombre: c.nombre || '', version: c.version || '', descripcion: c.descripcion || '', activo: c.activo ?? false });
@@ -138,6 +140,11 @@ export default function CuestionariosSection() {
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
+                      <button onClick={() => onVerPreguntas?.(c.id)}
+                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        title="Ver preguntas de este cuestionario">
+                        ❓ Ver preguntas
+                      </button>
                       <button onClick={() => abrirEditar(c)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="Editar">✏️</button>
                       <button onClick={() => { setFormError(null); setModalEliminar(c); }} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg" title="Eliminar">🗑️</button>
                     </div>

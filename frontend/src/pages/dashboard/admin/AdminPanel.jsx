@@ -35,6 +35,10 @@ export default function AdminPanel({ user, profile }) {
   const [isAdmin, setIsAdmin]             = useState(null); // null=checking, true/false
   const [stats, setStats]                 = useState({});
 
+  // Id del cuestionario a preseleccionar cuando se navega a "Preguntas"
+  // desde el botón "Ver preguntas" de CuestionariosSection.
+  const [filtroCuestionarioId, setFiltroCuestionarioId] = useState('');
+
   useEffect(() => {
     const checkAdminRole = async () => {
       if (!user?.id) { setIsAdmin(false); return; }
@@ -52,6 +56,12 @@ export default function AdminPanel({ user, profile }) {
     if (!isAdmin) return;
     getStats().then(({ success, data }) => { if (success) setStats(data); });
   }, [isAdmin]);
+
+  // Navega a la sección Preguntas dejando pre-seteado el filtro por cuestionario_id.
+  const verPreguntasDeCuestionario = (cuestionarioId) => {
+    setFiltroCuestionarioId(cuestionarioId);
+    setActiveSection('preguntas');
+  };
 
   if (isAdmin === null) {
     return (
@@ -118,7 +128,10 @@ export default function AdminPanel({ user, profile }) {
         <ModulesNav active={activeSection} onChange={setActiveSection} />
 
         {/* Section content */}
-        <SectionComponent />
+        <SectionComponent
+          onVerPreguntas={verPreguntasDeCuestionario}
+          filtroCuestionarioId={filtroCuestionarioId}
+        />
 
       </div>
     </DashboardLayout>
