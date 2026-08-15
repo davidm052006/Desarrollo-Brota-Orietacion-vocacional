@@ -34,7 +34,13 @@ function splitTexto(texto) {
   return { normal: w.slice(0, h).join(' '), verde: w.slice(h).join(' ') };
 }
 
-const LIKERT_MARKS = ['😕', '🙁', '😐', '🙂', '😄'];
+const LIKERT_MARKS = [
+  '/logos/logo-triste.svg',
+  '/logos/logo-triste.svg',
+  '/logos/logo-base-limpio.svg',
+  '/logos/logo-guino.svg',
+  '/logos/logo-feliz.svg',
+];
 
 export default function TestQuestion({
   pregunta       = PREGUNTA_DEMO,
@@ -111,7 +117,7 @@ export default function TestQuestion({
                   transform: active ? 'scale(1.12)' : 'scale(1)',
                   transition: 'all .2s',
                 }}>
-                  {o.mark}
+                  {o.mark.startsWith('/') ? <img src={o.mark} alt="" style={{ width: 32, height: 32 }} /> : o.mark}
                 </span>
                 <span style={{
                   fontSize: 12, fontWeight: active ? 700 : 600, textAlign: 'center',
