@@ -144,13 +144,6 @@ const cardMap = {
   ),
   forgotPassword: (
     <ForgotPasswordCard
-      email={email}
-      validationErrors={validationErrors}
-      error={error}
-      successMessage={successMessage}
-      loading={loading}
-      onEmailChange={onEmailChange}
-      onSubmit={handlePasswordRecovery}
       onSwitchToLogin={() => changeMode('login')}
     />
   ),

@@ -1,7 +1,6 @@
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const loginWithEmail = async (email) => {
-  console.log('MODO DEMO: Simulando login con', email);
   await delay(1200);
   localStorage.setItem('demoModeLoggedIn', 'true');
   localStorage.setItem('demoUserEmail', email);
@@ -10,7 +9,6 @@ export const loginWithEmail = async (email) => {
 };
 
 export const signUpWithEmail = async (email, _password, nombre, apellido) => {
-  console.log('MODO DEMO: Simulando registro de', nombre, apellido);
   await delay(1200);
   localStorage.setItem('demoModeLoggedIn', 'true');
   localStorage.setItem('demoUserEmail', email);

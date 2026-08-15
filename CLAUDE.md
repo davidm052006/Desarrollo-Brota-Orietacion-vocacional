@@ -15,24 +15,64 @@ El oxide scanner NO recursiona subdirectorios profundos sin `@source` explícito
 Ver `frontend/src/index.css` — tiene `@source` explícitos por cada subdirectorio (`pages/**`, `components/**`, etc.).
 **No quitar los @source**, si no el CSS cae de 88 kB a ~9 kB y todo se ve sin estilos.
 
-## Arquitectura de páginas
+## Mapa de rutas y archivos clave
+Referencia rápida para no tener que releer `App.jsx` / routers backend en cada sesión. Si cambian rutas o archivos, actualizar aquí.
 
-### Rutas públicas (landing)
-- `/` → `LandingPage.jsx` — landing completa con Navbar, Hero, "Tu camino en 3 pasos", Features, CTA
-- `/login` → `Login.jsx` — maneja modos: `login`, `signup`, `forgotPassword` con `useAuth` hook
-- `/privacidad`, `/terminos`, `/contacto`, `/servicios`, `/saber-mas` — páginas informativas
+### Frontend — rutas (`frontend/src/App.jsx`)
+| Ruta | Componente | Notas |
+|---|---|---|
+| `/` | `pages/landing/LandingPage.jsx` | redirige a `/dashboard` si hay sesión |
+| `/login` | `pages/landing/Login.jsx` | modos `login`/`signup`/`forgotPassword` vía `useAuth` |
+| `/reset-password` | `pages/landing/ResetPassword.jsx` | |
+| `/servicios`, `/saber-mas`, `/privacidad`, `/terminos`, `/contacto` | `pages/landing/*.jsx` | públicas, sin auth |
+| `/dashboard` | `pages/dashboard/Dashboard.jsx` | home, layout 2 columnas + sidebar perfil |
+| `/dashboard/test` | `pages/dashboard/test-vocacional/TestVocacional.jsx` | subcomponentes en `test-vocacional/components/` |
+| `/dashboard/profesiones` | `pages/dashboard/Profesiones.jsx` | |
+| `/dashboard/recursos` | `pages/dashboard/Recursos.jsx` | |
+| `/dashboard/comunidad` | `pages/dashboard/Comunidad.jsx` | + detalle en `comunidad/{ForoDetalle,HistoriaDetalle,ConvocatoriaDetalle,PostDetalle}.jsx` |
+| `/dashboard/admin` | `pages/dashboard/admin/AdminPanel.jsx` | secciones en `admin/sections/*Section.jsx` |
+| `/dashboard/ajustes` | `pages/dashboard/Ajustes.jsx` | mi perfil (autoedición — la edad se ingresa como fecha de nacimiento en 3 `GlassSelect` día/mes/año, `utils/calcularEdad.js` la convierte a entero con la misma fórmula que `authController.registerPerfil`; no se persiste la fecha, solo la edad calculada, igual que el registro), cambio de contraseña (con el mismo flujo de código OTP de 8 dígitos que "Olvidé mi contraseña", vía `authService.sendPasswordReset`/`verifyOtpAndUpdatePassword`), cerrar sesión — implementado agosto 2026 |
+| `/dashboard/racha` | `pages/dashboard/Racha.jsx` | mascota animada según estado real de la racha (feliz/triste/guiño/neutral), fondo que va de gris a rojo según `racha_dias` — se llega clickeando la card de racha en el Dashboard (pasa `profile` por `location.state` para no re-pedirlo) |
+| `/dashboard/{rutas,favoritos,mensajes}` | `PaginaEnConstruccion` (inline en `App.jsx`) | placeholders, sin implementar |
 
-### Dashboard (protegidas)
-- `/dashboard` → `Dashboard.jsx` — layout de 2 columnas: contenido + sidebar perfil
-- `/dashboard/profesiones` → `Profesiones.jsx`
-- `/dashboard/test` → `TestVocacional.jsx`
-- `/dashboard/recursos` → `Recursos.jsx`
-- `/dashboard/admin` → `AdminPanel.jsx`
+Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (sesión o modo demo) — no hay un `ProtectedRoute` wrapper reusable (existe `components/ProtectedRoute.jsx` pero no está en uso en las rutas de arriba, verificar antes de asumir que aplica).
+
+`Ajustes.jsx` también tiene una tarjeta "Apariencia" (selector de tipo de letra, `hooks/useFontFamily.js` — mismo patrón que `useDarkMode.js`, guarda en `localStorage` y setea `--font-body` en `<html>`; se inicializa desde `TopNavbar.jsx` para que se aplique en todo `/dashboard/*`, no solo al entrar a Ajustes) y una tarjeta "Próximamente" con configuraciones sugeridas pero sin implementar (notificaciones por correo, perfil público en Comunidad, tamaño de texto, exportar/eliminar cuenta, idioma) — son filas deshabilitadas a propósito, para no perder la idea; si se implementa alguna, sacarla de esa lista.
 
 ### Layout del dashboard
 - **TopNavbar** (`components/Layout/TopNavbar.jsx`) — navbar horizontal sticky con tabs
 - **DashboardLayout** (`components/Layout/DashboardLayout.jsx`) — wrapper simple con TopNavbar
-- **ELIMINADO**: sidebar vertical (Sidebar.jsx ya no se usa en DashboardLayout)
+- **ELIMINADO**: sidebar vertical (`Sidebar.jsx` ya no se usa en DashboardLayout, pero el archivo sigue existiendo)
+
+### Backend — API (`backend/src/routes/*.js`, montadas bajo `/api`)
+| Router | Base | Contenido |
+|---|---|---|
+| `auth.js` | `/api/auth` | `POST /register-perfil` |
+| `perfil.js` | `/api/perfil` | cuestionario, resultado, recomendaciones, `GET/PATCH /:userId` (PATCH = autoedición, usado por `Ajustes.jsx`; el `GET` también actualiza la racha de días como efecto secundario, ver `actualizarRacha()` en el controller) |
+| `programas.js` | `/api/programas` | `GET /`, `GET /stats` |
+| `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas (+ `POST /:id/reportar`), convocatorias |
+| `contacto.js` | `/api/contacto` | `POST /` |
+| `admin.js` | `/api/admin` | CRUD usuarios/instituciones/programas/cuestionarios/preguntas/contactos + moderación `preguntas-comunidad` (`GET`/`DELETE`) + sincronización MEN |
+
+Cada router habla con controladores en `backend/src/controllers/` — **ya no son un archivo por router**: `admin.js` reparte entre `controllers/admin/{usuarios,instituciones,programas,cuestionarios,preguntas,contactos,preguntasComunidad}Controller.js`, y `comunidad.js` entre `controllers/comunidad/{foros,historias,preguntas,convocatorias}Controller.js` (split por SOLID/SRP en el commit `ca87128`, agosto 2026 — antes eran `adminController.js`/`comunidadController.js` monolíticos, esos nombres ya no existen). Middlewares: `verificarAuth.js` (JWT), `verificarAdmin.js` (rol admin, ver Bug #8 más abajo — **ojo**: la entrada de ese bug menciona una tabla `roles` separada que ya no existe en el diseño actual, el middleware compara `perfiles_usuario.rol` directo, ver `docs/modelo_datos.md`).
+
+### Servicios frontend (`frontend/src/services/*.js`)
+Un service por dominio, todos hablan con el backend vía `VITE_API_URL`: `authService`/`authServiceDemo` (modo demo), `perfilService`, `programasService`, `comunidadService`, `contactoService`, `adminService`. `getAuthHeaders`/`parseResponse`/`API_URL` viven en `services/apiClient.js` (compartido, no duplicar en cada service nuevo). `utils/validation.js` es la única fuente de validación de formularios — no crear otra en `services/`.
+
+### Archivos grandes — evitar leerlos completos si el cambio es puntual
+`TestVocacional.jsx` / `Profesiones.jsx` / `Dashboard.jsx` (~350-390L). Preferir `grep -n` para ubicar la función/sección y `Read` con `offset`/`limit` sobre ese rango.
+`Comunidad.jsx`, `UsuariosSection.jsx`, `ContactosSection.jsx`, y los antiguos `comunidadController.js`/`adminController.js` ya NO están en esta lista — se dividieron en julio/agosto 2026, ver sección siguiente.
+
+### Módulos divididos por SOLID/SRP (julio 2026)
+Estos tres eran archivos únicos de 280-760 líneas mezclando fetch de datos, estado de modales y presentación. Se dividieron en un componente orquestador (estado + llamadas al service) + subcomponentes de presentación en una carpeta `components/` hermana. Patrón a seguir si otro archivo grande necesita el mismo tratamiento:
+
+- **`pages/dashboard/Comunidad.jsx`** (760L → 158L) — orquesta tabs/modales; UI de cada tab vive en `comunidad/components/{Foros,Historias,Preguntas,Convocatorias,Sidebar}.jsx`, los formularios modales en `ModalCompartirHistoria.jsx`/`ModalHacerPregunta.jsx`, y las piezas compartidas en `primitivos.jsx` (solo componentes, por Fast Refresh) + `constantes.js` (datos/helpers puros — `avatarColor`, `TIPO_COLOR`, etc).
+- **`pages/dashboard/admin/sections/UsuariosSection.jsx`** (426L → 229L) — orquesta CRUD; tabla+paginación en `usuarios/TablaUsuarios.jsx`, los 4 modales (Ver/Editar/Eliminar/Nuevo) en `usuarios/Modal*.jsx`, constantes de roles en `usuarios/constants.js`. `Campo`/`Detalle` (inputs de formulario reutilizables) se movieron a `admin/components/formPrimitives.jsx` — **este mismo patrón Campo/Detalle sigue duplicado sin migrar en `CuestionariosSection.jsx`, `InstitucionesSection.jsx` y `OportunidadesSection.jsx`**, sería el siguiente paso si se tocan esos archivos.
+- **`pages/dashboard/admin/sections/ContactosSection.jsx`** (280L → 125L) — orquesta fetch/filtro/paginación; la tarjeta expandible de cada solicitud vive en `contactos/ContactoCard.jsx`, estados/labels en `contactos/constants.js`.
+
+**Backend (agosto 2026, commit `ca87128`):** `adminController.js` (~630L) y `comunidadController.js` (~700L) monolíticos se dividieron en un archivo por entidad, sin capa orquestadora — cada router (`routes/admin.js`, `routes/comunidad.js`) importa directo de `controllers/admin/*.js` / `controllers/comunidad/*.js`. Al agregar un endpoint nuevo de un dominio existente, va en el controller de ese dominio (ej. moderación de preguntas de comunidad → `controllers/admin/preguntasComunidadController.js`), no en un archivo nuevo por endpoint.
+
+Regla de Fast Refresh de Vite (`react-refresh/only-export-components`): un archivo `.jsx` que exporta componentes no debe exportar también constantes/funciones sueltas — por eso los datos puros siempre quedaron en un `.js` separado (`constantes.js`, `formatFecha.js`), nunca mezclados con los componentes.
 
 ## Rediseño visual implementado (junio 2026)
 
@@ -114,100 +154,20 @@ CREATE TABLE men_sincronizacion (
 
 ---
 
-## 🐛 Bugs del sistema de recomendaciones — resueltos (junio 2026)
+## 🐛 Bugs del sistema de recomendaciones (junio 2026)
 
-Estos bugs causaban que el test vocacional mostrara el perfil de áreas pero ningún programa recomendado.
+Causaban que el test vocacional mostrara el perfil de áreas pero ningún programa recomendado. Todos resueltos salvo el #4.
 
-### Bug #1 — Mismatch de categorías cuestionario ↔ programas ✅ RESUELTO
-**Archivo**: `backend/src/utils/algoritmoRecomendacion.js`
-
-**Causa**: El cuestionario usaba claves como `emprendimiento` y `ambiente` en `pesos_opciones`, pero la API del MEN no tiene NBC codes que mapeen a esas claves. La tabla `programas` solo tiene `negocios` y `ambiental`. El algoritmo buscaba `.eq('area_academica', 'emprendimiento')` → 0 resultados.
-
-**Fix**: Se agregó `CATEGORIA_ALIAS` al inicio del archivo que normaliza scores antes de consultar:
-```js
-const CATEGORIA_ALIAS = { emprendimiento: 'negocios', ambiente: 'ambiental' };
-```
-El perfil completo (scores, categoriaPrincipal, categoriaSecundaria) se normaliza antes de las queries y del cálculo de compatibilidad.
-
-**Si se agregan categorías nuevas al cuestionario** que no existan en `area_academica` de programas, añadirlas aquí.
-
----
-
-### Bug #2 — `razones` insertada como `string[]` en columna `TEXT` ✅ RESUELTO
-**Archivo**: `backend/src/utils/algoritmoRecomendacion.js`
-
-**Causa**: `generarRazones()` retorna `string[]`. Supabase/PostgREST no puede insertar un array JSON en una columna `TEXT`, causando que el campo se guarde como `NULL` o que el insert falle silenciosamente.
-
-**Fix**: `razones: JSON.stringify(item.razones)` en el row de insert.
-
-**Nota futura**: Si se quiere recuperar `razones` como array en el frontend, usar `JSON.parse(rec.razones)` en el mapper de `obtenerRecomendaciones`. Actualmente `razones` no se muestra en la UI.
-
----
-
-### Bug #3 — Sync del MEN borraba recomendaciones por CASCADE DELETE ✅ RESUELTO
-**Archivo**: `backend/src/controllers/sincronizacionController.js`
-
-**Causa**: El sync hace `DELETE FROM programas` y la FK `recomendaciones.programa_id → programas(id) ON DELETE CASCADE` eliminaba todas las recomendaciones de todos los usuarios.
-
-**Fix**: Se añadió `DELETE FROM recomendaciones` explícito antes de borrar programas, controlando el orden manualmente.
-
-**Limitación conocida**: Los usuarios igual pierden sus recomendaciones tras cada sync (se regeneran solo cuando vuelvan a hacer el test). Para mantenerlas habría que cambiar el sync a upsert en lugar de delete+reinsert, o guardar los datos del programa desnormalizados en la tabla `recomendaciones`.
-
----
-
-### Bug #4 — Programas con `area_academica = NULL` excluidos de recomendaciones ⚠️ LIMITACIÓN CONOCIDA
-**Archivo**: `backend/src/controllers/sincronizacionController.js` → `getAreaAcademica()`
-
-**Causa**: NBC codes del MEN que no están en `NBC_MAP` ni en `AREA_FALLBACK` retornan `null`. Esos programas se guardan en BD con `area_academica = NULL` y nunca aparecen en recomendaciones (el algoritmo filtra por `.eq('area_academica', cat)`).
-
-**Estado**: No bloqueante — los programas sí aparecen en la página Profesiones al navegar. Solo se pierden para recomendaciones automáticas.
-
-**Fix futuro**: Ampliar `NBC_MAP` en `sincronizacionController.js` con los NBC codes que faltan, o añadir un área genérica como fallback final en `getAreaAcademica()`.
-
----
-
-### Bug #5 — `.limit(6)` vs `MAX_RECOMENDACIONES = 8` ✅ RESUELTO
-**Archivo**: `backend/src/controllers/perfilController.js` → `obtenerRecomendaciones`
-
-**Fix**: Cambiado a `.limit(8)`.
-
----
-
-### Bug #6 — `calcularPorcentajes` usaba el objeto `perfilVocacional` como mapa plano ✅ RESUELTO
-**Archivo**: `backend/src/utils/perfilvocacional.js`
-
-**Causa**: La función trataba `perfilVocacional` como si fuera `{categoria: puntos}` cuando en realidad tiene forma `{categoriaPrincipal, categoriaSecundaria, scores: [...]}`. Generaba porcentajes basura en el campo `porcentajes` guardado en `resultados`.
-
-**Fix**: Ahora itera sobre `perfilVocacional.scores` correctamente.
-
----
-
-### Bug #7 — Conflicto git sin resolver en `setup_database.sql` ✅ RESUELTO
-**Archivo**: `backend/setup_database.sql` líneas 155, 170, 184
-
-**Fix**: Resuelto manteniendo la numeración de HEAD (tablas 10, 11, 12).
-
----
-
-### Bug #8 — `verificarAdmin` consultaba tabla inexistente ✅ RESUELTO
-**Archivo**: `backend/src/middlewares/verificarAdmin.js`
-
-**Causa**: Tres errores concatenados:
-1. `from('perfiles')` — la tabla no existe; la real es `perfiles_usuario`
-2. `.eq('id', user.id)` — debería ser `.eq('user_id', user.id)` (la PK de perfiles_usuario es diferente del auth user id)
-3. `.select('rol')` + check `=== 'admin'` — el campo es `rol_id` (UUID FK) y el valor en la tabla `roles` es `'Administrador'`, no `'admin'`
-
-**Impacto**: Todos los endpoints `/api/admin/*` devolvían 403 para todos los usuarios, incluyendo admins reales. El admin panel era completamente inaccesible.
-
-**Fix**:
-```js
-const { data: perfil, error: rolError } = await supabase
-  .from('perfiles_usuario')
-  .select('roles ( nombre )')
-  .eq('user_id', user.id)
-  .single();
-if (rolError || perfil?.roles?.nombre !== 'Administrador') { ... }
-```
+| # | Archivo | Qué pasaba | Fix |
+|---|---|---|---|
+| 1 ✅ | `utils/algoritmoRecomendacion.js` | Cuestionario usa claves `emprendimiento`/`ambiente`; `programas.area_academica` solo tiene `negocios`/`ambiental` → 0 resultados | `CATEGORIA_ALIAS` normaliza el perfil (scores, categoriaPrincipal/Secundaria) antes de las queries. **Si se agregan categorías nuevas al cuestionario, añadirlas aquí.** |
+| 2 ✅ | `utils/algoritmoRecomendacion.js` | `generarRazones()` retorna `string[]`, pero `razones` es columna `TEXT` → insert fallaba silenciosamente | `razones: JSON.stringify(item.razones)` al insertar. Para leerlo en frontend habría que `JSON.parse`; hoy no se muestra en la UI. |
+| 3 ✅ | `controllers/sincronizacionController.js` | Sync hace `DELETE FROM programas`; FK `recomendaciones.programa_id` con `ON DELETE CASCADE` borraba las recomendaciones de todos los usuarios | `DELETE FROM recomendaciones` explícito antes de borrar programas. Limitación: los usuarios igual pierden recomendaciones en cada sync (se regeneran al rehacer el test); para evitarlo habría que pasar a upsert. |
+| 4 ⚠️ ABIERTO | `controllers/sincronizacionController.js` → `getAreaAcademica()` | NBC codes sin mapeo en `NBC_MAP`/`AREA_FALLBACK` quedan con `area_academica = NULL` y nunca aparecen en recomendaciones (el algoritmo filtra `.eq('area_academica', cat)`) | No bloqueante — sí aparecen en Profesiones. Fix futuro: ampliar `NBC_MAP` o agregar un fallback genérico. |
+| 5 ✅ | `controllers/perfilController.js` → `obtenerRecomendaciones` | `.limit(6)` no coincidía con `MAX_RECOMENDACIONES = 8` | Cambiado a `.limit(8)` |
+| 6 ✅ | `utils/perfilvocacional.js` | `calcularPorcentajes` trataba `perfilVocacional` como `{categoria: puntos}` cuando en realidad es `{categoriaPrincipal, categoriaSecundaria, scores: [...]}` → porcentajes basura | Ahora itera `perfilVocacional.scores` |
+| 7 ✅ | `backend/setup_database.sql` (líneas 155/170/184) | Conflicto de git sin resolver | Resuelto manteniendo numeración de HEAD (tablas 10, 11, 12) |
+| 8 ✅ | `middlewares/verificarAdmin.js` | Tabla `perfiles` (no existe, es `perfiles_usuario`) + `.eq('id', user.id)` (debe ser `user_id`) + comparaba contra un rol mal resuelto. Tumbaba **todos** los endpoints `/api/admin/*` con 403, incluso para admins reales | Fix de esta fila (histórico, junio 2026): `from('perfiles_usuario').select('roles ( nombre )').eq('user_id', user.id)`, check `perfil?.roles?.nombre !== 'Administrador'`. **⚠️ Ya no es así**: verificado contra Supabase real en agosto 2026 (ver `docs/modelo_datos.md`) — la tabla `roles` sigue existiendo pero es legado sin uso (2 filas, ningún código la referencia). El middleware actual compara `perfiles_usuario.rol !== 'admin'` directo, que es lo correcto para el esquema de hoy. Si se vuelve a tocar este archivo, **no** reintroducir el join a `roles`. |
 
 ---
 
@@ -225,8 +185,13 @@ cp frontend/.env.local.example frontend/.env.local
 
 > ⚠️ En producción reemplazar TODAS las credenciales de los example antes de deployar.
 
+### ⚠️ Credenciales reales expuestas en el repo (decisión consciente, no reportar como hallazgo nuevo)
+`backend/.env.example`, `backend/scripts/import_snies.js` y `backend/scripts/seed_instituciones.js` tienen la `SUPABASE_SERVICE_KEY` real, el `JWT_SECRET` y el `SMTP_PASS` (Gmail app password) hardcodeados, en un repo **público** de GitHub.
+Decisión del usuario (2026-07-11): se mantiene así **durante la fase de desarrollo** a propósito, para facilitar el arranque en cualquier máquina sin gestionar secretos. Antes de ir a producción se rotarán todas las credenciales (Supabase service_role key, SMTP app password, JWT_SECRET) y se sacarán del repo (placeholders + `.env` real fuera de git).
+**No volver a reportar esto como hallazgo urgente ni intentar "arreglarlo" de forma proactiva** — es un riesgo aceptado temporalmente. Sí se puede recordar como pendiente si se habla de checklist de despliegue a producción.
+
 ## Modo Demo
 Si no hay `VITE_SUPABASE_URL` en `.env`, la app entra en modo demo.
 - Login demo: cualquier email/password
 - Admin demo: email `davidm20.05.2006@gmail.com`
-- La racha de días (streak) está hardcodeada en 3 días (por implementar)
+- La racha de días (streak) ya no está hardcodeada (agosto 2026) — se calcula real en `perfilController.obtenerPerfil` (columnas `racha_dias`/`ultima_actividad` en `perfiles_usuario`, `backend/scripts/migration_racha.sql`). En modo demo no hay perfil real, así que se ve en 0 en vez del "3 días" fijo que mostraba antes.

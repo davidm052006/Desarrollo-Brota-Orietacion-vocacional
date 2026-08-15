@@ -1,21 +1,4 @@
-import { supabase } from '../config/supabase';
-
-const API_URL = import.meta.env.VITE_API_URL ?? '';
-
-const getAuthHeaders = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return {
-    'Content-Type': 'application/json',
-    ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
-  };
-};
-
-const parseResponse = async (res) => {
-  let body;
-  try { body = await res.json(); } catch { body = {}; }
-  if (!res.ok) return { success: false, error: body.message || `Error (${res.status})` };
-  return { success: true, data: body.data };
-};
+import { API_URL, getAuthHeaders, parseResponse } from './apiClient';
 
 const get = async (path) => {
   try {
@@ -71,6 +54,7 @@ export const getPregunta         = (id)             => get(`/preguntas/${id}`);
 export const crearPregunta       = (datos)          => post('/preguntas', datos);
 export const responderPregunta   = (id, datos)      => post(`/preguntas/${id}/respuestas`, datos);
 export const marcarMejorRespuesta = (pregId, rId)   => patch(`/preguntas/${pregId}/respuestas/${rId}/mejor`);
+export const reportarPregunta    = (id, motivo)     => post(`/preguntas/${id}/reportar`, { motivo });
 
 // ── Convocatorias ─────────────────────────────────────────────────────────────
 export const getConvocatorias    = ()               => get('/convocatorias');

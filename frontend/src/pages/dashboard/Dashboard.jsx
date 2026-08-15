@@ -87,10 +87,10 @@ function HeroBanner({ nombre, estado }) {
 // ─── Quick actions ────────────────────────────────────────────────────────────
 
 const ACTIONS = [
-  { icon: '🧭', title: 'Explorar profesiones',   desc: 'Carreras que se alinean contigo.',      to: '/dashboard/profesiones', tint: 'var(--primary-soft)' },
-  { icon: '✅', title: 'Realizar test vocacional', desc: 'Conoce tus intereses y fortalezas.',   to: '/dashboard/test',        tint: 'var(--accent-soft)'  },
-  { icon: '🗺️', title: 'Rutas formativas',        desc: 'Caminos educativos para tu futuro.',   to: '/dashboard/rutas',       tint: 'var(--primary-soft)' },
-  { icon: '📚', title: 'Explorar recursos',        desc: 'Guías, becas y herramientas.',         to: '/dashboard/recursos',    tint: 'var(--accent-soft)'  },
+  { icon: '/icons/icon-profesiones.svg', title: 'Explorar profesiones',   desc: 'Carreras que se alinean contigo.',      to: '/dashboard/profesiones', tint: 'var(--primary-soft)' },
+  { icon: '/icons/icon-confirmar.svg',   title: 'Realizar test vocacional', desc: 'Conoce tus intereses y fortalezas.',   to: '/dashboard/test',        tint: 'var(--accent-soft)'  },
+  { icon: '/icons/icon-ruta.svg',        title: 'Rutas formativas',        desc: 'Caminos educativos para tu futuro.',   to: '/dashboard/rutas',       tint: 'var(--primary-soft)' },
+  { icon: '/icons/icon-recursos.svg',    title: 'Explorar recursos',        desc: 'Guías, becas y herramientas.',         to: '/dashboard/recursos',    tint: 'var(--accent-soft)'  },
 ];
 
 function QuickActions() {
@@ -122,7 +122,7 @@ function QuickActions() {
               background: tint,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 22, flexShrink: 0,
-            }}>{icon}</div>
+            }}><img src={icon} alt="" style={{ width: 24, height: 24 }} /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: 14.5 }}>{title}</div>
               <div style={{ fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.35, marginTop: 2 }}>{desc}</div>
@@ -144,7 +144,13 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
                  [profile?.primer_nombre, profile?.primer_apellido].filter(Boolean).join(' ') || '—';
   const initial = nombre.charAt(0).toUpperCase();
 
-  const diasRacha = 3; // TODO: conectar con retos_completados
+  const diasRacha = profile?.racha_dias ?? 0;
+
+  // Mismos 5 campos que se pueden completar en Ajustes > Mi perfil
+  const CAMPOS_PERFIL = ['nombre', 'apellido', 'ciudad', 'edad', 'nivel_educativo'];
+  const camposCompletos = CAMPOS_PERFIL.filter(c => Boolean(profile?.[c])).length;
+  const porcentajePerfil = Math.round((camposCompletos / CAMPOS_PERFIL.length) * 100);
+  const perfilCompleto = porcentajePerfil === 100;
 
   const card = {
     background: 'var(--surface)', border: '1px solid var(--line)',
@@ -177,13 +183,13 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
           borderRadius: 999, margin: '16px 0 7px', overflow: 'hidden',
         }}>
           <div style={{
-            width: '45%', height: '100%',
+            width: `${porcentajePerfil}%`, height: '100%',
             background: 'linear-gradient(90deg, var(--primary), var(--accent))',
-            borderRadius: 999,
+            borderRadius: 999, transition: 'width .3s',
           }} />
         </div>
         <div style={{ fontSize: 11.5, color: 'var(--ink-soft)' }}>
-          Perfil 45% completo
+          Perfil {porcentajePerfil}% completo
           {isAdmin && (
             <span style={{
               marginLeft: 8,
@@ -193,26 +199,42 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
           )}
         </div>
 
-        <button
-          onClick={() => navigate('/dashboard/ajustes')}
-          style={{
-            marginTop: 14, width: '100%',
+        {perfilCompleto ? (
+          <div style={{
+            marginTop: 14, width: '100%', boxSizing: 'border-box',
             background: 'var(--primary-soft)', color: 'var(--primary-deep)',
             textAlign: 'center', fontWeight: 700, fontSize: 13,
-            padding: 11, borderRadius: 12, border: 'none', cursor: 'pointer',
-          }}
-        >
-          Completar perfil →
-        </button>
+            padding: 11, borderRadius: 12,
+          }}>
+            Perfil completo
+          </div>
+        ) : (
+          <button
+            onClick={() => navigate('/dashboard/ajustes')}
+            style={{
+              marginTop: 14, width: '100%',
+              background: 'var(--primary-soft)', color: 'var(--primary-deep)',
+              textAlign: 'center', fontWeight: 700, fontSize: 13,
+              padding: 11, borderRadius: 12, border: 'none', cursor: 'pointer',
+            }}
+          >
+            Completar perfil →
+          </button>
+        )}
       </div>
 
       {/* Racha */}
-      <div style={{
-        background: 'linear-gradient(135deg, var(--accent), var(--primary))',
-        borderRadius: 20, padding: 20, color: '#fff',
-      }}>
+      <div
+        onClick={() => navigate('/dashboard/racha', { state: { profile } })}
+        role="button"
+        tabIndex={0}
+        style={{
+          background: 'linear-gradient(135deg, var(--accent), var(--primary))',
+          borderRadius: 20, padding: 20, color: '#fff', cursor: 'pointer',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 24 }}>🔥</span>
+          <img src="/icons/icon-racha.svg" alt="" style={{ width: 24, height: 24 }} />
           <div>
             <div className="font-display" style={{ fontWeight: 800, fontSize: 22, lineHeight: 1 }}>
               {diasRacha} días

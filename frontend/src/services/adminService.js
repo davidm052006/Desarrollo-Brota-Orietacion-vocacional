@@ -1,23 +1,4 @@
-import { supabase } from '../config/supabase';
-
-const API_URL = import.meta.env.VITE_API_URL ?? '';
-
-// Obtiene el token de sesión activo para enviarlo al backend
-const getAuthHeaders = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return {
-    'Content-Type': 'application/json',
-    ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
-  };
-};
-
-// Parsea la respuesta HTTP y normaliza al patrón { success, data, meta, error }
-const parseResponse = async (res) => {
-  let body;
-  try { body = await res.json(); } catch { body = {}; }
-  if (!res.ok) return { success: false, error: body.message || `Error del servidor (${res.status})` };
-  return { success: true, data: body.data, meta: body.meta };
-};
+import { API_URL, getAuthHeaders, parseResponse } from './apiClient';
 
 // ─── Estadísticas ──────────────────────────────────────────────────────────
 export const getStats = async () => {
@@ -275,6 +256,27 @@ export const deletePregunta = async (id) => {
     const res = await fetch(`${API_URL}/api/admin/preguntas/${id}`, { method: 'DELETE', headers });
     return parseResponse(res);
   } catch {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
+// ─── Preguntas de comunidad (moderación) ───────────────────────────────────
+export const getPreguntasComunidad = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/preguntas-comunidad`, { headers });
+    return parseResponse(res);
+  } catch (err) {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
+export const deletePreguntaComunidad = async (id) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/preguntas-comunidad/${id}`, { method: 'DELETE', headers });
+    return parseResponse(res);
+  } catch (err) {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };

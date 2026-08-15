@@ -135,6 +135,12 @@ INSERT INTO foros (id, icon, nombre, descripcion) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ─── Seed convocatorias ────────────────────────────────────────────────────────
+-- Guardado con IF NOT EXISTS de filas: este INSERT no tiene UNIQUE/ON CONFLICT
+-- propio, así que se protege con el guard de abajo para poder re-ejecutar el
+-- script completo sin duplicar las 5 convocatorias semilla.
+DO $$
+BEGIN
+IF NOT EXISTS (SELECT 1 FROM convocatorias) THEN
 INSERT INTO convocatorias (tipo, titulo, institucion, ciudad, detalles, url, fecha_cierre) VALUES
 (
   'Beca',
@@ -181,3 +187,5 @@ INSERT INTO convocatorias (tipo, titulo, institucion, ciudad, detalles, url, fec
   'https://www.corferias.com',
   NOW() + INTERVAL '19 days'
 );
+END IF;
+END $$;

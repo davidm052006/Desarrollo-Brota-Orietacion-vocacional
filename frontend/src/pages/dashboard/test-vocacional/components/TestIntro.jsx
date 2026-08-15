@@ -30,9 +30,9 @@ export default function TestIntro({
         <div style={{
           width: 80, height: 80, borderRadius: '50%', background: 'var(--primary-soft)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 38, margin: '0 auto 24px',
+          margin: '0 auto 24px',
         }}>
-          🌱
+          <img src="/logos/logo-feliz.svg" alt="Brota" style={{ width: 70, height: 70 }} />
         </div>
 
         <div className="font-display" style={{ fontWeight: 800, fontSize: 24, marginBottom: 8 }}>

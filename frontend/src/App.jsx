@@ -20,6 +20,8 @@ import ForoDetalle          from './pages/dashboard/comunidad/ForoDetalle';
 import HistoriaDetalle      from './pages/dashboard/comunidad/HistoriaDetalle';
 import ConvocatoriaDetalle  from './pages/dashboard/comunidad/ConvocatoriaDetalle';
 import PostDetalle          from './pages/dashboard/comunidad/PostDetalle';
+import Ajustes              from './pages/dashboard/Ajustes';
+import Racha                from './pages/dashboard/Racha';
 
 function PaginaEnConstruccion({ titulo }) {
   return (
@@ -98,16 +100,16 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing page pública */}
+        {/* Landing page pública — se renderiza de inmediato; solo redirige si se confirma sesión */}
         <Route
           path="/"
-          element={loading ? spinner : puedeAcceder ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+          element={!loading && puedeAcceder ? <Navigate to="/dashboard" replace /> : <LandingPage />}
         />
 
-        {/* Login / Auth */}
+        {/* Login / Auth — igual, no bloquea el render mientras se verifica la sesión */}
         <Route
           path="/login"
-          element={loading ? spinner : puedeAcceder ? <Navigate to="/dashboard" replace /> : <Login isDemoMode={isDemoMode} />}
+          element={!loading && puedeAcceder ? <Navigate to="/dashboard" replace /> : <Login isDemoMode={isDemoMode} />}
         />
 
         {/* Rutas públicas informativas */}
@@ -159,7 +161,6 @@ function App() {
           { path: '/dashboard/rutas',     titulo: 'Rutas formativas' },
           { path: '/dashboard/favoritos', titulo: 'Favoritos' },
           { path: '/dashboard/mensajes',  titulo: 'Mensajes' },
-          { path: '/dashboard/ajustes',   titulo: 'Ajustes' },
         ].map(({ path, titulo }) => (
           <Route
             key={path}
@@ -167,6 +168,14 @@ function App() {
             element={loading ? spinner : puedeAcceder ? <PaginaEnConstruccion titulo={titulo} /> : <Navigate to="/login" replace />}
           />
         ))}
+        <Route
+          path="/dashboard/ajustes"
+          element={loading ? spinner : puedeAcceder ? <Ajustes user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/racha"
+          element={loading ? spinner : puedeAcceder ? <Racha user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
+        />
         <Route
           path="/dashboard/admin"
           element={loading ? spinner : puedeAcceder ? <AdminPanel user={user} /> : <Navigate to="/login" replace />}

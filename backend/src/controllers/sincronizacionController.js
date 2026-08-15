@@ -135,6 +135,12 @@ function getModalidad(raw) {
   return raw ? raw : 'Presencial';
 }
 
+function chunk(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+  return chunks;
+}
+
 async function fetchAllActivos() {
   const all = [];
   let offset = 0;
@@ -206,7 +212,7 @@ const ejecutarSincronizacion = async (req, res) => {
         const meta = await metaRes.json();
         remoteTimestamp = meta.rowsUpdatedAt ?? null;
       }
-    } catch {}
+    } catch { /* si la API de metadata no responde, seguimos sin remoteTimestamp */ }
 
     // Descargar todos los programas activos
     console.log('[Sinc] Descargando desde MEN API...');
@@ -229,24 +235,25 @@ const ejecutarSincronizacion = async (req, res) => {
     const instArr = Array.from(instMap.values());
     console.log(`[Sinc] ${instArr.length} instituciones únicas`);
 
-    // Limpiar tablas en orden: recomendaciones → programas → instituciones
-    // (se borra recomendaciones primero para no perderlas por cascade al borrar programas)
-    const { error: e0 } = await supabase.from('recomendaciones').delete().not('id', 'is', null);
-    if (e0) throw new Error(`Borrar recomendaciones: ${e0.message}`);
-    const { error: e1 } = await supabase.from('programas').delete().not('id', 'is', null);
-    if (e1) throw new Error(`Borrar programas: ${e1.message}`);
-    const { error: e2 } = await supabase.from('instituciones').delete().not('id', 'is', null);
-    if (e2) throw new Error(`Borrar instituciones: ${e2.message}`);
+    // Capturar qué existe ANTES de tocar nada. Se purga al final, no al
+    // principio: así, si la sincronización falla a mitad de camino, los
+    // datos previos siguen intactos en vez de dejar la plataforma vacía.
+    const { data: institucionesViejas } = await supabase.from('instituciones').select('id');
+    const { data: programasViejos }     = await supabase.from('programas').select('id');
+    const idsInstitucionesViejas = (institucionesViejas ?? []).map(i => i.id);
+    const idsProgramasViejos     = (programasViejos ?? []).map(p => p.id);
 
-    // Insertar instituciones en lotes de 200
-    for (let i = 0; i < instArr.length; i += 200) {
-      const { error } = await supabase.from('instituciones').insert(instArr.slice(i, i + 200));
-      if (error) throw new Error(`Insertar instituciones lote ${i}: ${error.message}`);
+    // Insertar instituciones nuevas en lotes de 200. Se guardan los ids
+    // devueltos por el propio insert (en vez de re-consultar por nombre)
+    // porque durante la transición pueden coexistir instituciones viejas y
+    // nuevas con el mismo nombre, y una relectura por nombre sería ambigua.
+    const nuevasInstituciones = [];
+    for (const lote of chunk(instArr, 200)) {
+      const { data, error } = await supabase.from('instituciones').insert(lote).select('id, nombre');
+      if (error) throw new Error(`Insertar instituciones: ${error.message}`);
+      nuevasInstituciones.push(...(data ?? []));
     }
-
-    // Cargar mapa nombre → id
-    const { data: todasInst } = await supabase.from('instituciones').select('id, nombre');
-    const nombreToId = new Map((todasInst ?? []).map(i => [i.nombre.trim().toUpperCase(), i.id]));
+    const nombreToId = new Map(nuevasInstituciones.map(i => [i.nombre.trim().toUpperCase(), i.id]));
 
     // Construir programas
     const programas = [];
@@ -273,9 +280,24 @@ const ejecutarSincronizacion = async (req, res) => {
     }
 
     // Insertar programas en lotes de 500
-    for (let i = 0; i < programas.length; i += 500) {
-      const { error } = await supabase.from('programas').insert(programas.slice(i, i + 500));
-      if (error) throw new Error(`Insertar programas lote ${i}: ${error.message}`);
+    for (const lote of chunk(programas, 500)) {
+      const { error } = await supabase.from('programas').insert(lote);
+      if (error) throw new Error(`Insertar programas: ${error.message}`);
+    }
+
+    // Los datos nuevos ya están en pie — purgar los viejos. Si esto falla,
+    // no se aborta el sync (ya fue exitoso): solo quedan filas viejas sin
+    // usar hasta la próxima corrida, en vez de perder los datos nuevos.
+    try {
+      for (const lote of chunk(idsProgramasViejos, 200)) {
+        await supabase.from('recomendaciones').delete().in('programa_id', lote);
+        await supabase.from('programas').delete().in('id', lote);
+      }
+      for (const lote of chunk(idsInstitucionesViejas, 200)) {
+        await supabase.from('instituciones').delete().in('id', lote);
+      }
+    } catch (purgeErr) {
+      console.error('[Sinc] No se pudieron purgar todos los datos anteriores:', purgeErr.message);
     }
 
     // Registrar resultado exitoso
@@ -302,7 +324,7 @@ const ejecutarSincronizacion = async (req, res) => {
         remote_timestamp: remoteTimestamp, programas_importados: 0,
         instituciones_importadas: 0, estado: 'fallida', error: err.message,
       });
-    } catch {}
+    } catch { /* ya estamos en el path de error; no hay más que hacer si esto también falla */ }
     return res.status(500).json({ success: false, error: err.message });
   }
 };

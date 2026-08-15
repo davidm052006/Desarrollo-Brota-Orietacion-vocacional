@@ -4,10 +4,16 @@ const verificarAuth = require('../middlewares/verificarAuth');
 
 const {
   getForos, getPostsByForo, createPost, getPost, votarPost, responderPost,
+} = require('../controllers/comunidad/forosController');
+const {
   getHistorias, getHistoria, crearHistoria, toggleLikeHistoria,
-  getPreguntas, getPregunta, crearPregunta, responderPregunta, marcarMejorRespuesta,
+} = require('../controllers/comunidad/historiasController');
+const {
+  getPreguntas, getPregunta, crearPregunta, responderPregunta, marcarMejorRespuesta, reportarPregunta,
+} = require('../controllers/comunidad/preguntasController');
+const {
   getConvocatorias, getConvocatoria,
-} = require('../controllers/comunidadController');
+} = require('../controllers/comunidad/convocatoriasController');
 
 // ── Foros ─────────────────────────────────────────────────────────────────────
 router.get('/foros',                verificarAuth, getForos);
@@ -31,6 +37,7 @@ router.get('/preguntas/:id',        verificarAuth, getPregunta);
 router.post('/preguntas',           verificarAuth, crearPregunta);
 router.post('/preguntas/:id/respuestas', verificarAuth, responderPregunta);
 router.patch('/preguntas/:id/respuestas/:rid/mejor', verificarAuth, marcarMejorRespuesta);
+router.post('/preguntas/:id/reportar', verificarAuth, reportarPregunta);
 
 // ── Convocatorias ─────────────────────────────────────────────────────────────
 router.get('/convocatorias',        verificarAuth, getConvocatorias);

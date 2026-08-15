@@ -132,6 +132,18 @@ const obtenerResultado = async (req, res) => {
   try {
     const { perfilUsuarioId } = req.params;
 
+    // Verificar que el perfil pertenece al usuario autenticado
+    const { data: perfil, error: errPerfil } = await supabase
+      .from('perfiles_usuario')
+      .select('id')
+      .eq('id', perfilUsuarioId)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (errPerfil || !perfil) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
+    }
+
     const { data, error } = await supabase
       .from('resultados')
       .select(`
@@ -171,6 +183,28 @@ const obtenerResultado = async (req, res) => {
 const obtenerRecomendaciones = async (req, res) => {
   try {
     const { resultadoId } = req.params;
+
+    // Verificar que el resultado pertenece a un perfil del usuario autenticado
+    const { data: resultado, error: errResultado } = await supabase
+      .from('resultados')
+      .select('perfil_usuario_id')
+      .eq('id', resultadoId)
+      .single();
+
+    if (errResultado || !resultado) {
+      return res.status(404).json({ success: false, message: 'Resultado no encontrado' });
+    }
+
+    const { data: perfil, error: errPerfil } = await supabase
+      .from('perfiles_usuario')
+      .select('id')
+      .eq('id', resultado.perfil_usuario_id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (errPerfil || !perfil) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este resultado' });
+    }
 
     const { data, error } = await supabase
       .from('recomendaciones')
@@ -219,6 +253,28 @@ const obtenerRecomendaciones = async (req, res) => {
 const marcarRecomendacionVista = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Verificar que la recomendación pertenece a un resultado del usuario autenticado
+    const { data: recomendacion, error: errRecomendacion } = await supabase
+      .from('recomendaciones')
+      .select('id, resultados ( perfil_usuario_id )')
+      .eq('id', id)
+      .single();
+
+    if (errRecomendacion || !recomendacion) {
+      return res.status(404).json({ success: false, message: 'Recomendación no encontrada' });
+    }
+
+    const { data: perfil, error: errPerfil } = await supabase
+      .from('perfiles_usuario')
+      .select('id')
+      .eq('id', recomendacion.resultados?.perfil_usuario_id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (errPerfil || !perfil) {
+      return res.status(403).json({ success: false, message: 'No autorizado para esta recomendación' });
+    }
 
     const { error } = await supabase
       .from('recomendaciones')
@@ -286,9 +342,37 @@ const eliminarResultado = async (req, res) => {
 // GET /api/perfil/:userId
 // Devuelve el perfil completo del usuario autenticado.
 // ─────────────────────────────────────────────────────────────
+// Actualiza racha_dias/ultima_actividad si hoy todavía no se registró
+// actividad. Se llama desde obtenerPerfil (se pide en cada carga del
+// Dashboard), así que no hace falta un endpoint de "check-in" aparte.
+async function actualizarRacha(perfil, userId) {
+  const hoy = new Date().toISOString().slice(0, 10);
+  if (perfil.ultima_actividad === hoy) return { ...perfil, racha_rota: false }; // ya contada hoy
+
+  const ayer = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const continua = perfil.ultima_actividad === ayer;
+  const nuevaRacha = continua ? (perfil.racha_dias || 0) + 1 : 1;
+  // "rota" = de verdad se perdió una racha en curso (no el primer check-in nunca)
+  const rachaRota = !continua && (perfil.racha_dias || 0) > 1;
+
+  const { data: actualizado, error } = await supabase
+    .from('perfiles_usuario')
+    .update({ ultima_actividad: hoy, racha_dias: nuevaRacha })
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  // si falla el update, seguir con el dato viejo en vez de romper la carga del perfil
+  return error ? { ...perfil, racha_rota: false } : { ...actualizado, racha_rota: rachaRota };
+}
+
 const obtenerPerfil = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    if (userId !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
+    }
 
     const { data, error } = await supabase
       .from('perfiles_usuario')
@@ -300,9 +384,45 @@ const obtenerPerfil = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Perfil no encontrado' });
     }
 
-    return res.json({ success: true, data });
+    const dataConRacha = await actualizarRacha(data, userId);
+
+    return res.json({ success: true, data: dataConRacha });
   } catch (err) {
     console.error('perfilController.obtenerPerfil:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// PATCH /api/perfil/:userId — autoedición del propio perfil (sección Ajustes)
+// ─────────────────────────────────────────────────────────────
+const actualizarPerfil = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (userId !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
+    }
+
+    const { nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas, edad } = req.body;
+
+    const { data, error } = await supabase
+      .from('perfiles_usuario')
+      .update({
+        nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
+        edad: edad ? parseInt(edad) : null,
+      })
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+
+    return res.json({ success: true, data });
+  } catch (err) {
+    console.error('perfilController.actualizarPerfil:', err);
     return res.status(500).json({ success: false, message: err.message });
   }
 };
@@ -315,4 +435,5 @@ module.exports = {
   marcarRecomendacionVista,
   eliminarResultado,
   obtenerPerfil,
+  actualizarPerfil,
 };

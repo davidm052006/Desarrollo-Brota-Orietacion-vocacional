@@ -1,14 +1,4 @@
-import { supabase } from '../config/supabase';
-
-const API_URL = import.meta.env.VITE_API_URL ?? '';
-
-const getAuthHeaders = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return {
-    'Content-Type': 'application/json',
-    ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
-  };
-};
+import { API_URL, getAuthHeaders } from './apiClient';
 
 export const enviarContacto = async ({ nombre, email, telefono, asunto, mensaje }) => {
   try {

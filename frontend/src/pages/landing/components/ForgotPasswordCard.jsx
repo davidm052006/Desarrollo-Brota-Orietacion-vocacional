@@ -64,9 +64,10 @@ function ForgotPasswordCard({ onSwitchToLogin }) {
     setError(null);
     const errs = {};
 
-    if (!codigo || codigo.length < 6) errs.codigo = 'Ingresa el código de 6 dígitos';
+    if (!codigo || codigo.length < 8) errs.codigo = 'Ingresa el código de 8 dígitos';
     if (!password)                    errs.password = 'La contraseña es requerida';
-    else if (password.length < 6)    errs.password = 'Mínimo 6 caracteres';
+    else if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password))
+      errs.password = 'Mínimo 8 caracteres, con letras y números';
     if (password !== confirmPassword) errs.confirmPassword = 'Las contraseñas no coinciden';
 
     if (Object.keys(errs).length) return setErrors(errs);
@@ -96,7 +97,7 @@ function ForgotPasswordCard({ onSwitchToLogin }) {
     return (
       <AuthCardShell
         title="Recupera tu contraseña"
-        description="Te enviaremos un código de 6 dígitos a tu correo."
+        description="Te enviaremos un código de 8 dígitos a tu correo."
       >
         {error && <div style={alertStyle('error')}>{error}</div>}
 
@@ -131,7 +132,7 @@ function ForgotPasswordCard({ onSwitchToLogin }) {
   return (
     <AuthCardShell
       title="Ingresa el código"
-      description={`Enviamos un código de 6 dígitos a ${email}`}
+      description={`Enviamos un código de 8 dígitos a ${email}`}
     >
       {error && <div style={alertStyle('error')}>{error}</div>}
 
@@ -140,21 +141,21 @@ function ForgotPasswordCard({ onSwitchToLogin }) {
         {/* Campo del código OTP */}
         <div>
           <input
-            placeholder="Código de 6 dígitos"
+            placeholder="Código de 8 dígitos"
             value={codigo}
             onChange={(e) => {
-              // Solo números, máximo 6 dígitos
-              const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+              // Solo números, máximo 8 dígitos
+              const val = e.target.value.replace(/\D/g, '').slice(0, 8);
               setCodigo(val);
               setErrors((prev) => ({ ...prev, codigo: '' }));
             }}
-            maxLength={6}
+            maxLength={8}
             inputMode="numeric"
             style={{
               ...inputBase,
               border: `1px solid ${errors.codigo ? '#e53e3e' : 'var(--line)'}`,
-              letterSpacing: '10px',
-              fontSize: 22,
+              letterSpacing: '6px',
+              fontSize: 16,
               fontWeight: 700,
               textAlign: 'center',
             }}

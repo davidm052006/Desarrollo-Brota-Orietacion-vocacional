@@ -34,7 +34,13 @@ function splitTexto(texto) {
   return { normal: w.slice(0, h).join(' '), verde: w.slice(h).join(' ') };
 }
 
-const LIKERT_MARKS = ['😕', '🙁', '😐', '🙂', '😄'];
+const LIKERT_MARKS = [
+  '/logos/logo-triste.svg',
+  '/logos/logo-triste.svg',
+  '/logos/logo-base-limpio.svg',
+  '/logos/logo-guino.svg',
+  '/logos/logo-feliz.svg',
+];
 
 export default function TestQuestion({
   pregunta       = PREGUNTA_DEMO,
@@ -93,7 +99,7 @@ export default function TestQuestion({
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginTop: 30 }}>
           {/* Track line */}
           <div style={{
-            position: 'absolute', top: 23, left: '8%', right: '8%',
+            position: 'absolute', top: 32, left: '8%', right: '8%',
             height: 3, background: 'var(--surface-2)', borderRadius: 999,
           }} />
           {opciones.map(o => {
@@ -104,14 +110,14 @@ export default function TestQuestion({
                 gap: 11, zIndex: 1, cursor: 'pointer',
               }}>
                 <span style={{
-                  width: 46, height: 46, borderRadius: '50%',
+                  width: 64, height: 64, borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 18, border: `3px solid ${active ? 'var(--primary)' : 'var(--line)'}`,
                   background: active ? 'var(--primary)' : 'var(--surface)',
                   transform: active ? 'scale(1.12)' : 'scale(1)',
                   transition: 'all .2s',
                 }}>
-                  {o.mark}
+                  {o.mark.startsWith('/') ? <img src={o.mark} alt="" style={{ width: 54, height: 54 }} /> : o.mark}
                 </span>
                 <span style={{
                   fontSize: 12, fontWeight: active ? 700 : 600, textAlign: 'center',

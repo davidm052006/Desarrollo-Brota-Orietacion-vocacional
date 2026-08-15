@@ -1,23 +1,4 @@
-import { supabase } from '../config/supabase';
-
-const API_URL = import.meta.env.VITE_API_URL ?? '';
-
-// Obtiene el token de sesión activo para enviarlo en el header Authorization
-const getAuthHeaders = async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  return {
-    'Content-Type': 'application/json',
-    ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
-  };
-};
-
-// Parsea la respuesta HTTP y normaliza al patrón { success, data, error }
-const parseResponse = async (res) => {
-  let body;
-  try { body = await res.json(); } catch { body = {}; }
-  if (!res.ok) return { success: false, error: body.message || `Error del servidor (${res.status})` };
-  return { success: true, data: body.data };
-};
+import { API_URL, getAuthHeaders, parseResponse } from './apiClient';
 
 // ─────────────────────────────────────────────────────────────
 // CUESTIONARIO
@@ -135,6 +116,25 @@ export const obtenerPerfil = async (userId) => {
     return parseResponse(res);
   } catch (err) {
     console.error('perfilService.obtenerPerfil:', err);
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
+// ─────────────────────────────────────────────────────────────
+// ACTUALIZAR PERFIL PROPIO (sección Ajustes)
+// PATCH /api/perfil/:userId
+// ─────────────────────────────────────────────────────────────
+export const actualizarPerfil = async (userId, datos) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/perfil/${userId}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(datos),
+    });
+    return parseResponse(res);
+  } catch (err) {
+    console.error('perfilService.actualizarPerfil:', err);
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };

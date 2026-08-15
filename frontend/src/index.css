@@ -92,7 +92,7 @@ html, body, #root {
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-body, 'Plus Jakarta Sans', system-ui, sans-serif);
   background-color: var(--bg);
   color: var(--ink);
 }
@@ -120,6 +120,52 @@ body {
 .reveal-field {
   animation: revealField 220ms ease-out both;
 }
+
+@keyframes blinkCursor {
+  0%, 45%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.typewriter-cursor {
+  animation: blinkCursor 900ms step-end infinite;
+}
+
+/* ─── Mascota / página de racha ────────────────────────────────────────────── */
+@keyframes mascotaEntrada {
+  from { opacity: 0; transform: scale(.7) translateY(14px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes mascotaFlotar {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-8px) rotate(-2deg); }
+}
+
+@keyframes mascotaTemblor {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20%      { transform: translateX(-3px) rotate(-3deg); }
+  40%      { transform: translateX(3px) rotate(3deg); }
+  60%      { transform: translateX(-2px) rotate(-2deg); }
+  80%      { transform: translateX(2px) rotate(2deg); }
+}
+
+.mascota-entrada  { animation: mascotaEntrada 500ms cubic-bezier(.34,1.56,.64,1) both; }
+.mascota-flotar    { animation: mascotaFlotar 3.2s ease-in-out infinite; }
+.mascota-temblor   { animation: mascotaTemblor 600ms ease-in-out; }
+
+@keyframes rachaGlow {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: 1; }
+}
+
+.racha-glow { animation: rachaGlow 2.4s ease-in-out infinite; }
+
+@keyframes dotPop {
+  from { opacity: 0; transform: scale(.3); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.dot-pop { animation: dotPop 320ms cubic-bezier(.34,1.56,.64,1) both; }
 
 /* ─── Inputs y selects ─────────────────────────────────────────────────────── */
 input::placeholder,

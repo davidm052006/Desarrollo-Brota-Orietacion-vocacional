@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AuthCardShell from './AuthCardShell';
+import { CIUDADES_COLOMBIA } from '../../../utils/ciudadesColombia';
 
 // ── Estilos base de campo ────────────────────────────────────────────────────
 const fieldStyle = (error) => ({
@@ -65,13 +66,6 @@ function PasswordInput({ placeholder, value, onChange, error }) {
 }
 
 // ── Autocomplete de ciudades ──────────────────────────────────────────────────
-const CIUDADES_COLOMBIA = [
-  'Bogotá','Medellín','Cali','Barranquilla','Cartagena',
-  'Bucaramanga','Pereira','Manizales','Santa Marta','Cúcuta',
-  'Ibagué','Villavicencio','Pasto','Montería','Neiva',
-  'Armenia','Sincelejo','Valledupar','Popayán','Tunja',
-];
-
 function CityAutocomplete({ value, onChange, error }) {
   const [isOpen, setIsOpen] = useState(false);
   const search = value.trim().toLowerCase();

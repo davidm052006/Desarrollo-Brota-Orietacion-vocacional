@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '../../../config/supabase';
 import { getStats } from '../../../services/adminService';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
@@ -9,6 +10,7 @@ import OportunidadesSection from './sections/OportunidadesSection';
 import InstitucionesSection from './sections/InstitucionesSection';
 import CuestionariosSection from './sections/CuestionariosSection';
 import PreguntasSection from './sections/PreguntasSection';
+import PreguntasComunidadSection from './sections/PreguntasComunidadSection';
 import ConfiguracionSection from './sections/ConfiguracionSection';
 import ContactosSection from './sections/ContactosSection';
 
@@ -18,14 +20,15 @@ const SECTIONS = {
   instituciones: InstitucionesSection,
   cuestionarios: CuestionariosSection,
   preguntas:     PreguntasSection,
+  preguntas_comunidad: PreguntasComunidadSection,
   contactos:     ContactosSection,
   configuracion: ConfiguracionSection,
 };
 
 const STAT_DEFS = [
-  { key: 'perfiles_usuario', label: 'Usuarios',      icon: '👥', color: 'green'  },
+  { key: 'perfiles_usuario', label: 'Usuarios',      icon: <img src="/icons/icon-comunidad.svg" alt="" style={{ width: 20, height: 20 }} />,      color: 'green'  },
   { key: 'programas',        label: 'Programas',     icon: '💼', color: 'yellow' },
-  { key: 'instituciones',    label: 'Instituciones', icon: '🏛️', color: 'blue'   },
+  { key: 'instituciones',    label: 'Instituciones', icon: <img src="/icons/icon-instituciones.svg" alt="" style={{ width: 20, height: 20 }} />, color: 'blue'   },
   { key: 'cuestionarios',    label: 'Cuestionarios', icon: '📋', color: 'purple' },
   { key: 'preguntas',        label: 'Preguntas',     icon: '❓', color: 'red'    },
 ];
@@ -80,17 +83,7 @@ export default function AdminPanel({ user, profile }) {
   }
 
   if (!isAdmin) {
-    return (
-      <DashboardLayout profile={profile}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 52, marginBottom: 16 }}>🔒</div>
-            <div className="font-display" style={{ fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Acceso restringido</div>
-            <div style={{ fontSize: 14, color: 'var(--ink-soft)' }}>Solo los administradores pueden ver esta sección.</div>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
+    return <Navigate to="/dashboard" replace />;
   }
 
   const SectionComponent = SECTIONS[activeSection];

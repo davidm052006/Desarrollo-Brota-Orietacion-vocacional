@@ -10,25 +10,15 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
--- 1. TABLA: roles
+-- 1. TABLA: perfiles_usuario
 -- ============================================
-
-CREATE TABLE IF NOT EXISTS roles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nombre VARCHAR(50) UNIQUE NOT NULL
-);
-
-INSERT INTO roles (nombre) VALUES 
-('Administrador'),
-('Usuario');
-
--- ============================================
--- 2. TABLA: perfiles_usuario
--- ============================================
+-- Nota: el rol vive directamente en esta tabla como texto ('estudiante' |
+-- 'admin'), no como FK a una tabla `roles` separada. Así es como lo leen y
+-- escriben authController.js, adminController y verificarAdmin.js.
 CREATE TABLE IF NOT EXISTS perfiles_usuario (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  rol_id UUID REFERENCES roles(id),
+  rol VARCHAR(50) DEFAULT 'estudiante',
   nombre VARCHAR(100) NOT NULL,
   apellido VARCHAR(100) NOT NULL,
   edad INTEGER CHECK (edad >= 14 AND edad <= 100),
@@ -41,7 +31,7 @@ CREATE TABLE IF NOT EXISTS perfiles_usuario (
 );
 
 -- ============================================
--- 3. TABLA: cuestionarios
+-- 2. TABLA: cuestionarios
 -- ============================================
 CREATE TABLE IF NOT EXISTS cuestionarios (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -54,7 +44,7 @@ CREATE TABLE IF NOT EXISTS cuestionarios (
 );
 
 -- ============================================
--- 4. TABLA: preguntas
+-- 3. TABLA: preguntas
 -- ============================================
 CREATE TABLE IF NOT EXISTS preguntas (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -69,7 +59,7 @@ CREATE TABLE IF NOT EXISTS preguntas (
 );
 
 -- ============================================
--- 5. TABLA: resultados
+-- 4. TABLA: resultados
 -- ============================================
 CREATE TABLE IF NOT EXISTS resultados (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -81,7 +71,7 @@ CREATE TABLE IF NOT EXISTS resultados (
 );
 
 -- ============================================
--- 6. TABLA: instituciones
+-- 5. TABLA: instituciones
 -- ============================================
 CREATE TABLE IF NOT EXISTS instituciones (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -100,7 +90,7 @@ CREATE TABLE IF NOT EXISTS instituciones (
 );
 
 -- ============================================
--- 7. TABLA: programas
+-- 6. TABLA: programas
 -- ============================================
 CREATE TABLE IF NOT EXISTS programas (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -120,7 +110,7 @@ CREATE TABLE IF NOT EXISTS programas (
 );
 
 -- ============================================
--- 8. TABLA: convocatorias
+-- 7. TABLA: convocatorias
 -- ============================================
 -- Validación BD: reemplazada expresión GENERATED STORED por BOOLEAN DEFAULT true debido al error PostgreSQL 42P17; la vigencia pública se controla mediante fecha_cierre >= CURRENT_DATE en la política RLS.
 CREATE TABLE IF NOT EXISTS convocatorias (
@@ -137,7 +127,7 @@ CREATE TABLE IF NOT EXISTS convocatorias (
 );
 
 -- ============================================
--- 9. TABLA: recomendaciones
+-- 8. TABLA: recomendaciones
 -- ============================================
 -- Eliminada la relacion circular con perfiles_usuario.
 -- El usuario se obtiene implicitamente via result_id -> resultados.perfil_usuario_id
@@ -152,7 +142,7 @@ CREATE TABLE IF NOT EXISTS recomendaciones (
 );
 
 -- ============================================
--- 10. TABLA: opciones
+-- 9. TABLA: opciones
 -- ============================================
 CREATE TABLE IF NOT EXISTS opciones (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -163,7 +153,7 @@ CREATE TABLE IF NOT EXISTS opciones (
 );
 
 -- ============================================
--- 11. TABLA: pesos_opciones
+-- 10. TABLA: pesos_opciones
 -- ============================================
 CREATE TABLE IF NOT EXISTS pesos_opciones (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -173,7 +163,7 @@ CREATE TABLE IF NOT EXISTS pesos_opciones (
 );
 
 -- ============================================
--- 12. TABLA: perfiles_vocacionales
+-- 11. TABLA: perfiles_vocacionales
 -- ============================================
 CREATE TABLE IF NOT EXISTS perfiles_vocacionales (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -239,7 +229,6 @@ ALTER TABLE programas
 ALTER TABLE opciones            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pesos_opciones      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE perfiles_vocacionales ENABLE ROW LEVEL SECURITY;
-ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
 
 
 -- Políticas
@@ -270,9 +259,6 @@ CREATE POLICY "Usuarios pueden ver sus propias recomendaciones" ON recomendacion
       )
     )
   );
-
-CREATE POLICY "Todos pueden ver roles"
-  ON roles FOR SELECT USING (true);
 
 CREATE POLICY "Todos pueden ver opciones"
   ON opciones FOR SELECT USING (true);

@@ -70,8 +70,7 @@ export const signUpWithEmail = async (email, password, nombre, apellido, extraFi
 // ─────────────────────────────────────────────────────────────
 export const sendPasswordReset = async (email) => {
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {  
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) return { success: false, error: translateAuthError(error.message) };
     return { success: true };
   } catch (err) {
@@ -89,13 +88,10 @@ export const verifyOtpAndUpdatePassword = async (email, token, newPassword) => {
     });
   
     if (otpError) {
+      console.error('verifyOtp error:', otpError.message);
       return {
         success: false,
-        error: otpError.message.includes('expired')
-          ? 'El código expiró. Solicita uno nuevo.'
-          : otpError.message.includes('invalid')
-          ? 'Código incorrecto. Verifica e intenta de nuevo.'
-          : translateAuthError(otpError.message),
+        error: 'Código incorrecto o expirado. Verifica e intenta de nuevo.',
       };
     }
 

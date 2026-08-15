@@ -2,12 +2,14 @@
 const CATEGORIAS = {
   tecnologia: {
     emoji: '💻',
+    icono: '/icons/icon-categoria-tecnologia.svg',
     titulo: 'Tecnología e Innovación',
     descripcion: 'Tienes una mente analítica y curiosidad por cómo funcionan las cosas. Te atrae resolver problemas técnicos y crear soluciones digitales que impactan a las personas.',
     color: 'blue',
   },
   arte: {
     emoji: '🎨',
+    icono: '/icons/icon-categoria-arte.svg',
     titulo: 'Arte y Creatividad',
     descripcion: 'Tu mente piensa en imágenes, formas y posibilidades. Tienes un talento natural para expresar ideas y emociones de maneras que otros no imaginan.',
     color: 'purple',
@@ -20,6 +22,7 @@ const CATEGORIAS = {
   },
   ciencias: {
     emoji: '🔬',
+    icono: '/icons/icon-categoria-ciencias.svg',
     titulo: 'Ciencias e Investigación',
     descripcion: 'Te apasiona entender el porqué de las cosas. Eres metódico, observador y disfrutas explorar hipótesis y encontrar respuestas basadas en evidencia.',
     color: 'teal',
@@ -38,6 +41,7 @@ const CATEGORIAS = {
   },
   negocios: {
     emoji: '💼',
+    icono: '/icons/icon-negocios.svg',
     titulo: 'Negocios y Emprendimiento',
     descripcion: 'Tienes visión estratégica y capacidad para ver oportunidades donde otros no las ven. Te emociona crear, dirigir y llevar ideas al mercado.',
     color: 'amber',
@@ -50,6 +54,7 @@ const CATEGORIAS = {
   },
   salud: {
     emoji: '🏥',
+    icono: '/icons/icon-categoria-salud.svg',
     titulo: 'Salud y Bienestar',
     descripcion: 'Te importa el cuidado integral de las personas. Tu vocación de servicio y tu interés por las ciencias de la vida te orientan hacia las ciencias de la salud.',
     color: 'rose',
