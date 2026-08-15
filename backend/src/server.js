@@ -10,6 +10,7 @@ const adminRoutes     = require('./routes/admin');
 const programasRoutes = require('./routes/programas');
 const contactoRoutes  = require('./routes/contacto');
 const comunidadRoutes = require('./routes/comunidad');
+const rutasRoutes     = require('./routes/rutas');
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/admin',    adminRoutes);
 app.use('/api/programas', programasRoutes);
 app.use('/api/contacto', contactoLimiter, contactoRoutes);
 app.use('/api/comunidad', comunidadRoutes);
+app.use('/api/rutas',    rutasRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({
