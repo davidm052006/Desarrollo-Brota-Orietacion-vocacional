@@ -4,6 +4,7 @@ const MODULES = [
   { key: 'instituciones', icon: '🏛️', icono: '/icons/icon-instituciones.svg',  label: 'Instituciones'  },
   { key: 'cuestionarios', icon: '📋', label: 'Cuestionarios'  },
   { key: 'preguntas',     icon: '❓', label: 'Preguntas'      },
+  { key: 'preguntas_comunidad', icon: '🚩', label: 'Preguntas comunidad' },
   { key: 'contactos',     icon: '📬', icono: '/icons/icon-mensajes.svg',       label: 'Solicitudes'    },
   { key: 'configuracion', icon: '⚙️', icono: '/icons/icon-ajustes.svg',        label: 'Configuración'  },
 ];

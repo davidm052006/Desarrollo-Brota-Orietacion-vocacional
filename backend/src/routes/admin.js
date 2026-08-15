@@ -19,6 +19,9 @@ const {
 const {
   getContactos, updateContacto,
 } = require('../controllers/admin/contactosController');
+const {
+  getPreguntasComunidad, deletePreguntaComunidad,
+} = require('../controllers/admin/preguntasComunidadController');
 const { getEstado, ejecutarSincronizacion } = require('../controllers/sincronizacionController');
 
 router.use(verificarAdmin);
@@ -53,6 +56,9 @@ router.delete('/preguntas/:id', deletePregunta);
 
 router.get   ('/contactos',     getContactos);
 router.patch ('/contactos/:id', updateContacto);
+
+router.get   ('/preguntas-comunidad',     getPreguntasComunidad);
+router.delete('/preguntas-comunidad/:id', deletePreguntaComunidad);
 
 router.get ('/sincronizacion/estado',   getEstado);
 router.post('/sincronizacion/ejecutar', ejecutarSincronizacion);

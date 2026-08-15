@@ -54,6 +54,7 @@ export const getPregunta         = (id)             => get(`/preguntas/${id}`);
 export const crearPregunta       = (datos)          => post('/preguntas', datos);
 export const responderPregunta   = (id, datos)      => post(`/preguntas/${id}/respuestas`, datos);
 export const marcarMejorRespuesta = (pregId, rId)   => patch(`/preguntas/${pregId}/respuestas/${rId}/mejor`);
+export const reportarPregunta    = (id, motivo)     => post(`/preguntas/${id}/reportar`, { motivo });
 
 // ── Convocatorias ─────────────────────────────────────────────────────────────
 export const getConvocatorias    = ()               => get('/convocatorias');

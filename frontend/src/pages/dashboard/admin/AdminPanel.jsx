@@ -10,6 +10,7 @@ import OportunidadesSection from './sections/OportunidadesSection';
 import InstitucionesSection from './sections/InstitucionesSection';
 import CuestionariosSection from './sections/CuestionariosSection';
 import PreguntasSection from './sections/PreguntasSection';
+import PreguntasComunidadSection from './sections/PreguntasComunidadSection';
 import ConfiguracionSection from './sections/ConfiguracionSection';
 import ContactosSection from './sections/ContactosSection';
 
@@ -19,6 +20,7 @@ const SECTIONS = {
   instituciones: InstitucionesSection,
   cuestionarios: CuestionariosSection,
   preguntas:     PreguntasSection,
+  preguntas_comunidad: PreguntasComunidadSection,
   contactos:     ContactosSection,
   configuracion: ConfiguracionSection,
 };

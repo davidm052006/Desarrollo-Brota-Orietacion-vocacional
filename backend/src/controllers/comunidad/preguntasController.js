@@ -75,12 +75,26 @@ const getPregunta = asyncHandler('comunidad/preguntasController.getPregunta', as
   });
 });
 
+const REPORTES_PARA_BAN = 3;
+const DIAS_BAN = 7;
+
 const crearPregunta = asyncHandler('comunidad/preguntasController.crearPregunta', async (req, res) => {
   const { titulo, area = 'General', anonimo = false } = req.body;
   const userId = req.user.id;
 
   if (!titulo?.trim()) {
     return res.status(400).json({ success: false, message: 'Título requerido' });
+  }
+
+  const { data: perfil } = await supabase
+    .from('perfiles_usuario').select('baneado_preguntas_hasta').eq('user_id', userId).single();
+
+  if (perfil?.baneado_preguntas_hasta && new Date(perfil.baneado_preguntas_hasta) > new Date()) {
+    const hasta = new Date(perfil.baneado_preguntas_hasta).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' });
+    return res.status(403).json({
+      success: false,
+      message: `No podés publicar preguntas hasta el ${hasta} por reportes recibidos.`,
+    });
   }
 
   const autorNombre = anonimo ? null : await getNombreUsuario(userId);
@@ -152,4 +166,39 @@ const marcarMejorRespuesta = asyncHandler('comunidad/preguntasController.marcarM
   return res.json({ success: true });
 });
 
-module.exports = { getPreguntas, getPregunta, crearPregunta, responderPregunta, marcarMejorRespuesta };
+const reportarPregunta = asyncHandler('comunidad/preguntasController.reportarPregunta', async (req, res) => {
+  const { id: preguntaId } = req.params;
+  const { motivo } = req.body;
+  const userId = req.user.id;
+
+  const { data: pregunta } = await supabase
+    .from('preguntas_comunidad').select('id, user_id').eq('id', preguntaId).single();
+  if (!pregunta) return res.status(404).json({ success: false, message: 'Pregunta no encontrada' });
+
+  const { data: reporteExistente } = await supabase
+    .from('reportes_pregunta').select('id').eq('pregunta_id', preguntaId).eq('user_id', userId).single();
+  if (reporteExistente) {
+    return res.status(409).json({ success: false, message: 'Ya reportaste esta pregunta' });
+  }
+
+  const { error: insertError } = await supabase
+    .from('reportes_pregunta')
+    .insert({ pregunta_id: preguntaId, user_id: userId, motivo: motivo?.trim() || null });
+  if (insertError) return res.status(500).json({ success: false, message: insertError.message });
+
+  const { count } = await supabase
+    .from('reportes_pregunta')
+    .select('id', { count: 'exact', head: true })
+    .eq('pregunta_id', preguntaId);
+
+  let autorBaneado = false;
+  if (count >= REPORTES_PARA_BAN && pregunta.user_id) {
+    const hasta = new Date(Date.now() + DIAS_BAN * 24 * 60 * 60 * 1000).toISOString();
+    await supabase.from('perfiles_usuario').update({ baneado_preguntas_hasta: hasta }).eq('user_id', pregunta.user_id);
+    autorBaneado = true;
+  }
+
+  return res.status(201).json({ success: true, data: { reportes: count, autor_baneado: autorBaneado } });
+});
+
+module.exports = { getPreguntas, getPregunta, crearPregunta, responderPregunta, marcarMejorRespuesta, reportarPregunta };

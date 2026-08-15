@@ -241,6 +241,27 @@ export const deletePregunta = async (id) => {
   }
 };
 
+// ─── Preguntas de comunidad (moderación) ───────────────────────────────────
+export const getPreguntasComunidad = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/preguntas-comunidad`, { headers });
+    return parseResponse(res);
+  } catch (err) {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
+export const deletePreguntaComunidad = async (id) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/preguntas-comunidad/${id}`, { method: 'DELETE', headers });
+    return parseResponse(res);
+  } catch (err) {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
 // ─── Sincronización MEN ────────────────────────────────────────────────────
 export const getSincronizacionEstado = async () => {
   try {

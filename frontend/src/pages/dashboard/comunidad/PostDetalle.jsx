@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
-import { getPost, votarPost, responderPost, getPregunta, responderPregunta } from '../../../services/comunidadService';
+import { getPost, votarPost, responderPost, getPregunta, responderPregunta, reportarPregunta } from '../../../services/comunidadService';
 
 const AV_PALETTE = ['#16A34A', '#2563eb', '#db2777', '#d97706', '#7c3aed', '#0891b2'];
 function avatarColor(str = '') {
@@ -51,6 +51,7 @@ export default function PostDetalle() {
   const [nuevoTexto, setNuevoTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [anonimo, setAnonimo] = useState(false);
+  const [reporteEstado, setReporteEstado] = useState(null); // null | 'enviando' | 'ok' | mensaje de error
 
   useEffect(() => {
     setCargando(true);
@@ -64,6 +65,12 @@ export default function PostDetalle() {
   async function handleVotar(dir) {
     const res = await votarPost(id, dir);
     return res;
+  }
+
+  async function handleReportar() {
+    setReporteEstado('enviando');
+    const res = await reportarPregunta(id);
+    setReporteEstado(res.success ? 'ok' : (res.error || 'No se pudo reportar'));
   }
 
   async function handleResponder() {
@@ -134,7 +141,23 @@ export default function PostDetalle() {
                       Resuelta ✓
                     </span>
                   )}
+                  {tipo === 'pregunta' && !datos.es_autor && (
+                    <button
+                      onClick={handleReportar}
+                      disabled={reporteEstado === 'enviando' || reporteEstado === 'ok'}
+                      style={{
+                        marginLeft: 'auto', background: 'none', border: '1px solid var(--line)',
+                        color: 'var(--ink-soft)', fontSize: 11.5, fontWeight: 600, padding: '4px 10px',
+                        borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
+                      }}
+                    >
+                      {reporteEstado === 'ok' ? 'Reportada' : '🚩 Reportar'}
+                    </button>
+                  )}
                 </div>
+                {reporteEstado && reporteEstado !== 'enviando' && reporteEstado !== 'ok' && (
+                  <div style={{ fontSize: 12, color: '#dc2626', marginBottom: 10 }}>{reporteEstado}</div>
+                )}
                 <div style={{ fontSize: 14.5, lineHeight: 1.75, color: 'var(--ink)' }}>
                   {datos.body || datos.contenido}
                 </div>
