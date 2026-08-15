@@ -128,7 +128,7 @@ export default function Recursos() {
             padding: '9px 14px', fontSize: 13, color: 'var(--ink-soft)',
             display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
           }}>
-            <span>🔍</span>
+            <img src="/icons/icon-buscar.svg" alt="" style={{ width: 14, height: 14 }} />
             <input
               type="text"
               value={busqueda}

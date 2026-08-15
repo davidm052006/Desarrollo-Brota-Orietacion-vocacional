@@ -3,16 +3,16 @@ import { useEffect, useState } from 'react';
 import { obtenerRecomendaciones, marcarRecomendacionVista } from '../../../../services/perfilService';
 
 const AREA_INFO = {
-  tecnologia:     { label: 'Tecnología',        emoji: '💻' },
-  salud:          { label: 'Salud',             emoji: '🏥' },
-  ciencias:       { label: 'Ciencias',          emoji: '🔬' },
+  tecnologia:     { label: 'Tecnología',        emoji: '💻', icono: '/icons/icon-categoria-tecnologia.svg' },
+  salud:          { label: 'Salud',             emoji: '🏥', icono: '/icons/icon-categoria-salud.svg' },
+  ciencias:       { label: 'Ciencias',          emoji: '🔬', icono: '/icons/icon-categoria-ciencias.svg' },
   diseño:         { label: 'Diseño',            emoji: '🎨' },
-  arte:           { label: 'Arte',              emoji: '🎭' },
+  arte:           { label: 'Arte',              emoji: '🎭', icono: '/icons/icon-categoria-arte.svg' },
   educacion:      { label: 'Educación',         emoji: '📚' },
   social:         { label: 'Ciencias Sociales', emoji: '🤝' },
   comunicacion:   { label: 'Comunicación',      emoji: '📡' },
   juridico:       { label: 'Derecho',           emoji: '⚖️' },
-  negocios:       { label: 'Negocios',          emoji: '📈' },
+  negocios:       { label: 'Negocios',          emoji: '📈', icono: '/icons/icon-negocios.svg' },
   administrativo: { label: 'Administración',    emoji: '🏢' },
   humanidades:    { label: 'Humanidades',       emoji: '📖' },
   ambiental:      { label: 'Ambiental',         emoji: '🌿' },
@@ -66,7 +66,9 @@ function ProgramaCard({ rec, onVer }) {
             fontSize: 11, background: 'var(--primary-soft)', color: 'var(--primary-deep)',
             padding: '2px 8px', borderRadius: 999, fontWeight: 600,
           }}>
-            {areaInfo.emoji} {areaInfo.label}
+            {areaInfo.icono
+              ? <img src={areaInfo.icono} alt="" style={{ width: 12, height: 12, verticalAlign: '-1px' }} />
+              : areaInfo.emoji} {areaInfo.label}
           </span>
         )}
         {rec.modalidad && (
@@ -140,7 +142,9 @@ export default function TestResult({
         background: 'var(--primary-soft)', border: '1px solid var(--line)',
         borderRadius: 24, padding: '36px 32px', textAlign: 'center',
       }}>
-        <div style={{ fontSize: 52, marginBottom: 14 }}>{perfil.emoji}</div>
+        <div style={{ fontSize: 52, marginBottom: 14 }}>
+          {perfil.icono ? <img src={perfil.icono} alt="" style={{ width: 52, height: 52, margin: '0 auto' }} /> : perfil.emoji}
+        </div>
         <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>
           Tu perfil vocacional
         </div>
@@ -158,7 +162,7 @@ export default function TestResult({
             background: 'var(--surface)', borderRadius: 999, padding: '8px 16px',
             fontSize: 13, color: 'var(--ink-soft)', border: '1px solid var(--line)',
           }}>
-            <span>{perfilSecundario.emoji}</span>
+            <span>{perfilSecundario.icono ? <img src={perfilSecundario.icono} alt="" style={{ width: 14, height: 14 }} /> : perfilSecundario.emoji}</span>
             <span>Perfil secundario: <b>{perfilSecundario.titulo}</b></span>
           </div>
         )}

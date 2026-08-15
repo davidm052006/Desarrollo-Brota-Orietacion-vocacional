@@ -5,16 +5,16 @@ import { obtenerProgramas, obtenerEstadisticas } from '../../services/programasS
 // ── Categorías ────────────────────────────────────────────────────────────────
 const CATEGORIAS = [
   { key: 'todos',          emoji: '✨', label: 'Todos',             tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
-  { key: 'tecnologia',     emoji: '💻', label: 'Tecnología',        tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
-  { key: 'salud',          emoji: '🩺', label: 'Salud',             tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
-  { key: 'ciencias',       emoji: '🔬', label: 'Ciencias',          tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
+  { key: 'tecnologia',     emoji: '💻', icono: '/icons/icon-categoria-tecnologia.svg', label: 'Tecnología',        tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
+  { key: 'salud',          emoji: '🩺', icono: '/icons/icon-categoria-salud.svg',      label: 'Salud',             tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
+  { key: 'ciencias',       emoji: '🔬', icono: '/icons/icon-categoria-ciencias.svg',   label: 'Ciencias',          tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
   { key: 'diseño',         emoji: '🎨', label: 'Diseño',            tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
-  { key: 'arte',           emoji: '🎭', label: 'Arte',              tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
+  { key: 'arte',           emoji: '🎭', icono: '/icons/icon-categoria-arte.svg',       label: 'Arte',              tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
   { key: 'educacion',      emoji: '🎓', label: 'Educación',         tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
   { key: 'social',         emoji: '🤝', label: 'Ciencias Sociales', tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
   { key: 'comunicacion',   emoji: '📡', label: 'Comunicación',      tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
   { key: 'juridico',       emoji: '⚖️', label: 'Derecho',           tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
-  { key: 'negocios',       emoji: '📈', label: 'Negocios',          tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
+  { key: 'negocios',       emoji: '📈', icono: '/icons/icon-negocios.svg',             label: 'Negocios',          tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
   { key: 'administrativo', emoji: '🏛️', label: 'Administración',    tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
   { key: 'humanidades',    emoji: '📖', label: 'Humanidades',       tint: 'var(--accent-soft)',  color: 'var(--accent)'       },
   { key: 'ambiental',      emoji: '🌱', label: 'Ambiental',         tint: 'var(--primary-soft)', color: 'var(--primary-deep)' },
@@ -65,7 +65,7 @@ function ProgramaCard({ programa }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 17, flexShrink: 0,
         }}>
-          {cat.emoji}
+          {cat.icono ? <img src={cat.icono} alt="" style={{ width: 20, height: 20 }} /> : cat.emoji}
         </div>
         <span style={{
           fontSize: 11, fontWeight: 700, color: cat.color, background: cat.tint,
@@ -86,7 +86,8 @@ function ProgramaCard({ programa }) {
       {/* Institución */}
       {inst && (
         <div style={{ fontSize: 12, color: 'var(--ink-soft)', display: 'flex', alignItems: 'center', gap: 6 }}>
-          🏛️ <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inst.nombre}</span>
+          <img src="/icons/icon-instituciones.svg" alt="" style={{ width: 13, height: 13, flexShrink: 0 }} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inst.nombre}</span>
         </div>
       )}
 
@@ -132,7 +133,7 @@ function FilterSidebar({ categoriaActiva, onCategoriaChange, modalidad, onModali
         Área de conocimiento
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {CATEGORIAS.map(({ key, emoji, label }) => {
+        {CATEGORIAS.map(({ key, emoji, icono, label }) => {
           const active = categoriaActiva === key;
           return (
             <button key={key} onClick={() => onCategoriaChange(key)} style={{
@@ -142,7 +143,9 @@ function FilterSidebar({ categoriaActiva, onCategoriaChange, modalidad, onModali
               background: active ? 'var(--primary-soft)' : 'transparent',
               color: active ? 'var(--primary-deep)' : 'var(--ink-soft)',
             }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>{emoji} {label}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                {icono ? <img src={icono} alt="" style={{ width: 16, height: 16 }} /> : emoji} {label}
+              </span>
               <span style={{ opacity: .65, fontWeight: 600 }}>{conteo(key)}</span>
             </button>
           );

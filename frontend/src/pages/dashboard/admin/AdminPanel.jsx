@@ -24,9 +24,9 @@ const SECTIONS = {
 };
 
 const STAT_DEFS = [
-  { key: 'perfiles_usuario', label: 'Usuarios',      icon: '👥', color: 'green'  },
+  { key: 'perfiles_usuario', label: 'Usuarios',      icon: <img src="/icons/icon-comunidad.svg" alt="" style={{ width: 20, height: 20 }} />,      color: 'green'  },
   { key: 'programas',        label: 'Programas',     icon: '💼', color: 'yellow' },
-  { key: 'instituciones',    label: 'Instituciones', icon: '🏛️', color: 'blue'   },
+  { key: 'instituciones',    label: 'Instituciones', icon: <img src="/icons/icon-instituciones.svg" alt="" style={{ width: 20, height: 20 }} />, color: 'blue'   },
   { key: 'cuestionarios',    label: 'Cuestionarios', icon: '📋', color: 'purple' },
   { key: 'preguntas',        label: 'Preguntas',     icon: '❓', color: 'red'    },
 ];

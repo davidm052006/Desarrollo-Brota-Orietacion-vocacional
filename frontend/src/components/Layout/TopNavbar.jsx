@@ -118,14 +118,14 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
           onClick={() => navigate('/dashboard/favoritos')}
           title="Favoritos"
           style={iconBtn}
-        >⭐</button>
+        ><img src="/icons/icon-favoritos.svg" alt="Favoritos" style={{ width: 18, height: 18 }} /></button>
 
         <div style={{ position: 'relative' }}>
           <button
             onClick={() => navigate('/dashboard/mensajes')}
             title="Mensajes"
             style={iconBtn}
-          >💬</button>
+          ><img src="/icons/icon-mensajes.svg" alt="Mensajes" style={{ width: 18, height: 18 }} /></button>
           <span style={{
             position: 'absolute', top: 6, right: 6,
             width: 7, height: 7, borderRadius: '50%',
