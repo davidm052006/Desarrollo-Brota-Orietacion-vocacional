@@ -1,6 +1,7 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useDarkMode } from '../../hooks/useDarkMode';
+import { useFontFamily } from '../../hooks/useFontFamily';
 import { handleLogout } from '../../utils/auth';
 
 const NAV_ITEMS = [
@@ -32,6 +33,7 @@ function Avatar({ nombre }) {
 export default function TopNavbar({ profile, isDemoMode = false }) {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [dark, toggleDark] = useDarkMode();
+  useFontFamily(); // aplica la fuente guardada en cada carga del dashboard — el selector vive en Ajustes.jsx
   const navigate = useNavigate();
   const location = useLocation();
 

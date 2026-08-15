@@ -342,6 +342,26 @@ const eliminarResultado = async (req, res) => {
 // GET /api/perfil/:userId
 // Devuelve el perfil completo del usuario autenticado.
 // ─────────────────────────────────────────────────────────────
+// Actualiza racha_dias/ultima_actividad si hoy todavía no se registró
+// actividad. Se llama desde obtenerPerfil (se pide en cada carga del
+// Dashboard), así que no hace falta un endpoint de "check-in" aparte.
+async function actualizarRacha(perfil, userId) {
+  const hoy = new Date().toISOString().slice(0, 10);
+  if (perfil.ultima_actividad === hoy) return perfil; // ya contada hoy
+
+  const ayer = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const nuevaRacha = perfil.ultima_actividad === ayer ? (perfil.racha_dias || 0) + 1 : 1;
+
+  const { data: actualizado, error } = await supabase
+    .from('perfiles_usuario')
+    .update({ ultima_actividad: hoy, racha_dias: nuevaRacha })
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  return error ? perfil : actualizado; // si falla el update, seguir con el dato viejo en vez de romper la carga del perfil
+}
+
 const obtenerPerfil = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -360,7 +380,9 @@ const obtenerPerfil = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Perfil no encontrado' });
     }
 
-    return res.json({ success: true, data });
+    const dataConRacha = await actualizarRacha(data, userId);
+
+    return res.json({ success: true, data: dataConRacha });
   } catch (err) {
     console.error('perfilController.obtenerPerfil:', err);
     return res.status(500).json({ success: false, message: err.message });

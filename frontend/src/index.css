@@ -92,7 +92,7 @@ html, body, #root {
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-body, 'Plus Jakarta Sans', system-ui, sans-serif);
   background-color: var(--bg);
   color: var(--ink);
 }

@@ -5,6 +5,7 @@ import { obtenerPerfil, actualizarPerfil } from '../../services/perfilService';
 import { sendPasswordReset, verifyOtpAndUpdatePassword } from '../../services/authService';
 import { handleLogout } from '../../utils/auth';
 import { CIUDADES_COLOMBIA } from '../../utils/ciudadesColombia';
+import { useFontFamily, FUENTES } from '../../hooks/useFontFamily';
 
 const EDADES = Array.from({ length: 87 }, (_, i) => String(14 + i)); // 14–100, mismo rango del CHECK en perfiles_usuario
 const NIVELES_EDUCATIVOS = ['Educación media', 'Técnico', 'Tecnólogo', 'Universitario', 'Posgrado'];
@@ -53,7 +54,30 @@ function Card({ icono, titulo, children }) {
   );
 }
 
+// Fila deshabilitada para configuraciones futuras — visible para que no se
+// olviden, pero sin funcionalidad real todavía.
+function FilaProvisional({ titulo, descripcion }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      gap: 14, padding: '12px 0', borderBottom: '1px solid var(--line)', opacity: 0.55,
+    }}>
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 700 }}>{titulo}</div>
+        <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>{descripcion}</div>
+      </div>
+      <span style={{
+        flexShrink: 0, fontSize: 10.5, fontWeight: 700, color: 'var(--ink-soft)',
+        background: 'var(--surface-2)', padding: '3px 9px', borderRadius: 999,
+      }}>
+        Próximamente
+      </span>
+    </div>
+  );
+}
+
 export default function Ajustes({ user, isDemoMode = false }) {
+  const [fuente, setFuente] = useFontFamily();
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -198,6 +222,21 @@ export default function Ajustes({ user, isDemoMode = false }) {
               <Mensaje estado={perfilMsg} />
             </Card>
 
+            <Card icono="/icons/icon-apariencia.svg" titulo="Apariencia">
+              <div style={{ maxWidth: 260 }}>
+                <label style={labelStyle}>Tipo de letra</label>
+                <GlassSelect
+                  value={fuente}
+                  onChange={setFuente}
+                  options={Object.entries(FUENTES).map(([key, f]) => ({ value: key, label: f.label }))}
+                  placeholder="Elegir tipo de letra"
+                />
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 10 }}>
+                Se aplica en todo el panel y se guarda en este dispositivo.
+              </p>
+            </Card>
+
             <Card icono="/icons/icon-seguridad.svg" titulo="Seguridad">
               <p style={{ fontSize: 12.5, color: 'var(--ink-soft)', marginBottom: 14 }}>
                 Por seguridad, para cambiar tu contraseña primero necesitás verificar tu correo con un código —
@@ -276,6 +315,14 @@ export default function Ajustes({ user, isDemoMode = false }) {
               >
                 Cerrar sesión
               </button>
+            </Card>
+
+            <Card icono="/icons/icon-ajustes.svg" titulo="Próximamente">
+              <FilaProvisional titulo="Notificaciones por correo" descripcion="Avisos de respuestas a tus preguntas y nuevas convocatorias." />
+              <FilaProvisional titulo="Perfil público en Comunidad" descripcion="Elegir si tu nombre real se muestra en vez de anónimo por defecto." />
+              <FilaProvisional titulo="Tamaño de texto" descripcion="Accesibilidad — independiente del tipo de letra." />
+              <FilaProvisional titulo="Exportar o eliminar mi cuenta" descripcion="Descargar tus datos o borrar la cuenta permanentemente." />
+              <FilaProvisional titulo="Idioma" descripcion="Si Brota se traduce a otros idiomas en el futuro." />
             </Card>
           </>
         )}

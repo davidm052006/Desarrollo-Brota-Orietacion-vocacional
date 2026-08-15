@@ -36,6 +36,8 @@ Referencia rápida para no tener que releer `App.jsx` / routers backend en cada 
 
 Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (sesión o modo demo) — no hay un `ProtectedRoute` wrapper reusable (existe `components/ProtectedRoute.jsx` pero no está en uso en las rutas de arriba, verificar antes de asumir que aplica).
 
+`Ajustes.jsx` también tiene una tarjeta "Apariencia" (selector de tipo de letra, `hooks/useFontFamily.js` — mismo patrón que `useDarkMode.js`, guarda en `localStorage` y setea `--font-body` en `<html>`; se inicializa desde `TopNavbar.jsx` para que se aplique en todo `/dashboard/*`, no solo al entrar a Ajustes) y una tarjeta "Próximamente" con configuraciones sugeridas pero sin implementar (notificaciones por correo, perfil público en Comunidad, tamaño de texto, exportar/eliminar cuenta, idioma) — son filas deshabilitadas a propósito, para no perder la idea; si se implementa alguna, sacarla de esa lista.
+
 ### Layout del dashboard
 - **TopNavbar** (`components/Layout/TopNavbar.jsx`) — navbar horizontal sticky con tabs
 - **DashboardLayout** (`components/Layout/DashboardLayout.jsx`) — wrapper simple con TopNavbar
@@ -45,7 +47,7 @@ Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (ses
 | Router | Base | Contenido |
 |---|---|---|
 | `auth.js` | `/api/auth` | `POST /register-perfil` |
-| `perfil.js` | `/api/perfil` | cuestionario, resultado, recomendaciones, `GET/PATCH /:userId` (PATCH = autoedición, usado por `Ajustes.jsx`) |
+| `perfil.js` | `/api/perfil` | cuestionario, resultado, recomendaciones, `GET/PATCH /:userId` (PATCH = autoedición, usado por `Ajustes.jsx`; el `GET` también actualiza la racha de días como efecto secundario, ver `actualizarRacha()` en el controller) |
 | `programas.js` | `/api/programas` | `GET /`, `GET /stats` |
 | `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas (+ `POST /:id/reportar`), convocatorias |
 | `contacto.js` | `/api/contacto` | `POST /` |
@@ -191,4 +193,4 @@ Decisión del usuario (2026-07-11): se mantiene así **durante la fase de desarr
 Si no hay `VITE_SUPABASE_URL` en `.env`, la app entra en modo demo.
 - Login demo: cualquier email/password
 - Admin demo: email `davidm20.05.2006@gmail.com`
-- La racha de días (streak) está hardcodeada en 3 días (por implementar)
+- La racha de días (streak) ya no está hardcodeada (agosto 2026) — se calcula real en `perfilController.obtenerPerfil` (columnas `racha_dias`/`ultima_actividad` en `perfiles_usuario`, `backend/scripts/migration_racha.sql`). En modo demo no hay perfil real, así que se ve en 0 en vez del "3 días" fijo que mostraba antes.

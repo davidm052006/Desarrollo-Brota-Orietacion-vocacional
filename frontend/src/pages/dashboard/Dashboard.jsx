@@ -144,7 +144,7 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
                  [profile?.primer_nombre, profile?.primer_apellido].filter(Boolean).join(' ') || '—';
   const initial = nombre.charAt(0).toUpperCase();
 
-  const diasRacha = 3; // TODO: conectar con retos_completados
+  const diasRacha = profile?.racha_dias ?? 0;
 
   const card = {
     background: 'var(--surface)', border: '1px solid var(--line)',
