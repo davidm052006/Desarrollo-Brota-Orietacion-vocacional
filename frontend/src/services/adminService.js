@@ -88,9 +88,28 @@ export const deleteUsuario = async (id) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/usuarios/${id}`, { method: 'DELETE', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
+};
+
+// Crea usuarios en lote reutilizando createUsuario fila por fila.
+// usuarios: array de objetos con la misma forma que espera createUsuario.
+// Devuelve { success: true, resultados } donde resultados es un array
+// paralelo con { usuario, success, error } por cada fila del CSV.
+export const createUsuariosMasivo = async (usuarios) => {
+  const resultados = [];
+
+  for (const usuario of usuarios) {
+    const res = await createUsuario(usuario);
+    resultados.push({
+      usuario,
+      success: res.success,
+      error: res.success ? null : res.error,
+    });
+  }
+
+  return { success: true, resultados };
 };
 
 // ─── Instituciones ─────────────────────────────────────────────────────────
@@ -100,7 +119,7 @@ export const getInstituciones = async ({ pagina = 1, limite = 10, busqueda = '' 
     const params  = new URLSearchParams({ pagina, limite, ...(busqueda && { busqueda }) });
     const res = await fetch(`${API_URL}/api/admin/instituciones?${params}`, { headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -110,7 +129,7 @@ export const createInstitucion = async (datos) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/instituciones`, { method: 'POST', headers, body: JSON.stringify(datos) });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -120,7 +139,7 @@ export const updateInstitucion = async (id, datos) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/instituciones/${id}`, { method: 'PATCH', headers, body: JSON.stringify(datos) });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -130,7 +149,7 @@ export const deleteInstitucion = async (id) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/instituciones/${id}`, { method: 'DELETE', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -142,7 +161,7 @@ export const getProgramas = async ({ pagina = 1, limite = 10, busqueda = '' } = 
     const params  = new URLSearchParams({ pagina, limite, ...(busqueda && { busqueda }) });
     const res = await fetch(`${API_URL}/api/admin/programas?${params}`, { headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -152,7 +171,7 @@ export const createPrograma = async (datos) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/programas`, { method: 'POST', headers, body: JSON.stringify(datos) });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -162,7 +181,7 @@ export const updatePrograma = async (id, datos) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/programas/${id}`, { method: 'PATCH', headers, body: JSON.stringify(datos) });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -172,7 +191,7 @@ export const deletePrograma = async (id) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/programas/${id}`, { method: 'DELETE', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -183,7 +202,7 @@ export const getCuestionarios = async () => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/cuestionarios`, { headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -193,7 +212,7 @@ export const createCuestionario = async (datos) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/cuestionarios`, { method: 'POST', headers, body: JSON.stringify(datos) });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -203,7 +222,7 @@ export const updateCuestionario = async (id, datos) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/cuestionarios/${id}`, { method: 'PATCH', headers, body: JSON.stringify(datos) });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -213,7 +232,7 @@ export const deleteCuestionario = async (id) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/cuestionarios/${id}`, { method: 'DELETE', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -225,7 +244,7 @@ export const getPreguntas = async ({ cuestionario_id = '', busqueda = '' } = {})
     const params  = new URLSearchParams({ ...(cuestionario_id && { cuestionario_id }), ...(busqueda && { busqueda }) });
     const res = await fetch(`${API_URL}/api/admin/preguntas?${params}`, { headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -235,7 +254,7 @@ export const createPregunta = async (datos) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/preguntas`, { method: 'POST', headers, body: JSON.stringify(datos) });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -245,7 +264,7 @@ export const updatePregunta = async (id, datos) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/preguntas/${id}`, { method: 'PATCH', headers, body: JSON.stringify(datos) });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -255,7 +274,7 @@ export const deletePregunta = async (id) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/preguntas/${id}`, { method: 'DELETE', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -266,7 +285,7 @@ export const getSincronizacionEstado = async () => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/sincronizacion/estado`, { headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -279,7 +298,7 @@ export const ejecutarSincronizacion = async () => {
       headers,
     });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
