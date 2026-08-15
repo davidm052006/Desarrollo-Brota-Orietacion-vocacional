@@ -375,7 +375,7 @@ export default function Ajustes({ user, isDemoMode = false }) {
             </Card>
 
             <Card icono="/icons/icon-ajustes.svg" titulo="Próximamente">
-              <FilaProvisional titulo="Notificaciones por correo" descripcion="Avisos de respuestas a tus preguntas y nuevas convocatorias." />
+              <FilaProvisional titulo="Notificaciones por correo" descripcion="El feed dentro de la app ya existe (ícono de arriba) — esto es mandarlas también por email." />
               <FilaProvisional titulo="Perfil público en Comunidad" descripcion="Elegir si tu nombre real se muestra en vez de anónimo por defecto." />
               <FilaProvisional titulo="Tamaño de texto" descripcion="Accesibilidad — independiente del tipo de letra." />
               <FilaProvisional titulo="Exportar o eliminar mi cuenta" descripcion="Descargar tus datos o borrar la cuenta permanentemente." />
