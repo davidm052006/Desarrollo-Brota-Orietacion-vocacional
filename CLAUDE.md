@@ -31,7 +31,8 @@ Referencia rápida para no tener que releer `App.jsx` / routers backend en cada 
 | `/dashboard/recursos` | `pages/dashboard/Recursos.jsx` | |
 | `/dashboard/comunidad` | `pages/dashboard/Comunidad.jsx` | + detalle en `comunidad/{ForoDetalle,HistoriaDetalle,ConvocatoriaDetalle,PostDetalle}.jsx` |
 | `/dashboard/admin` | `pages/dashboard/admin/AdminPanel.jsx` | secciones en `admin/sections/*Section.jsx` |
-| `/dashboard/{rutas,favoritos,mensajes,ajustes}` | `PaginaEnConstruccion` (inline en `App.jsx`) | placeholders, sin implementar |
+| `/dashboard/ajustes` | `pages/dashboard/Ajustes.jsx` | mi perfil (autoedición), cambio de contraseña, cerrar sesión — implementado agosto 2026 |
+| `/dashboard/{rutas,favoritos,mensajes}` | `PaginaEnConstruccion` (inline en `App.jsx`) | placeholders, sin implementar |
 
 Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (sesión o modo demo) — no hay un `ProtectedRoute` wrapper reusable (existe `components/ProtectedRoute.jsx` pero no está en uso en las rutas de arriba, verificar antes de asumir que aplica).
 
@@ -44,20 +45,20 @@ Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (ses
 | Router | Base | Contenido |
 |---|---|---|
 | `auth.js` | `/api/auth` | `POST /register-perfil` |
-| `perfil.js` | `/api/perfil` | cuestionario, resultado, recomendaciones, `GET /:userId` |
+| `perfil.js` | `/api/perfil` | cuestionario, resultado, recomendaciones, `GET/PATCH /:userId` (PATCH = autoedición, usado por `Ajustes.jsx`) |
 | `programas.js` | `/api/programas` | `GET /`, `GET /stats` |
-| `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas, convocatorias |
+| `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas (+ `POST /:id/reportar`), convocatorias |
 | `contacto.js` | `/api/contacto` | `POST /` |
-| `admin.js` | `/api/admin` | CRUD usuarios/instituciones/programas/cuestionarios/preguntas/contactos + sincronización MEN |
+| `admin.js` | `/api/admin` | CRUD usuarios/instituciones/programas/cuestionarios/preguntas/contactos + moderación `preguntas-comunidad` (`GET`/`DELETE`) + sincronización MEN |
 
-Cada router tiene su controlador homónimo en `backend/src/controllers/`. Middlewares: `verificarAuth.js` (JWT), `verificarAdmin.js` (rol admin, ver Bug #8 más abajo).
+Cada router habla con controladores en `backend/src/controllers/` — **ya no son un archivo por router**: `admin.js` reparte entre `controllers/admin/{usuarios,instituciones,programas,cuestionarios,preguntas,contactos,preguntasComunidad}Controller.js`, y `comunidad.js` entre `controllers/comunidad/{foros,historias,preguntas,convocatorias}Controller.js` (split por SOLID/SRP en el commit `ca87128`, agosto 2026 — antes eran `adminController.js`/`comunidadController.js` monolíticos, esos nombres ya no existen). Middlewares: `verificarAuth.js` (JWT), `verificarAdmin.js` (rol admin, ver Bug #8 más abajo — **ojo**: la entrada de ese bug menciona una tabla `roles` separada que ya no existe en el diseño actual, el middleware compara `perfiles_usuario.rol` directo, ver `docs/modelo_datos.md`).
 
 ### Servicios frontend (`frontend/src/services/*.js`)
 Un service por dominio, todos hablan con el backend vía `VITE_API_URL`: `authService`/`authServiceDemo` (modo demo), `perfilService`, `programasService`, `comunidadService`, `contactoService`, `adminService`. `getAuthHeaders`/`parseResponse`/`API_URL` viven en `services/apiClient.js` (compartido, no duplicar en cada service nuevo). `utils/validation.js` es la única fuente de validación de formularios — no crear otra en `services/`.
 
 ### Archivos grandes — evitar leerlos completos si el cambio es puntual
-`comunidadController.js` (~700L), `adminController.js` (~630L), `TestVocacional.jsx` / `Profesiones.jsx` / `Dashboard.jsx` (~350-390L). Preferir `grep -n` para ubicar la función/sección y `Read` con `offset`/`limit` sobre ese rango.
-`Comunidad.jsx`, `UsuariosSection.jsx` y `ContactosSection.jsx` ya NO están en esta lista — se dividieron en julio 2026, ver sección siguiente.
+`TestVocacional.jsx` / `Profesiones.jsx` / `Dashboard.jsx` (~350-390L). Preferir `grep -n` para ubicar la función/sección y `Read` con `offset`/`limit` sobre ese rango.
+`Comunidad.jsx`, `UsuariosSection.jsx`, `ContactosSection.jsx`, y los antiguos `comunidadController.js`/`adminController.js` ya NO están en esta lista — se dividieron en julio/agosto 2026, ver sección siguiente.
 
 ### Módulos divididos por SOLID/SRP (julio 2026)
 Estos tres eran archivos únicos de 280-760 líneas mezclando fetch de datos, estado de modales y presentación. Se dividieron en un componente orquestador (estado + llamadas al service) + subcomponentes de presentación en una carpeta `components/` hermana. Patrón a seguir si otro archivo grande necesita el mismo tratamiento:
@@ -65,6 +66,8 @@ Estos tres eran archivos únicos de 280-760 líneas mezclando fetch de datos, es
 - **`pages/dashboard/Comunidad.jsx`** (760L → 158L) — orquesta tabs/modales; UI de cada tab vive en `comunidad/components/{Foros,Historias,Preguntas,Convocatorias,Sidebar}.jsx`, los formularios modales en `ModalCompartirHistoria.jsx`/`ModalHacerPregunta.jsx`, y las piezas compartidas en `primitivos.jsx` (solo componentes, por Fast Refresh) + `constantes.js` (datos/helpers puros — `avatarColor`, `TIPO_COLOR`, etc).
 - **`pages/dashboard/admin/sections/UsuariosSection.jsx`** (426L → 229L) — orquesta CRUD; tabla+paginación en `usuarios/TablaUsuarios.jsx`, los 4 modales (Ver/Editar/Eliminar/Nuevo) en `usuarios/Modal*.jsx`, constantes de roles en `usuarios/constants.js`. `Campo`/`Detalle` (inputs de formulario reutilizables) se movieron a `admin/components/formPrimitives.jsx` — **este mismo patrón Campo/Detalle sigue duplicado sin migrar en `CuestionariosSection.jsx`, `InstitucionesSection.jsx` y `OportunidadesSection.jsx`**, sería el siguiente paso si se tocan esos archivos.
 - **`pages/dashboard/admin/sections/ContactosSection.jsx`** (280L → 125L) — orquesta fetch/filtro/paginación; la tarjeta expandible de cada solicitud vive en `contactos/ContactoCard.jsx`, estados/labels en `contactos/constants.js`.
+
+**Backend (agosto 2026, commit `ca87128`):** `adminController.js` (~630L) y `comunidadController.js` (~700L) monolíticos se dividieron en un archivo por entidad, sin capa orquestadora — cada router (`routes/admin.js`, `routes/comunidad.js`) importa directo de `controllers/admin/*.js` / `controllers/comunidad/*.js`. Al agregar un endpoint nuevo de un dominio existente, va en el controller de ese dominio (ej. moderación de preguntas de comunidad → `controllers/admin/preguntasComunidadController.js`), no en un archivo nuevo por endpoint.
 
 Regla de Fast Refresh de Vite (`react-refresh/only-export-components`): un archivo `.jsx` que exporta componentes no debe exportar también constantes/funciones sueltas — por eso los datos puros siempre quedaron en un `.js` separado (`constantes.js`, `formatFecha.js`), nunca mezclados con los componentes.
 
@@ -161,7 +164,7 @@ Causaban que el test vocacional mostrara el perfil de áreas pero ningún progra
 | 5 ✅ | `controllers/perfilController.js` → `obtenerRecomendaciones` | `.limit(6)` no coincidía con `MAX_RECOMENDACIONES = 8` | Cambiado a `.limit(8)` |
 | 6 ✅ | `utils/perfilvocacional.js` | `calcularPorcentajes` trataba `perfilVocacional` como `{categoria: puntos}` cuando en realidad es `{categoriaPrincipal, categoriaSecundaria, scores: [...]}` → porcentajes basura | Ahora itera `perfilVocacional.scores` |
 | 7 ✅ | `backend/setup_database.sql` (líneas 155/170/184) | Conflicto de git sin resolver | Resuelto manteniendo numeración de HEAD (tablas 10, 11, 12) |
-| 8 ✅ | `middlewares/verificarAdmin.js` | Tabla `perfiles` (no existe, es `perfiles_usuario`) + `.eq('id', user.id)` (debe ser `user_id`) + comparaba `rol === 'admin'` (el campo real es `roles.nombre === 'Administrador'`). Tumbaba **todos** los endpoints `/api/admin/*` con 403, incluso para admins reales | `from('perfiles_usuario').select('roles ( nombre )').eq('user_id', user.id)`, check `perfil?.roles?.nombre !== 'Administrador'` |
+| 8 ✅ | `middlewares/verificarAdmin.js` | Tabla `perfiles` (no existe, es `perfiles_usuario`) + `.eq('id', user.id)` (debe ser `user_id`) + comparaba contra un rol mal resuelto. Tumbaba **todos** los endpoints `/api/admin/*` con 403, incluso para admins reales | Fix de esta fila (histórico, junio 2026): `from('perfiles_usuario').select('roles ( nombre )').eq('user_id', user.id)`, check `perfil?.roles?.nombre !== 'Administrador'`. **⚠️ Ya no es así**: verificado contra Supabase real en agosto 2026 (ver `docs/modelo_datos.md`) — la tabla `roles` sigue existiendo pero es legado sin uso (2 filas, ningún código la referencia). El middleware actual compara `perfiles_usuario.rol !== 'admin'` directo, que es lo correcto para el esquema de hoy. Si se vuelve a tocar este archivo, **no** reintroducir el join a `roles`. |
 
 ---
 

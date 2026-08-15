@@ -367,6 +367,40 @@ const obtenerPerfil = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────
+// PATCH /api/perfil/:userId — autoedición del propio perfil (sección Ajustes)
+// ─────────────────────────────────────────────────────────────
+const actualizarPerfil = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (userId !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
+    }
+
+    const { nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas, edad } = req.body;
+
+    const { data, error } = await supabase
+      .from('perfiles_usuario')
+      .update({
+        nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
+        edad: edad ? parseInt(edad) : null,
+      })
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+
+    return res.json({ success: true, data });
+  } catch (err) {
+    console.error('perfilController.actualizarPerfil:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   obtenerCuestionario,
   guardarResultado,
@@ -375,4 +409,5 @@ module.exports = {
   marcarRecomendacionVista,
   eliminarResultado,
   obtenerPerfil,
+  actualizarPerfil,
 };

@@ -119,3 +119,22 @@ export const obtenerPerfil = async (userId) => {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
+
+// ─────────────────────────────────────────────────────────────
+// ACTUALIZAR PERFIL PROPIO (sección Ajustes)
+// PATCH /api/perfil/:userId
+// ─────────────────────────────────────────────────────────────
+export const actualizarPerfil = async (userId, datos) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/perfil/${userId}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(datos),
+    });
+    return parseResponse(res);
+  } catch (err) {
+    console.error('perfilService.actualizarPerfil:', err);
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
