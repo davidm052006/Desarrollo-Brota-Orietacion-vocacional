@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/Layout/DashboardLayout';
 import { obtenerPerfil, actualizarPerfil } from '../../services/perfilService';
-import { updatePassword } from '../../services/authService';
+import { sendPasswordReset, verifyOtpAndUpdatePassword } from '../../services/authService';
 import { handleLogout } from '../../utils/auth';
 
 const inputStyle = {
@@ -57,6 +57,9 @@ export default function Ajustes({ user, isDemoMode = false }) {
   const [perfilMsg, setPerfilMsg] = useState(null);
 
   const [passwords, setPasswords] = useState({ nueva: '', confirmar: '' });
+  const [codigo, setCodigo] = useState('');
+  const [codigoEnviado, setCodigoEnviado] = useState(false);
+  const [enviandoCodigo, setEnviandoCodigo] = useState(false);
   const [guardandoPassword, setGuardandoPassword] = useState(false);
   const [passwordMsg, setPasswordMsg] = useState(null);
 
@@ -89,8 +92,25 @@ export default function Ajustes({ user, isDemoMode = false }) {
     );
   }
 
+  async function enviarCodigo() {
+    setPasswordMsg(null);
+    setEnviandoCodigo(true);
+    const { success, error } = await sendPasswordReset(user.email);
+    setEnviandoCodigo(false);
+    if (!success) {
+      setPasswordMsg({ tipo: 'error', texto: error || 'No se pudo enviar el código.' });
+      return;
+    }
+    setCodigoEnviado(true);
+    setPasswordMsg({ tipo: 'ok', texto: `Te enviamos un código de 8 dígitos a ${user.email}.` });
+  }
+
   async function cambiarPassword() {
     setPasswordMsg(null);
+    if (codigo.length < 8) {
+      setPasswordMsg({ tipo: 'error', texto: 'Ingresá el código de 8 dígitos que te enviamos por correo.' });
+      return;
+    }
     if (passwords.nueva.length < 6) {
       setPasswordMsg({ tipo: 'error', texto: 'La contraseña debe tener mínimo 6 caracteres.' });
       return;
@@ -100,13 +120,15 @@ export default function Ajustes({ user, isDemoMode = false }) {
       return;
     }
     setGuardandoPassword(true);
-    const { success, error } = await updatePassword(passwords.nueva);
+    const { success, error } = await verifyOtpAndUpdatePassword(user.email, codigo, passwords.nueva);
     setGuardandoPassword(false);
     if (!success) {
       setPasswordMsg({ tipo: 'error', texto: error || 'No se pudo cambiar la contraseña.' });
       return;
     }
     setPasswords({ nueva: '', confirmar: '' });
+    setCodigo('');
+    setCodigoEnviado(false);
     setPasswordMsg({ tipo: 'ok', texto: 'Contraseña actualizada.' });
   }
 
@@ -150,22 +172,65 @@ export default function Ajustes({ user, isDemoMode = false }) {
             </Card>
 
             <Card icono="/icons/icon-seguridad.svg" titulo="Seguridad">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-                <Campo label="Nueva contraseña" type="password" value={passwords.nueva} onChange={v => setPasswords(p => ({ ...p, nueva: v }))} />
-                <Campo label="Confirmar contraseña" type="password" value={passwords.confirmar} onChange={v => setPasswords(p => ({ ...p, confirmar: v }))} />
-              </div>
-              <button
-                onClick={cambiarPassword}
-                disabled={guardandoPassword || isDemoMode}
-                style={{
-                  background: 'var(--surface-2)', color: 'var(--ink)', fontWeight: 700,
-                  fontSize: 13, padding: '9px 18px', borderRadius: 10, border: '1px solid var(--line)',
-                  cursor: isDemoMode ? 'not-allowed' : 'pointer', opacity: guardandoPassword || isDemoMode ? 0.6 : 1,
-                  fontFamily: 'inherit',
-                }}
-              >
-                {guardandoPassword ? 'Cambiando…' : 'Cambiar contraseña'}
-              </button>
+              <p style={{ fontSize: 12.5, color: 'var(--ink-soft)', marginBottom: 14 }}>
+                Por seguridad, para cambiar tu contraseña primero necesitás verificar tu correo con un código —
+                el mismo método que usa "Olvidé mi contraseña".
+              </p>
+
+              {!codigoEnviado ? (
+                <button
+                  onClick={enviarCodigo}
+                  disabled={enviandoCodigo || isDemoMode}
+                  style={{
+                    background: 'var(--surface-2)', color: 'var(--ink)', fontWeight: 700,
+                    fontSize: 13, padding: '9px 18px', borderRadius: 10, border: '1px solid var(--line)',
+                    cursor: isDemoMode ? 'not-allowed' : 'pointer', opacity: enviandoCodigo || isDemoMode ? 0.6 : 1,
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {enviandoCodigo ? 'Enviando…' : 'Enviar código de verificación'}
+                </button>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 14 }}>
+                    <Campo
+                      label="Código de 8 dígitos"
+                      value={codigo}
+                      onChange={v => setCodigo(v.replace(/\D/g, '').slice(0, 8))}
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                    <Campo label="Nueva contraseña" type="password" value={passwords.nueva} onChange={v => setPasswords(p => ({ ...p, nueva: v }))} />
+                    <Campo label="Confirmar contraseña" type="password" value={passwords.confirmar} onChange={v => setPasswords(p => ({ ...p, confirmar: v }))} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <button
+                      onClick={cambiarPassword}
+                      disabled={guardandoPassword || codigo.length < 8 || isDemoMode}
+                      style={{
+                        background: 'var(--primary)', color: 'var(--primary-ink)', fontWeight: 700,
+                        fontSize: 13, padding: '9px 18px', borderRadius: 10, border: 'none',
+                        cursor: (codigo.length < 8 || isDemoMode) ? 'not-allowed' : 'pointer',
+                        opacity: guardandoPassword || codigo.length < 8 || isDemoMode ? 0.4 : 1,
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      {guardandoPassword ? 'Cambiando…' : 'Cambiar contraseña'}
+                    </button>
+                    <button
+                      onClick={enviarCodigo}
+                      disabled={enviandoCodigo || isDemoMode}
+                      style={{
+                        background: 'none', color: 'var(--ink-soft)', fontWeight: 600,
+                        fontSize: 12.5, padding: '9px 6px', borderRadius: 10, border: 'none',
+                        cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline',
+                      }}
+                    >
+                      Reenviar código
+                    </button>
+                  </div>
+                </>
+              )}
               {isDemoMode && <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 10 }}>No disponible en modo demo.</p>}
               <Mensaje estado={passwordMsg} />
             </Card>

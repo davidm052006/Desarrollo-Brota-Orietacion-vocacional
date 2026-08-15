@@ -31,7 +31,7 @@ Referencia rápida para no tener que releer `App.jsx` / routers backend en cada 
 | `/dashboard/recursos` | `pages/dashboard/Recursos.jsx` | |
 | `/dashboard/comunidad` | `pages/dashboard/Comunidad.jsx` | + detalle en `comunidad/{ForoDetalle,HistoriaDetalle,ConvocatoriaDetalle,PostDetalle}.jsx` |
 | `/dashboard/admin` | `pages/dashboard/admin/AdminPanel.jsx` | secciones en `admin/sections/*Section.jsx` |
-| `/dashboard/ajustes` | `pages/dashboard/Ajustes.jsx` | mi perfil (autoedición), cambio de contraseña, cerrar sesión — implementado agosto 2026 |
+| `/dashboard/ajustes` | `pages/dashboard/Ajustes.jsx` | mi perfil (autoedición), cambio de contraseña (con el mismo flujo de código OTP de 8 dígitos que "Olvidé mi contraseña", vía `authService.sendPasswordReset`/`verifyOtpAndUpdatePassword`), cerrar sesión — implementado agosto 2026 |
 | `/dashboard/{rutas,favoritos,mensajes}` | `PaginaEnConstruccion` (inline en `App.jsx`) | placeholders, sin implementar |
 
 Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (sesión o modo demo) — no hay un `ProtectedRoute` wrapper reusable (existe `components/ProtectedRoute.jsx` pero no está en uso en las rutas de arriba, verificar antes de asumir que aplica).
