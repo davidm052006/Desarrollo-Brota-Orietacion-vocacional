@@ -1,11 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
+import Papa from 'papaparse';
 import * as adminService from '../../../../services/adminService';
+import Modal from '../components/Modal';
 import TablaUsuarios from './usuarios/TablaUsuarios';
 import ModalVerUsuario from './usuarios/ModalVerUsuario';
 import ModalEditarUsuario from './usuarios/ModalEditarUsuario';
 import ModalEliminarUsuario from './usuarios/ModalEliminarUsuario';
 import ModalNuevoUsuario from './usuarios/ModalNuevoUsuario';
 import { ROLES_FILTRO, FORM_VACIO, FORM_NUEVO_VACIO } from './usuarios/constants';
+
+// Columnas que debe traer el CSV de carga masiva (mismos nombres que espera createUsuario)
+const COLUMNAS_CSV_ESPERADAS = [
+  'email', 'password', 'nombre', 'apellido', 'ciudad',
+  'nivel_educativo', 'condiciones_socioeconomicas', 'edad', 'rol',
+];
 
 // Sección "Usuarios" del panel admin: esta pieza solo se encarga de
 //   1. traer la lista de usuarios (paginada/filtrada) del backend,
@@ -28,12 +36,19 @@ export default function UsuariosSection() {
   const [modalEditar,   setModalEditar]   = useState(null);
   const [modalEliminar, setModalEliminar] = useState(null);
   const [modalNuevo,    setModalNuevo]    = useState(false);
+  const [modalMasivo,   setModalMasivo]   = useState(false);
 
   // ─── Estado de formularios ────────────────────────────────────────────────
   const [formEditar, setFormEditar] = useState(FORM_VACIO);
   const [formNuevo,  setFormNuevo]  = useState(FORM_NUEVO_VACIO);
   const [guardando,  setGuardando]  = useState(false);
   const [formError,  setFormError]  = useState(null);
+
+  // ─── Estado de carga masiva (CSV) ─────────────────────────────────────────
+  const [csvNombreArchivo, setCsvNombreArchivo]     = useState('');
+  const [csvFilas, setCsvFilas]                     = useState([]);
+  const [importando, setImportando]                 = useState(false);
+  const [reporteImportacion, setReporteImportacion] = useState(null);
 
   // Debounce: espera 350ms después del último keystroke antes de buscar
   useEffect(() => {
@@ -57,7 +72,7 @@ export default function UsuariosSection() {
     setLoading(false);
   }, [pagina, busquedaDebounce, rolFiltro]);
 
-  useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]);
+useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line react-hooks/set-state-in-effect
 
   // ─── UPDATE ───────────────────────────────────────────────────────────────
   const abrirEditar = (usuario) => {
@@ -138,6 +153,58 @@ export default function UsuariosSection() {
     fetchUsuarios();
   };
 
+  // ─── CARGA MASIVA (CSV) ────────────────────────────────────────────────────
+  const abrirMasivo = () => {
+    setCsvNombreArchivo('');
+    setCsvFilas([]);
+    setReporteImportacion(null);
+    setFormError(null);
+    setModalMasivo(true);
+  };
+
+  const cerrarMasivo = () => {
+    setModalMasivo(false);
+    setCsvNombreArchivo('');
+    setCsvFilas([]);
+    setReporteImportacion(null);
+  };
+
+  // Lee el archivo seleccionado y lo convierte en filas para la previsualización
+  const handleArchivoCSV = (e) => {
+    const archivo = e.target.files[0];
+    if (!archivo) return;
+
+    setCsvNombreArchivo(archivo.name);
+    setReporteImportacion(null);
+    setFormError(null);
+
+    Papa.parse(archivo, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (resultado) => {
+        if (resultado.errors.length > 0) {
+          setFormError(`El CSV tiene ${resultado.errors.length} fila(s) con formato inválido`);
+        }
+        setCsvFilas(resultado.data);
+      },
+      error: () => {
+        setFormError('No se pudo leer el archivo CSV');
+      },
+    });
+  };
+
+  // Envía todas las filas previsualizadas y guarda el reporte fila por fila
+  const importarMasivo = async () => {
+    setImportando(true);
+    setFormError(null);
+
+    const { resultados } = await adminService.createUsuariosMasivo(csvFilas);
+
+    setReporteImportacion(resultados);
+    setImportando(false);
+    fetchUsuarios();
+  };
+
   // ─── Helpers de UI ────────────────────────────────────────────────────────
   const cambiarFiltro = (setter) => (valor) => {
     setter(valor);
@@ -155,13 +222,22 @@ export default function UsuariosSection() {
             {meta.total > 0 ? `${meta.total.toLocaleString('es-CO')} usuarios registrados` : 'Gestiona los usuarios del sistema'}
           </p>
         </div>
-        <button
-          onClick={abrirNuevo}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-        >
-          <span className="text-lg leading-none">+</span>
-          Nuevo usuario
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={abrirMasivo}
+            className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            <span className="text-base leading-none">⇪</span>
+            Carga masiva
+          </button>
+          <button
+            onClick={abrirNuevo}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            <span className="text-lg leading-none">+</span>
+            Nuevo usuario
+          </button>
+        </div>
       </div>
 
       {/* Filtros server-side: busqueda + rol */}
@@ -222,6 +298,107 @@ export default function UsuariosSection() {
           formError={formError} guardando={guardando}
           onCrear={crearUsuario} onClose={() => setModalNuevo(false)}
         />
+      )}
+
+      {/* ── MODAL CARGA MASIVA (CSV) ───────────────────────────────────────── */}
+      {modalMasivo && (
+        <Modal title="Carga masiva de usuarios" onClose={cerrarMasivo} size="lg">
+          {!reporteImportacion ? (
+            <>
+              <div className="mb-4">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Archivo CSV
+                </label>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleArchivoCSV}
+                  className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-50 file:text-green-700 file:text-sm file:font-semibold file:cursor-pointer hover:file:bg-green-100"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Columnas esperadas: {COLUMNAS_CSV_ESPERADAS.join(', ')}
+                </p>
+              </div>
+
+              {csvFilas.length > 0 && (
+                <>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {csvFilas.length} fila(s) detectada(s) en <strong>{csvNombreArchivo}</strong>
+                  </p>
+                  <div className="max-h-64 overflow-y-auto border border-gray-100 rounded-lg mb-4">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-3 py-2 text-left font-semibold text-gray-500">Email</th>
+                          <th className="px-3 py-2 text-left font-semibold text-gray-500">Nombre</th>
+                          <th className="px-3 py-2 text-left font-semibold text-gray-500">Apellido</th>
+                          <th className="px-3 py-2 text-left font-semibold text-gray-500">Rol</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {csvFilas.map((fila, i) => (
+                          <tr key={i} className="border-t border-gray-50">
+                            <td className="px-3 py-1.5 text-gray-700">{fila.email || '—'}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{fila.nombre || '—'}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{fila.apellido || '—'}</td>
+                            <td className="px-3 py-1.5 text-gray-700">{fila.rol || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+
+              {formError && <p className="text-sm text-red-500 mb-3">{formError}</p>}
+
+              <div className="flex justify-end gap-2">
+                <button onClick={cerrarMasivo}
+                  className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  Cancelar
+                </button>
+                <button onClick={importarMasivo} disabled={importando || csvFilas.length === 0}
+                  className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50">
+                  {importando ? 'Importando...' : `Importar ${csvFilas.length || ''} usuario(s)`}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-600 mb-3">
+                {reporteImportacion.filter(r => r.success).length} creado(s), {reporteImportacion.filter(r => !r.success).length} con error, de {reporteImportacion.length} fila(s)
+              </p>
+              <div className="max-h-72 overflow-y-auto border border-gray-100 rounded-lg mb-4">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-semibold text-gray-500">Email</th>
+                      <th className="px-3 py-2 text-left font-semibold text-gray-500">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reporteImportacion.map((r, i) => (
+                      <tr key={i} className="border-t border-gray-50">
+                        <td className="px-3 py-1.5 text-gray-700">{r.usuario.email || '—'}</td>
+                        <td className="px-3 py-1.5">
+                          {r.success
+                            ? <span className="text-green-600 font-semibold">✓ Creado</span>
+                            : <span className="text-red-500">✗ {r.error}</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end">
+                <button onClick={cerrarMasivo}
+                  className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                  Cerrar
+                </button>
+              </div>
+            </>
+          )}
+        </Modal>
       )}
 
     </div>

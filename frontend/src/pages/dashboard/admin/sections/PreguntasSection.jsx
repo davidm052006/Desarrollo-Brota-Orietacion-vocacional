@@ -64,12 +64,14 @@ function FormCampos({ f, setF, cuestionarios }) {
   );
 }
 
-export default function PreguntasSection() {
+// filtroCuestionarioId: id opcional que llega desde CuestionariosSection (botón "Ver preguntas")
+// para pre-seleccionar el filtro al entrar a esta sección.
+export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   const [preguntas, setPreguntas]         = useState([]);
   const [cuestionarios, setCuestionarios] = useState([]);
   const [loading, setLoading]             = useState(true);
   const [busqueda, setBusqueda]           = useState('');
-  const [filtroC, setFiltroC]             = useState('');
+  const [filtroC, setFiltroC]             = useState(filtroCuestionarioId);
 
   const [modalEditar,   setModalEditar]   = useState(null);
   const [modalEliminar, setModalEliminar] = useState(null);
@@ -79,6 +81,10 @@ export default function PreguntasSection() {
   const [guardando, setGuardando] = useState(false);
   const [formError, setFormError] = useState(null);
 
+  // filtroCuestionarioId llega como valor inicial. AdminPanel usa una `key` para
+  // remontar este componente cuando cambia, así el estado siempre parte correcto
+  // sin necesidad de sincronizarlo con un efecto.
+
   const fetchPreguntas = useCallback(async () => {
     setLoading(true);
     const { success, data } = await adminService.getPreguntas({ cuestionario_id: filtroC, busqueda });
@@ -86,13 +92,13 @@ export default function PreguntasSection() {
     setLoading(false);
   }, [filtroC, busqueda]);
 
-  useEffect(() => { fetchPreguntas(); }, [fetchPreguntas]);
+  useEffect(() => { fetchPreguntas(); }, [fetchPreguntas]); // eslint-disable-line react-hooks/set-state-in-effect
 
   useEffect(() => {
     adminService.getCuestionarios().then(({ success, data }) => {
       if (success) setCuestionarios(data);
     });
-  }, []);
+  }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   const abrirEditar = (p) => {
     setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: p.tipo || 'opcion_multiple', orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0' });
