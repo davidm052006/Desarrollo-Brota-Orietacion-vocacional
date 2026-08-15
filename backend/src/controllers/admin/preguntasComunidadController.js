@@ -12,10 +12,26 @@ const getPreguntasComunidad = asyncHandler('admin/preguntasComunidadController.g
 
   const ids = (preguntas ?? []).map(p => p.id);
   let conteoReportes = {};
+  let respuestasPorPregunta = {};
   if (ids.length) {
     const { data: reportes } = await supabase
       .from('reportes_pregunta').select('pregunta_id').in('pregunta_id', ids);
     (reportes ?? []).forEach(r => { conteoReportes[r.pregunta_id] = (conteoReportes[r.pregunta_id] ?? 0) + 1; });
+
+    const { data: respuestas } = await supabase
+      .from('respuestas_pregunta')
+      .select('id, pregunta_id, contenido, autor_nombre, anonimo, es_mejor, created_at')
+      .in('pregunta_id', ids)
+      .order('created_at', { ascending: true });
+    (respuestas ?? []).forEach(r => {
+      (respuestasPorPregunta[r.pregunta_id] ??= []).push({
+        id:        r.id,
+        contenido: r.contenido,
+        autor:     r.anonimo ? 'Anónimo' : (r.autor_nombre || 'Usuario'),
+        mejor:     r.es_mejor,
+        created_at: r.created_at,
+      });
+    });
   }
 
   const data = (preguntas ?? []).map(p => ({
@@ -25,6 +41,7 @@ const getPreguntasComunidad = asyncHandler('admin/preguntasComunidadController.g
     autor:     p.anonimo ? 'Anónimo' : (p.autor_nombre || 'Usuario'),
     resuelta:  p.resuelta,
     reportes:  conteoReportes[p.id] ?? 0,
+    respuestas: respuestasPorPregunta[p.id] ?? [],
     created_at: p.created_at,
   }));
 
