@@ -146,6 +146,12 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
 
   const diasRacha = profile?.racha_dias ?? 0;
 
+  // Mismos 5 campos que se pueden completar en Ajustes > Mi perfil
+  const CAMPOS_PERFIL = ['nombre', 'apellido', 'ciudad', 'edad', 'nivel_educativo'];
+  const camposCompletos = CAMPOS_PERFIL.filter(c => Boolean(profile?.[c])).length;
+  const porcentajePerfil = Math.round((camposCompletos / CAMPOS_PERFIL.length) * 100);
+  const perfilCompleto = porcentajePerfil === 100;
+
   const card = {
     background: 'var(--surface)', border: '1px solid var(--line)',
     borderRadius: 20, padding: 20, boxShadow: 'var(--shadow)',
@@ -177,13 +183,13 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
           borderRadius: 999, margin: '16px 0 7px', overflow: 'hidden',
         }}>
           <div style={{
-            width: '45%', height: '100%',
+            width: `${porcentajePerfil}%`, height: '100%',
             background: 'linear-gradient(90deg, var(--primary), var(--accent))',
-            borderRadius: 999,
+            borderRadius: 999, transition: 'width .3s',
           }} />
         </div>
         <div style={{ fontSize: 11.5, color: 'var(--ink-soft)' }}>
-          Perfil 45% completo
+          Perfil {porcentajePerfil}% completo
           {isAdmin && (
             <span style={{
               marginLeft: 8,
@@ -193,17 +199,28 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
           )}
         </div>
 
-        <button
-          onClick={() => navigate('/dashboard/ajustes')}
-          style={{
-            marginTop: 14, width: '100%',
+        {perfilCompleto ? (
+          <div style={{
+            marginTop: 14, width: '100%', boxSizing: 'border-box',
             background: 'var(--primary-soft)', color: 'var(--primary-deep)',
             textAlign: 'center', fontWeight: 700, fontSize: 13,
-            padding: 11, borderRadius: 12, border: 'none', cursor: 'pointer',
-          }}
-        >
-          Completar perfil →
-        </button>
+            padding: 11, borderRadius: 12,
+          }}>
+            Perfil completo
+          </div>
+        ) : (
+          <button
+            onClick={() => navigate('/dashboard/ajustes')}
+            style={{
+              marginTop: 14, width: '100%',
+              background: 'var(--primary-soft)', color: 'var(--primary-deep)',
+              textAlign: 'center', fontWeight: 700, fontSize: 13,
+              padding: 11, borderRadius: 12, border: 'none', cursor: 'pointer',
+            }}
+          >
+            Completar perfil →
+          </button>
+        )}
       </div>
 
       {/* Racha */}
