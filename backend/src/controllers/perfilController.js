@@ -347,10 +347,13 @@ const eliminarResultado = async (req, res) => {
 // Dashboard), así que no hace falta un endpoint de "check-in" aparte.
 async function actualizarRacha(perfil, userId) {
   const hoy = new Date().toISOString().slice(0, 10);
-  if (perfil.ultima_actividad === hoy) return perfil; // ya contada hoy
+  if (perfil.ultima_actividad === hoy) return { ...perfil, racha_rota: false }; // ya contada hoy
 
   const ayer = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  const nuevaRacha = perfil.ultima_actividad === ayer ? (perfil.racha_dias || 0) + 1 : 1;
+  const continua = perfil.ultima_actividad === ayer;
+  const nuevaRacha = continua ? (perfil.racha_dias || 0) + 1 : 1;
+  // "rota" = de verdad se perdió una racha en curso (no el primer check-in nunca)
+  const rachaRota = !continua && (perfil.racha_dias || 0) > 1;
 
   const { data: actualizado, error } = await supabase
     .from('perfiles_usuario')
@@ -359,7 +362,8 @@ async function actualizarRacha(perfil, userId) {
     .select()
     .single();
 
-  return error ? perfil : actualizado; // si falla el update, seguir con el dato viejo en vez de romper la carga del perfil
+  // si falla el update, seguir con el dato viejo en vez de romper la carga del perfil
+  return error ? { ...perfil, racha_rota: false } : { ...actualizado, racha_rota: rachaRota };
 }
 
 const obtenerPerfil = async (req, res) => {

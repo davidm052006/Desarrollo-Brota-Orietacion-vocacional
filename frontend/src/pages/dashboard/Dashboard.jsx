@@ -224,10 +224,15 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
       </div>
 
       {/* Racha */}
-      <div style={{
-        background: 'linear-gradient(135deg, var(--accent), var(--primary))',
-        borderRadius: 20, padding: 20, color: '#fff',
-      }}>
+      <div
+        onClick={() => navigate('/dashboard/racha', { state: { profile } })}
+        role="button"
+        tabIndex={0}
+        style={{
+          background: 'linear-gradient(135deg, var(--accent), var(--primary))',
+          borderRadius: 20, padding: 20, color: '#fff', cursor: 'pointer',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <img src="/icons/icon-racha.svg" alt="" style={{ width: 24, height: 24 }} />
           <div>

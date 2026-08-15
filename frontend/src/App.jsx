@@ -21,6 +21,7 @@ import HistoriaDetalle      from './pages/dashboard/comunidad/HistoriaDetalle';
 import ConvocatoriaDetalle  from './pages/dashboard/comunidad/ConvocatoriaDetalle';
 import PostDetalle          from './pages/dashboard/comunidad/PostDetalle';
 import Ajustes              from './pages/dashboard/Ajustes';
+import Racha                from './pages/dashboard/Racha';
 
 function PaginaEnConstruccion({ titulo }) {
   return (
@@ -170,6 +171,10 @@ function App() {
         <Route
           path="/dashboard/ajustes"
           element={loading ? spinner : puedeAcceder ? <Ajustes user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/racha"
+          element={loading ? spinner : puedeAcceder ? <Racha user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/dashboard/admin"
