@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/Layout/DashboardLayout';
+import GlassSelect from '../../components/Shared/GlassSelect';
 import { obtenerPerfil, actualizarPerfil } from '../../services/perfilService';
 import { sendPasswordReset, verifyOtpAndUpdatePassword } from '../../services/authService';
 import { handleLogout } from '../../utils/auth';
+import { CIUDADES_COLOMBIA } from '../../utils/ciudadesColombia';
+
+const EDADES = Array.from({ length: 87 }, (_, i) => String(14 + i)); // 14–100, mismo rango del CHECK en perfiles_usuario
+const NIVELES_EDUCATIVOS = ['Educación media', 'Técnico', 'Tecnólogo', 'Universitario', 'Posgrado'];
 
 const inputStyle = {
   width: '100%', padding: '9px 12px', borderRadius: 10,
@@ -149,10 +154,32 @@ export default function Ajustes({ user, isDemoMode = false }) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
                 <Campo label="Nombre" value={form.nombre} onChange={v => setForm(f => ({ ...f, nombre: v }))} />
                 <Campo label="Apellido" value={form.apellido} onChange={v => setForm(f => ({ ...f, apellido: v }))} />
-                <Campo label="Ciudad" value={form.ciudad} onChange={v => setForm(f => ({ ...f, ciudad: v }))} />
-                <Campo label="Edad" type="number" value={form.edad} onChange={v => setForm(f => ({ ...f, edad: v }))} />
+                <div>
+                  <label style={labelStyle}>Ciudad</label>
+                  <GlassSelect
+                    value={form.ciudad}
+                    onChange={v => setForm(f => ({ ...f, ciudad: v }))}
+                    options={CIUDADES_COLOMBIA}
+                    placeholder="Elegir ciudad"
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Edad</label>
+                  <GlassSelect
+                    value={form.edad ? String(form.edad) : ''}
+                    onChange={v => setForm(f => ({ ...f, edad: v }))}
+                    options={EDADES}
+                    placeholder="Elegir edad"
+                  />
+                </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <Campo label="Nivel educativo" value={form.nivel_educativo} onChange={v => setForm(f => ({ ...f, nivel_educativo: v }))} />
+                  <label style={labelStyle}>Nivel educativo</label>
+                  <GlassSelect
+                    value={form.nivel_educativo}
+                    onChange={v => setForm(f => ({ ...f, nivel_educativo: v }))}
+                    options={NIVELES_EDUCATIVOS}
+                    placeholder="Elegir nivel educativo"
+                  />
                 </div>
               </div>
               <button
