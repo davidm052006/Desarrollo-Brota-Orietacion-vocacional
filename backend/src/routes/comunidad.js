@@ -14,6 +14,9 @@ const {
 const {
   getConvocatorias, getConvocatoria,
 } = require('../controllers/comunidad/convocatoriasController');
+const {
+  getNotificaciones,
+} = require('../controllers/comunidad/notificacionesController');
 
 // ── Foros ─────────────────────────────────────────────────────────────────────
 router.get('/foros',                verificarAuth, getForos);
@@ -42,5 +45,8 @@ router.post('/preguntas/:id/reportar', verificarAuth, reportarPregunta);
 // ── Convocatorias ─────────────────────────────────────────────────────────────
 router.get('/convocatorias',        verificarAuth, getConvocatorias);
 router.get('/convocatorias/:id',    verificarAuth, getConvocatoria);
+
+// ── Notificaciones ────────────────────────────────────────────────────────────
+router.get('/notificaciones',       verificarAuth, getNotificaciones);
 
 module.exports = router;

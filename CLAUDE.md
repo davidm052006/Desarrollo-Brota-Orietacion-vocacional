@@ -33,7 +33,8 @@ Referencia rápida para no tener que releer `App.jsx` / routers backend en cada 
 | `/dashboard/admin` | `pages/dashboard/admin/AdminPanel.jsx` | secciones en `admin/sections/*Section.jsx` |
 | `/dashboard/ajustes` | `pages/dashboard/Ajustes.jsx` | mi perfil (autoedición — la edad se ingresa como fecha de nacimiento en 3 `GlassSelect` día/mes/año, `utils/calcularEdad.js` la convierte a entero con la misma fórmula que `authController.registerPerfil`; no se persiste la fecha, solo la edad calculada, igual que el registro), cambio de contraseña (con el mismo flujo de código OTP de 8 dígitos que "Olvidé mi contraseña", vía `authService.sendPasswordReset`/`verifyOtpAndUpdatePassword`), cerrar sesión — implementado agosto 2026 |
 | `/dashboard/racha` | `pages/dashboard/Racha.jsx` | mascota animada según estado real de la racha (feliz/triste/guiño/neutral), fondo que va de gris a rojo según `racha_dias` — se llega clickeando la card de racha en el Dashboard (pasa `profile` por `location.state` para no re-pedirlo) |
-| `/dashboard/{rutas,favoritos,mensajes}` | `PaginaEnConstruccion` (inline en `App.jsx`) | placeholders, sin implementar |
+| `/dashboard/notificaciones` | `pages/dashboard/Notificaciones.jsx` | reemplaza al viejo placeholder `/dashboard/mensajes` (agosto 2026) — no hay chat, es un feed de respuestas a tus preguntas de comunidad + likes a tus historias, armado al vuelo sin tabla de notificaciones ni estado leído/no-leído |
+| `/dashboard/{rutas,favoritos}` | `PaginaEnConstruccion` (inline en `App.jsx`) | placeholders, sin implementar |
 
 Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (sesión o modo demo) — no hay un `ProtectedRoute` wrapper reusable (existe `components/ProtectedRoute.jsx` pero no está en uso en las rutas de arriba, verificar antes de asumir que aplica).
 
@@ -50,7 +51,7 @@ Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (ses
 | `auth.js` | `/api/auth` | `POST /register-perfil` |
 | `perfil.js` | `/api/perfil` | cuestionario, resultado, recomendaciones, `GET/PATCH /:userId` (PATCH = autoedición, usado por `Ajustes.jsx`; el `GET` también actualiza la racha de días como efecto secundario, ver `actualizarRacha()` en el controller) |
 | `programas.js` | `/api/programas` | `GET /`, `GET /stats` |
-| `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas (+ `POST /:id/reportar`), convocatorias |
+| `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas (+ `POST /:id/reportar`), convocatorias, `GET /notificaciones` |
 | `contacto.js` | `/api/contacto` | `POST /` |
 | `admin.js` | `/api/admin` | CRUD usuarios/instituciones/programas/cuestionarios/preguntas/contactos + moderación `preguntas-comunidad` (`GET`/`DELETE`) + sincronización MEN |
 

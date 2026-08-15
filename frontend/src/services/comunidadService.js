@@ -59,3 +59,6 @@ export const reportarPregunta    = (id, motivo)     => post(`/preguntas/${id}/re
 // ── Convocatorias ─────────────────────────────────────────────────────────────
 export const getConvocatorias    = ()               => get('/convocatorias');
 export const getConvocatoria     = (id)             => get(`/convocatorias/${id}`);
+
+// ── Notificaciones ───────────────────────────────────────────────────────────
+export const getNotificaciones   = ()               => get('/notificaciones');

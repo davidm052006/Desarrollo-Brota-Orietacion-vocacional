@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { to: "/dashboard/recursos", icon: "📖", label: "Recursos" },
   { to: "/dashboard/favoritos", icon: "♡", label: "Favoritos" },
   { to: "/dashboard/comunidad", icon: "👥", label: "Comunidad" },
-  { to: "/dashboard/mensajes", icon: "💬", label: "Mensajes" },
+  { to: "/dashboard/notificaciones", icon: "💬", label: "Notificaciones" },
   { to: "/dashboard/ajustes", icon: "⚙️", label: "Ajustes" },
 ];
 

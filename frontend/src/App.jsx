@@ -22,6 +22,7 @@ import ConvocatoriaDetalle  from './pages/dashboard/comunidad/ConvocatoriaDetall
 import PostDetalle          from './pages/dashboard/comunidad/PostDetalle';
 import Ajustes              from './pages/dashboard/Ajustes';
 import Racha                from './pages/dashboard/Racha';
+import Notificaciones       from './pages/dashboard/Notificaciones';
 
 function PaginaEnConstruccion({ titulo }) {
   return (
@@ -160,7 +161,6 @@ function App() {
         {[
           { path: '/dashboard/rutas',     titulo: 'Rutas formativas' },
           { path: '/dashboard/favoritos', titulo: 'Favoritos' },
-          { path: '/dashboard/mensajes',  titulo: 'Mensajes' },
         ].map(({ path, titulo }) => (
           <Route
             key={path}
@@ -168,6 +168,10 @@ function App() {
             element={loading ? spinner : puedeAcceder ? <PaginaEnConstruccion titulo={titulo} /> : <Navigate to="/login" replace />}
           />
         ))}
+        <Route
+          path="/dashboard/notificaciones"
+          element={loading ? spinner : puedeAcceder ? <Notificaciones isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
+        />
         <Route
           path="/dashboard/ajustes"
           element={loading ? spinner : puedeAcceder ? <Ajustes user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
