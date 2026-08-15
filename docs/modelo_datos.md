@@ -25,9 +25,15 @@
 | `programas` | `institucion_id` (FK), `nombre`, `area_academica`, `modalidad`, `costo_matricula`, `perfil_compatible` (JSONB) | N:1 ← `instituciones`; sincronizado desde la API del MEN (ver `sincronizacionController.js`) |
 | `men_sincronizacion` | `ejecutada_en`, `remote_timestamp`, `programas_importados`, `instituciones_importadas`, `estado` | registro de auditoría de cada corrida de sync MEN |
 
+## Contacto
+
+| Tabla | Columnas clave | Relaciones |
+|---|---|---|
+| `contactos` | `nombre`, `email`, `telefono`, `asunto`, `mensaje`, `estado` (`pendiente`\|`leido`\|`respondido`\|`archivado`), `notas_admin` | sin FK; alimentada por el formulario público `/contacto`. RLS restringido a `service_role` (solo el backend accede, nunca el cliente directo) |
+
 ## Comunidad
 
-⚠️ **Estado real verificado contra Supabase (2026-08-15): ninguna de estas 8 tablas existe todavía**, salvo `convocatorias`. Definidas en `backend/scripts/migration_comunidad.sql`, que nunca se ejecutó — causa raíz del error `Could not find the table 'public.preguntas_comunidad'`. Ejecutar ese script (ya corregido para ser re-ejecutable sin duplicar datos) en el SQL Editor de Supabase antes de usar esta sección.
+✅ Las 8 tablas + `reportes_pregunta` ya están creadas en Supabase (`migration_comunidad.sql` y `migration_reportes_preguntas.sql`, corridas el 2026-08-15 — antes de esa fecha ninguna existía, causa raíz del error `Could not find the table 'public.preguntas_comunidad'`).
 
 | Tabla | Columnas clave | Relaciones |
 |---|---|---|
@@ -39,9 +45,12 @@
 | `likes_historia` | `historia_id` (FK), `user_id` (FK) | UNIQUE(`historia_id`,`user_id`) |
 | `preguntas_comunidad` | `user_id` (FK), `titulo`, `area`, `resuelta` | **no confundir con `preguntas`** (esa es del cuestionario del test vocacional) — nombres distintos a propósito por esta ambigüedad |
 | `respuestas_pregunta` | `pregunta_id` (FK → `preguntas_comunidad`), `user_id` (FK), `contenido`, `votos`, `es_mejor` | N:1 ← `preguntas_comunidad` |
+| `reportes_pregunta` | `pregunta_id` (FK → `preguntas_comunidad`), `user_id` (FK), `motivo` | UNIQUE(`pregunta_id`,`user_id`) — un reporte por usuario. Al llegar a 3, `perfiles_usuario.baneado_preguntas_hasta` del autor se pone en `NOW() + 7 días` (ver `preguntasController.reportarPregunta`) |
 | `convocatorias` | `tipo`, `titulo`, `institucion`, `ciudad`, `detalles` (JSONB), `url`, `fecha_cierre`, `activa` | ✅ existe y tiene datos (5 filas semilla). **Ojo:** `backend/setup_database.sql` todavía define `convocatorias` con OTRO esquema (`programa_id`/`nombre`/`fecha_apertura`/`cupos`) que no es el que está realmente en producción — ese archivo quedó desactualizado para esta tabla específica, pendiente de corregir. |
 
 ## Notas de consistencia código↔DB encontradas en esta revisión
 
 - `verificarAdmin.js` compara `perfiles_usuario.rol === 'admin'` directamente — esto es correcto para el esquema actual. La entrada del bug #8 en `CLAUDE.md` (que menciona una tabla `roles` con columna `nombre`) describe un diseño anterior ya reemplazado; si se vuelve a tocar ese middleware, usar `rol` como columna directa, no reintroducir el join a `roles`.
 - `preguntas` (cuestionario) y `preguntas_comunidad` (foro de dudas) son tablas distintas con propósitos distintos — al leer código o logs, confirmar de cuál se habla antes de asumir.
+- **Patrón recurrente encontrado dos veces (2026-08-15):** el código de un feature se escribe y mergea antes de que alguien corra su script de migración en Supabase — pasó con `migration_comunidad.sql` (comunidad completa) y con `contactos_migration.sql` (formulario de contacto), ambos ya corregidos y ejecutados. Si aparece de nuevo el error `Could not find the table 'X' in the schema cache`, primero revisar si existe un `backend/scripts/migration_*.sql` para esa tabla que nunca se ejecutó, antes de asumir que falta escribirlo desde cero.
+- Todos los scripts de migración deberían vivir en `backend/scripts/migration_*.sql` — `contactos_migration.sql` estaba suelto en `docs/` con otro patrón de nombre; ya se movió y renombró a `backend/scripts/migration_contactos.sql` para que quede junto a los demás.
