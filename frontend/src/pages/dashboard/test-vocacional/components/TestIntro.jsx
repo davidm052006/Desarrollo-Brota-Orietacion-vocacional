@@ -32,7 +32,7 @@ export default function TestIntro({
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 24px',
         }}>
-          <img src="/logos/logo-feliz.svg" alt="Brota" style={{ width: 56, height: 56 }} />
+          <img src="/logos/logo-feliz.svg" alt="Brota" style={{ width: 70, height: 70 }} />
         </div>
 
         <div className="font-display" style={{ fontWeight: 800, fontSize: 24, marginBottom: 8 }}>
