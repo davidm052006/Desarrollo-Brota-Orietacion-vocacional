@@ -1,6 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDarkMode } from '../../hooks/useDarkMode';
+
+const HERO_SEGMENTS = [
+  { text: 'Descubre ', primary: false, start: 0 },
+  { text: 'quién', primary: true, start: 9 },
+  { text: ' quieres ser.', primary: false, start: 14 },
+];
+const HERO_TEXT_LENGTH = HERO_SEGMENTS.reduce((sum, s) => sum + s.text.length, 0);
+
+function useTypewriter(totalLength, speedMs = 45) {
+  const [typedCount, setTypedCount] = useState(0);
+
+  useEffect(() => {
+    if (totalLength === 0) return;
+    const interval = setInterval(() => {
+      setTypedCount((prev) => {
+        if (prev >= totalLength) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, speedMs);
+    return () => clearInterval(interval);
+  }, [totalLength, speedMs]);
+
+  return typedCount;
+}
 
 const NAV_LINKS = [
   { label: 'Cómo funciona', href: '#como-funciona' },
@@ -96,6 +123,7 @@ function Navbar({ dark, toggleDark }) {
 
 function Hero() {
   const navigate = useNavigate();
+  const typedCount = useTypewriter(HERO_TEXT_LENGTH);
 
   return (
     <section style={{ display: 'grid', gridTemplateColumns: '1.05fr 1fr', gap: 40, alignItems: 'center', padding: '30px 40px 50px' }}>
@@ -104,7 +132,15 @@ function Hero() {
           fontWeight: 800, fontSize: 62, lineHeight: 0.98, letterSpacing: -2,
           color: 'var(--ink)',
         }}>
-          Descubre <span style={{ color: 'var(--primary)' }}>quién</span> quieres ser.
+          {HERO_SEGMENTS.map((segment, i) => {
+            const shown = segment.text.slice(0, Math.max(0, Math.min(segment.text.length, typedCount - segment.start)));
+            return segment.primary
+              ? <span key={i} style={{ color: 'var(--primary)' }}>{shown}</span>
+              : <span key={i}>{shown}</span>;
+          })}
+          {typedCount < HERO_TEXT_LENGTH && (
+            <span className="typewriter-cursor" style={{ color: 'var(--primary)' }}>|</span>
+          )}
         </div>
         <div style={{ fontSize: 16, color: 'var(--ink-soft)', marginTop: 22, maxWidth: 430, lineHeight: 1.55 }}>
           Una experiencia pensada para ayudarte a explorar tu vocación y tomar decisiones con claridad y propósito.

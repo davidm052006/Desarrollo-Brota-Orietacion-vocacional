@@ -37,12 +37,11 @@ let supabase;
 
 // Si tenemos ambas variables configuradas, crear cliente real
 if (supabaseUrl && supabaseAnonKey) {
-  console.log('✅ Conectando a Supabase...');
   supabase = createClient(supabaseUrl, supabaseAnonKey);
 } else {
   // Si no hay variables, crear un cliente "dummy" para modo demo
-  console.warn('📱 MODO DEMO: No hay variables de entorno de Supabase. Usando cliente deshabilitado.');
-  
+  if (import.meta.env.DEV) console.warn('📱 MODO DEMO: No hay variables de entorno de Supabase. Usando cliente deshabilitado.');
+
   // Cliente dummy que no hace nada pero no lanza error
   supabase = {
     auth: {
@@ -65,9 +64,6 @@ if (supabaseUrl && supabaseAnonKey) {
 //   import { supabase } from './config/supabase'
 export { supabase };
 //   const { data } = await supabase.from('programas').select('*')
-
-// Mensaje de confirmación en la consola del navegador
-console.log('✅ Supabase configurado en frontend');
 
 // ============================================
 // RESUMEN:

@@ -4,10 +4,16 @@ const verificarAuth = require('../middlewares/verificarAuth');
 
 const {
   getForos, getPostsByForo, createPost, getPost, votarPost, responderPost,
+} = require('../controllers/comunidad/forosController');
+const {
   getHistorias, getHistoria, crearHistoria, toggleLikeHistoria,
+} = require('../controllers/comunidad/historiasController');
+const {
   getPreguntas, getPregunta, crearPregunta, responderPregunta, marcarMejorRespuesta,
+} = require('../controllers/comunidad/preguntasController');
+const {
   getConvocatorias, getConvocatoria,
-} = require('../controllers/comunidadController');
+} = require('../controllers/comunidad/convocatoriasController');
 
 // ── Foros ─────────────────────────────────────────────────────────────────────
 router.get('/foros',                verificarAuth, getForos);

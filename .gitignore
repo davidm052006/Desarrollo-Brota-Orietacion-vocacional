@@ -40,3 +40,6 @@ docs/aprendizajes.md
 docs/notas_personales.md
 
 .vscode
+
+# graphify (output generado, regenerable localmente)
+graphify-out/

@@ -132,6 +132,18 @@ const obtenerResultado = async (req, res) => {
   try {
     const { perfilUsuarioId } = req.params;
 
+    // Verificar que el perfil pertenece al usuario autenticado
+    const { data: perfil, error: errPerfil } = await supabase
+      .from('perfiles_usuario')
+      .select('id')
+      .eq('id', perfilUsuarioId)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (errPerfil || !perfil) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
+    }
+
     const { data, error } = await supabase
       .from('resultados')
       .select(`
@@ -171,6 +183,28 @@ const obtenerResultado = async (req, res) => {
 const obtenerRecomendaciones = async (req, res) => {
   try {
     const { resultadoId } = req.params;
+
+    // Verificar que el resultado pertenece a un perfil del usuario autenticado
+    const { data: resultado, error: errResultado } = await supabase
+      .from('resultados')
+      .select('perfil_usuario_id')
+      .eq('id', resultadoId)
+      .single();
+
+    if (errResultado || !resultado) {
+      return res.status(404).json({ success: false, message: 'Resultado no encontrado' });
+    }
+
+    const { data: perfil, error: errPerfil } = await supabase
+      .from('perfiles_usuario')
+      .select('id')
+      .eq('id', resultado.perfil_usuario_id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (errPerfil || !perfil) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este resultado' });
+    }
 
     const { data, error } = await supabase
       .from('recomendaciones')
@@ -219,6 +253,28 @@ const obtenerRecomendaciones = async (req, res) => {
 const marcarRecomendacionVista = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Verificar que la recomendación pertenece a un resultado del usuario autenticado
+    const { data: recomendacion, error: errRecomendacion } = await supabase
+      .from('recomendaciones')
+      .select('id, resultados ( perfil_usuario_id )')
+      .eq('id', id)
+      .single();
+
+    if (errRecomendacion || !recomendacion) {
+      return res.status(404).json({ success: false, message: 'Recomendación no encontrada' });
+    }
+
+    const { data: perfil, error: errPerfil } = await supabase
+      .from('perfiles_usuario')
+      .select('id')
+      .eq('id', recomendacion.resultados?.perfil_usuario_id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (errPerfil || !perfil) {
+      return res.status(403).json({ success: false, message: 'No autorizado para esta recomendación' });
+    }
 
     const { error } = await supabase
       .from('recomendaciones')
@@ -289,6 +345,10 @@ const eliminarResultado = async (req, res) => {
 const obtenerPerfil = async (req, res) => {
   try {
     const { userId } = req.params;
+
+    if (userId !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
+    }
 
     const { data, error } = await supabase
       .from('perfiles_usuario')

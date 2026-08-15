@@ -3,7 +3,8 @@ export const isValidEmail = (value) => {
   return emailRegex.test(value);
 };
 
-export const isValidPassword = (value) => value.length >= 6;
+export const isValidPassword = (value) =>
+  value.length >= 8 && /[a-zA-Z]/.test(value) && /[0-9]/.test(value);
 export const getPasswordStrength = (password) => {
   let score = 0;
 
@@ -29,7 +30,7 @@ export const validateFields = (fields, mode) => {
     else if (!isValidEmail(email)) errors.email = 'Correo inválido';
 
     if (!password) errors.password = 'La contraseña es requerida';
-    else if (!isValidPassword(password)) errors.password = 'Mínimo 6 caracteres';
+    else if (!isValidPassword(password)) errors.password = 'Mínimo 8 caracteres, con letras y números';
   }
 
   if (mode === 'forgotPassword') {

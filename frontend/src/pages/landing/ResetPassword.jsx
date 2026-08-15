@@ -65,7 +65,8 @@ function ResetPassword() {
   const validate = () => {
     const errors = {};
     if (!password) errors.password = 'La contraseña es requerida';
-    else if (password.length < 6) errors.password = 'Mínimo 6 caracteres';
+    else if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password))
+      errors.password = 'Mínimo 8 caracteres, con letras y números';
     if (!confirmPassword) errors.confirmPassword = 'Confirma tu contraseña';
     else if (password !== confirmPassword) errors.confirmPassword = 'Las contraseñas no coinciden';
     return errors;
@@ -105,7 +106,7 @@ function ResetPassword() {
           title="Nueva contraseña"
           description={
             sessionReady
-              ? 'Elige una contraseña segura de al menos 6 caracteres.'
+              ? 'Elige una contraseña segura de al menos 8 caracteres, con letras y números.'
               : 'Verificando tu enlace de recuperación...'
           }
         >

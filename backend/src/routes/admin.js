@@ -3,12 +3,22 @@ const router         = express.Router();
 const verificarAdmin = require('../middlewares/verificarAdmin');
 const {
   getUsuarios, getUsuario, createUsuario, updateUsuario, deleteUsuario, getStats,
+} = require('../controllers/admin/usuariosController');
+const {
   getInstituciones, createInstitucion, updateInstitucion, deleteInstitucion,
+} = require('../controllers/admin/institucionesController');
+const {
   getProgramas, createPrograma, updatePrograma, deletePrograma,
+} = require('../controllers/admin/programasController');
+const {
   getCuestionarios, createCuestionario, updateCuestionario, deleteCuestionario,
+} = require('../controllers/admin/cuestionariosController');
+const {
   getPreguntas, createPregunta, updatePregunta, deletePregunta,
+} = require('../controllers/admin/preguntasController');
+const {
   getContactos, updateContacto,
-} = require('../controllers/adminController');
+} = require('../controllers/admin/contactosController');
 const { getEstado, ejecutarSincronizacion } = require('../controllers/sincronizacionController');
 
 router.use(verificarAdmin);

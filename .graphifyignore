@@ -1,0 +1,5 @@
+# Excluido de graphify: bundle/runtime generado de terceros (handoff de diseño),
+# no es código fuente propio del proyecto. Causaba un puente falso en el grafo
+# (colisión de nombres get() entre comunidadService.js y el registry interno
+# del runtime, ver graphify-out/GRAPH_REPORT.md).
+frontend/design_handoff_comunidad_vistas/

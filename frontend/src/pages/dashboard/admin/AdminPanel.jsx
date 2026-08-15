@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '../../../config/supabase';
 import { getStats } from '../../../services/adminService';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
@@ -70,17 +71,7 @@ export default function AdminPanel({ user, profile }) {
   }
 
   if (!isAdmin) {
-    return (
-      <DashboardLayout profile={profile}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 52, marginBottom: 16 }}>🔒</div>
-            <div className="font-display" style={{ fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Acceso restringido</div>
-            <div style={{ fontSize: 14, color: 'var(--ink-soft)' }}>Solo los administradores pueden ver esta sección.</div>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
+    return <Navigate to="/dashboard" replace />;
   }
 
   const SectionComponent = SECTIONS[activeSection];

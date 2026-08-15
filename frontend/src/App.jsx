@@ -98,16 +98,16 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing page pública */}
+        {/* Landing page pública — se renderiza de inmediato; solo redirige si se confirma sesión */}
         <Route
           path="/"
-          element={loading ? spinner : puedeAcceder ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+          element={!loading && puedeAcceder ? <Navigate to="/dashboard" replace /> : <LandingPage />}
         />
 
-        {/* Login / Auth */}
+        {/* Login / Auth — igual, no bloquea el render mientras se verifica la sesión */}
         <Route
           path="/login"
-          element={loading ? spinner : puedeAcceder ? <Navigate to="/dashboard" replace /> : <Login isDemoMode={isDemoMode} />}
+          element={!loading && puedeAcceder ? <Navigate to="/dashboard" replace /> : <Login isDemoMode={isDemoMode} />}
         />
 
         {/* Rutas públicas informativas */}

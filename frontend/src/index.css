@@ -121,6 +121,15 @@ body {
   animation: revealField 220ms ease-out both;
 }
 
+@keyframes blinkCursor {
+  0%, 45%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.typewriter-cursor {
+  animation: blinkCursor 900ms step-end infinite;
+}
+
 /* ─── Inputs y selects ─────────────────────────────────────────────────────── */
 input::placeholder,
 textarea::placeholder {

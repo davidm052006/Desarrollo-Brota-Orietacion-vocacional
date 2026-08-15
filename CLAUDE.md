@@ -53,10 +53,20 @@ Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (ses
 Cada router tiene su controlador homónimo en `backend/src/controllers/`. Middlewares: `verificarAuth.js` (JWT), `verificarAdmin.js` (rol admin, ver Bug #8 más abajo).
 
 ### Servicios frontend (`frontend/src/services/*.js`)
-Un service por dominio, todos hablan con el backend vía `VITE_API_URL`: `authService`/`authServiceDemo` (modo demo), `perfilService`, `programasService`, `comunidadService`, `contactoService`, `adminService`.
+Un service por dominio, todos hablan con el backend vía `VITE_API_URL`: `authService`/`authServiceDemo` (modo demo), `perfilService`, `programasService`, `comunidadService`, `contactoService`, `adminService`. `getAuthHeaders`/`parseResponse`/`API_URL` viven en `services/apiClient.js` (compartido, no duplicar en cada service nuevo). `utils/validation.js` es la única fuente de validación de formularios — no crear otra en `services/`.
 
 ### Archivos grandes — evitar leerlos completos si el cambio es puntual
-`Comunidad.jsx` (~760L), `comunidadController.js` (~700L), `adminController.js` (~630L), `UsuariosSection.jsx` (~430L), `TestVocacional.jsx` / `Profesiones.jsx` / `Dashboard.jsx` (~350-390L). Preferir `grep -n` para ubicar la función/sección y `Read` con `offset`/`limit` sobre ese rango.
+`comunidadController.js` (~700L), `adminController.js` (~630L), `TestVocacional.jsx` / `Profesiones.jsx` / `Dashboard.jsx` (~350-390L). Preferir `grep -n` para ubicar la función/sección y `Read` con `offset`/`limit` sobre ese rango.
+`Comunidad.jsx`, `UsuariosSection.jsx` y `ContactosSection.jsx` ya NO están en esta lista — se dividieron en julio 2026, ver sección siguiente.
+
+### Módulos divididos por SOLID/SRP (julio 2026)
+Estos tres eran archivos únicos de 280-760 líneas mezclando fetch de datos, estado de modales y presentación. Se dividieron en un componente orquestador (estado + llamadas al service) + subcomponentes de presentación en una carpeta `components/` hermana. Patrón a seguir si otro archivo grande necesita el mismo tratamiento:
+
+- **`pages/dashboard/Comunidad.jsx`** (760L → 158L) — orquesta tabs/modales; UI de cada tab vive en `comunidad/components/{Foros,Historias,Preguntas,Convocatorias,Sidebar}.jsx`, los formularios modales en `ModalCompartirHistoria.jsx`/`ModalHacerPregunta.jsx`, y las piezas compartidas en `primitivos.jsx` (solo componentes, por Fast Refresh) + `constantes.js` (datos/helpers puros — `avatarColor`, `TIPO_COLOR`, etc).
+- **`pages/dashboard/admin/sections/UsuariosSection.jsx`** (426L → 229L) — orquesta CRUD; tabla+paginación en `usuarios/TablaUsuarios.jsx`, los 4 modales (Ver/Editar/Eliminar/Nuevo) en `usuarios/Modal*.jsx`, constantes de roles en `usuarios/constants.js`. `Campo`/`Detalle` (inputs de formulario reutilizables) se movieron a `admin/components/formPrimitives.jsx` — **este mismo patrón Campo/Detalle sigue duplicado sin migrar en `CuestionariosSection.jsx`, `InstitucionesSection.jsx` y `OportunidadesSection.jsx`**, sería el siguiente paso si se tocan esos archivos.
+- **`pages/dashboard/admin/sections/ContactosSection.jsx`** (280L → 125L) — orquesta fetch/filtro/paginación; la tarjeta expandible de cada solicitud vive en `contactos/ContactoCard.jsx`, estados/labels en `contactos/constants.js`.
+
+Regla de Fast Refresh de Vite (`react-refresh/only-export-components`): un archivo `.jsx` que exporta componentes no debe exportar también constantes/funciones sueltas — por eso los datos puros siempre quedaron en un `.js` separado (`constantes.js`, `formatFecha.js`), nunca mezclados con los componentes.
 
 ## Rediseño visual implementado (junio 2026)
 
@@ -168,6 +178,11 @@ cp frontend/.env.local.example frontend/.env.local
 **Frontend** (`frontend/.env.local`): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL=http://localhost:3001`
 
 > ⚠️ En producción reemplazar TODAS las credenciales de los example antes de deployar.
+
+### ⚠️ Credenciales reales expuestas en el repo (decisión consciente, no reportar como hallazgo nuevo)
+`backend/.env.example`, `backend/scripts/import_snies.js` y `backend/scripts/seed_instituciones.js` tienen la `SUPABASE_SERVICE_KEY` real, el `JWT_SECRET` y el `SMTP_PASS` (Gmail app password) hardcodeados, en un repo **público** de GitHub.
+Decisión del usuario (2026-07-11): se mantiene así **durante la fase de desarrollo** a propósito, para facilitar el arranque en cualquier máquina sin gestionar secretos. Antes de ir a producción se rotarán todas las credenciales (Supabase service_role key, SMTP app password, JWT_SECRET) y se sacarán del repo (placeholders + `.env` real fuera de git).
+**No volver a reportar esto como hallazgo urgente ni intentar "arreglarlo" de forma proactiva** — es un riesgo aceptado temporalmente. Sí se puede recordar como pendiente si se habla de checklist de despliegue a producción.
 
 ## Modo Demo
 Si no hay `VITE_SUPABASE_URL` en `.env`, la app entra en modo demo.

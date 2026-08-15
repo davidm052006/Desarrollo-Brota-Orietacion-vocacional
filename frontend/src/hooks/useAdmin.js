@@ -14,7 +14,6 @@ export function useAdmin() {
       if (isDemoMode && demoLoggedIn) {
         const demoEmail = localStorage.getItem('demoUserEmail');
         const isDemoAdmin = demoEmail === 'davidm20.05.2006@gmail.com';
-        console.log('🔍 Demo mode - email:', demoEmail, 'isAdmin:', isDemoAdmin);
         setIsAdmin(isDemoAdmin);
         setLoading(false);
         return;

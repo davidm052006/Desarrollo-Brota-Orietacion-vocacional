@@ -66,7 +66,8 @@ function ForgotPasswordCard({ onSwitchToLogin }) {
 
     if (!codigo || codigo.length < 8) errs.codigo = 'Ingresa el código de 8 dígitos';
     if (!password)                    errs.password = 'La contraseña es requerida';
-    else if (password.length < 6)    errs.password = 'Mínimo 6 caracteres';
+    else if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password))
+      errs.password = 'Mínimo 8 caracteres, con letras y números';
     if (password !== confirmPassword) errs.confirmPassword = 'Las contraseñas no coinciden';
 
     if (Object.keys(errs).length) return setErrors(errs);
