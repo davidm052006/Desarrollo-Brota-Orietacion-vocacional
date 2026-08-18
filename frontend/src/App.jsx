@@ -170,7 +170,7 @@ function App() {
         ))}
         <Route
           path="/dashboard/rutas"
-          element={loading ? spinner : puedeAcceder ? <Rutas isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
+          element={loading ? spinner : puedeAcceder ? <Rutas user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/dashboard/notificaciones"

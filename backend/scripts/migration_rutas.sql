@@ -5,90 +5,40 @@
 -- Contenido estático por área académica (mismas 14 claves que ya usan
 -- Profesiones.jsx / TestResult.jsx / vocacionalCategorias.js). Nada de
 -- scraping de pensums ni llamadas en vivo a una API de LLM: el contenido
--- se escribió una sola vez (agosto 2026) y se sirve tal cual, para no
--- generar costo ni dependencia externa en /dashboard/rutas.
+-- se escribió/curó una sola vez (agosto 2026 — temas_previos/proyectos/
+-- recursos escritos a mano; materias_comunes curado con ayuda de otra IA
+-- + revisión manual, ver commits de agosto 2026) y se sirve tal cual,
+-- para no generar costo ni dependencia externa en /dashboard/rutas.
 
 CREATE TABLE IF NOT EXISTS contenido_rutas (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   area              TEXT UNIQUE NOT NULL,
-  materias_comunes  JSONB NOT NULL DEFAULT '[]', -- pensum real de la carrera, más profundo que temas_previos — agregado agosto 2026, se completa con contenido curado externamente (ver docs/plantilla_materias_rutas.csv)
+  materias_comunes  JSONB NOT NULL DEFAULT '[]',
   temas_previos     JSONB NOT NULL DEFAULT '[]',
   proyectos         JSONB NOT NULL DEFAULT '[]',
-  recursos          JSONB NOT NULL DEFAULT '[]', -- [{ "titulo": "...", "url": "..." }] — links de búsqueda de YouTube, no videos puntuales (evita links rotos)
+  recursos          JSONB NOT NULL DEFAULT '[]', -- [{ "titulo": "...", "url": "..." }]
   created_at        TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE contenido_rutas ADD COLUMN IF NOT EXISTS materias_comunes JSONB NOT NULL DEFAULT '[]';
 
-INSERT INTO contenido_rutas (area, temas_previos, proyectos, recursos) VALUES
-('tecnologia',
-  '["Lógica de programación", "Un lenguaje base (Python o JavaScript)", "Matemáticas discretas", "Uso de la terminal y Git", "Inglés técnico"]',
-  '["Una calculadora simple", "Un to-do list", "Una página web personal"]',
-  '[{"titulo":"Curso de programación para principiantes","url":"https://www.youtube.com/results?search_query=curso+de+programacion+para+principiantes+en+espa%C3%B1ol"},{"titulo":"Lógica de programación desde cero","url":"https://www.youtube.com/results?search_query=logica+de+programacion+desde+cero"}]'
-),
-('salud',
-  '["Biología celular", "Química básica", "Anatomía general", "Primeros auxilios", "Ética en salud"]',
-  '["Voluntariado en brigadas de salud", "Sacar una certificación básica de primeros auxilios"]',
-  '[{"titulo":"Biología celular explicada","url":"https://www.youtube.com/results?search_query=biologia+celular+explicada"},{"titulo":"Anatomía humana básica","url":"https://www.youtube.com/results?search_query=anatomia+humana+basica"}]'
-),
-('ciencias',
-  '["El método científico", "Física básica", "Estadística", "Redacción de informes", "Pensamiento crítico"]',
-  '["Documentar un experimento casero", "Participar en una feria de ciencias"]',
-  '[{"titulo":"El método científico explicado","url":"https://www.youtube.com/results?search_query=metodo+cientifico+explicado"},{"titulo":"Estadística básica para principiantes","url":"https://www.youtube.com/results?search_query=estadistica+basica+para+principiantes"}]'
-),
-('diseño',
-  '["Teoría del color", "Tipografía", "Composición visual", "Herramientas como Figma o Canva", "Historia del diseño"]',
-  '["Rediseñar el logo de una marca ficticia", "Crear una identidad visual simple"]',
-  '[{"titulo":"Fundamentos de diseño gráfico","url":"https://www.youtube.com/results?search_query=fundamentos+de+diseno+grafico"},{"titulo":"Teoría del color para diseñadores","url":"https://www.youtube.com/results?search_query=teoria+del+color+para+disenadores"}]'
-),
-('arte',
-  '["Historia del arte", "Dibujo básico", "Composición", "Técnicas de tu disciplina (pintura, escultura, etc.)"]',
-  '["Armar un portafolio de 5 piezas", "Participar en una exposición estudiantil"]',
-  '[{"titulo":"Fundamentos de dibujo para principiantes","url":"https://www.youtube.com/results?search_query=fundamentos+de+dibujo+para+principiantes"},{"titulo":"Historia del arte resumen","url":"https://www.youtube.com/results?search_query=historia+del+arte+resumen"}]'
-),
-('educacion',
-  '["Psicología del aprendizaje", "Didáctica general", "Comunicación oral", "Diseño curricular básico"]',
-  '["Dar una clase de prueba a compañeros", "Hacer tutorías voluntarias"]',
-  '[{"titulo":"Psicología del aprendizaje explicada","url":"https://www.youtube.com/results?search_query=psicologia+del+aprendizaje+explicada"},{"titulo":"Cómo dar una buena clase","url":"https://www.youtube.com/results?search_query=como+dar+una+buena+clase"}]'
-),
-('social',
-  '["Teoría social básica", "Historia de Colombia", "Métodos de investigación cualitativa", "Redacción académica"]',
-  '["Una pequeña investigación sobre tu comunidad", "Voluntariado social"]',
-  '[{"titulo":"Introducción a las ciencias sociales","url":"https://www.youtube.com/results?search_query=introduccion+a+las+ciencias+sociales"},{"titulo":"Métodos de investigación cualitativa","url":"https://www.youtube.com/results?search_query=metodos+de+investigacion+cualitativa"}]'
-),
-('comunicacion',
-  '["Redacción periodística", "Oratoria", "Edición básica de video o audio", "Ética en medios"]',
-  '["Un podcast corto", "Un blog personal", "Cubrir un evento del colegio"]',
-  '[{"titulo":"Cómo escribir una noticia","url":"https://www.youtube.com/results?search_query=como+escribir+una+noticia"},{"titulo":"Oratoria y hablar en público","url":"https://www.youtube.com/results?search_query=oratoria+y+hablar+en+publico"}]'
-),
-('juridico',
-  '["Constitución Política de Colombia", "Argumentación", "Redacción de textos formales", "Ética"]',
-  '["Un debate estudiantil", "Un simulacro de juicio (moot court)"]',
-  '[{"titulo":"Introducción al derecho en Colombia","url":"https://www.youtube.com/results?search_query=introduccion+al+derecho+en+colombia"},{"titulo":"Cómo argumentar un caso","url":"https://www.youtube.com/results?search_query=como+argumentar+un+caso+juridico"}]'
-),
-('negocios',
-  '["Matemática financiera básica", "Excel u hojas de cálculo", "Fundamentos de marketing", "Emprendimiento"]',
-  '["Un plan de negocio simple", "Vender algo pequeño (real o simulado)"]',
-  '[{"titulo":"Fundamentos de finanzas personales","url":"https://www.youtube.com/results?search_query=fundamentos+de+finanzas+personales"},{"titulo":"Cómo hacer un plan de negocio","url":"https://www.youtube.com/results?search_query=como+hacer+un+plan+de+negocio"}]'
-),
-('administrativo',
-  '["Gestión de proyectos", "Excel", "Comunicación organizacional", "Contabilidad básica"]',
-  '["Organizar un evento estudiantil", "Simular la administración de un pequeño negocio"]',
-  '[{"titulo":"Gestión de proyectos para principiantes","url":"https://www.youtube.com/results?search_query=gestion+de+proyectos+para+principiantes"},{"titulo":"Contabilidad básica explicada","url":"https://www.youtube.com/results?search_query=contabilidad+basica+explicada"}]'
-),
-('humanidades',
-  '["Filosofía básica", "Historia universal", "Lectura crítica", "Redacción de ensayos"]',
-  '["Escribir un ensayo", "Participar en un club de lectura"]',
-  '[{"titulo":"Introducción a la filosofía","url":"https://www.youtube.com/results?search_query=introduccion+a+la+filosofia"},{"titulo":"Cómo escribir un ensayo argumentativo","url":"https://www.youtube.com/results?search_query=como+escribir+un+ensayo+argumentativo"}]'
-),
-('ambiental',
-  '["Ecología básica", "Cambio climático", "Química ambiental", "Normativa ambiental colombiana"]',
-  '["Un proyecto de reciclaje en tu colegio", "Documentar un ecosistema cercano"]',
-  '[{"titulo":"Ecología básica explicada","url":"https://www.youtube.com/results?search_query=ecologia+basica+explicada"},{"titulo":"Cambio climático causas y consecuencias","url":"https://www.youtube.com/results?search_query=cambio+climatico+causas+y+consecuencias"}]'
-),
-('deporte',
-  '["Anatomía y fisiología básica", "Nutrición deportiva", "Principios de entrenamiento"]',
-  '["Diseñar una rutina de entrenamiento propia", "Ayudar a entrenar un equipo escolar"]',
-  '[{"titulo":"Fisiología del ejercicio básica","url":"https://www.youtube.com/results?search_query=fisiologia+del+ejercicio+basica"},{"titulo":"Principios de entrenamiento deportivo","url":"https://www.youtube.com/results?search_query=principios+de+entrenamiento+deportivo"}]'
-)
-ON CONFLICT (area) DO NOTHING;
+INSERT INTO contenido_rutas (area, materias_comunes, temas_previos, proyectos, recursos) VALUES
+('administrativo', '["Administración","Contabilidad","Economía","Finanzas","Mercadeo","Gestión Humana","Estadística","Emprendimiento","Planeación Estratégica","Comercio Internacional","Gestión de Operaciones","Gestión de Proyectos"]'::jsonb, '["Matemáticas básicas","Comunicación","Excel","Economía básica","Pensamiento analítico"]'::jsonb, '["Plan de negocio","Presupuesto empresarial","Estudio de mercado","Plan de marketing","Dashboard financiero","Modelo de emprendimiento"]'::jsonb, '[{"url":"https://www.sena.edu.co/","titulo":"SENA"},{"url":"https://www.ccb.org.co/","titulo":"Cámara de Comercio de Bogotá"},{"url":"https://www.banrep.gov.co/","titulo":"Banco de la República"}]'::jsonb),
+('ambiental', '["Ecología","Química Ambiental","Biología","Hidrología","Gestión Ambiental","Legislación Ambiental","Cambio Climático","Evaluación de Impacto Ambiental","Manejo de Residuos","Cartografía y SIG","Educación Ambiental","Desarrollo Sostenible"]'::jsonb, '["Biología básica","Química básica","Ecología","Método científico","Actualidad ambiental"]'::jsonb, '["Diagnóstico ambiental de un espacio cercano","Proyecto de reciclaje escolar","Huerta urbana","Campaña de sensibilización ambiental","Monitoreo de un ecosistema local"]'::jsonb, '[{"url":"https://www.minambiente.gov.co/","titulo":"Ministerio de Ambiente y Desarrollo Sostenible"},{"url":"https://www.parquesnacionales.gov.co/","titulo":"Parques Nacionales Naturales de Colombia"},{"url":"https://www.ideam.gov.co/","titulo":"IDEAM"}]'::jsonb),
+('arte', '["Dibujo","Historia del Arte","Teoría del Color","Composición","Tipografía","Diseño Gráfico","Ilustración","Fotografía","Diseño UX/UI","Modelado","Animación","Portafolio"]'::jsonb, '["Dibujo básico","Creatividad","Composición visual","Manejo básico de software de diseño"]'::jsonb, '["Identidad visual","Cartel","Ilustración editorial","Prototipo UX/UI","Animación corta","Portafolio profesional"]'::jsonb, '[{"url":"https://helpx.adobe.com/learn.html","titulo":"Adobe Learn"},{"url":"https://help.figma.com/hc/en-us/categories/360002051613-Learn-design","titulo":"Figma Learn"}]'::jsonb),
+('ciencias', '["Biología","Química","Física","Matemáticas","Geología","Ecología","Microbiología","Genética","Estadística","Métodos de Investigación","Bioquímica","Ciencias Ambientales"]'::jsonb, '["Álgebra","Biología básica","Química básica","Física básica","Método científico"]'::jsonb, '["Experimento científico","Colección de datos ambientales","Modelo ecológico","Informe de laboratorio","Investigación experimental"]'::jsonb, '[{"url":"https://minciencias.gov.co/","titulo":"Ministerio de Ciencia"},{"url":"https://www.ideam.gov.co/","titulo":"IDEAM"},{"url":"https://bibliotecadigital.minciencias.gov.co/","titulo":"Biblioteca Virtual de Ciencia"}]'::jsonb),
+('comunicacion', '["Teoría de la Comunicación","Redacción","Periodismo","Comunicación Digital","Producción Audiovisual","Fotografía","Diseño Editorial","Narrativa","Comunicación Organizacional","Publicidad","Investigación de Medios","Ética de la Comunicación"]'::jsonb, '["Lectura","Escritura","Creatividad","Herramientas digitales","Cultura general"]'::jsonb, '["Podcast","Blog periodístico","Campaña digital","Documental corto","Revista digital","Plan de comunicación"]'::jsonb, '[{"url":"https://www.rtvc.gov.co/","titulo":"RTVC"},{"url":"https://www.mintic.gov.co/","titulo":"MinTIC"},{"url":"https://grow.google/intl/es/courses-and-tools/","titulo":"Google Digital Garage"}]'::jsonb),
+('deporte', '["Anatomía","Fisiología del Ejercicio","Biomecánica","Entrenamiento Deportivo","Pedagogía del Deporte","Nutrición Deportiva","Psicología del Deporte","Recreación y Tiempo Libre","Primeros Auxilios","Lesiones Deportivas","Evaluación Física","Gestión Deportiva"]'::jsonb, '["Biología básica","Anatomía básica","Hábitos de actividad física","Nutrición básica","Trabajo en equipo"]'::jsonb, '["Rutina de entrenamiento propia","Plan de actividad física para un grupo","Campaña de hábitos saludables","Organización de un torneo escolar","Diario de rendimiento deportivo"]'::jsonb, '[{"url":"https://www.mindeporte.gov.co/","titulo":"Ministerio del Deporte"},{"url":"https://www.sena.edu.co/","titulo":"SENA"}]'::jsonb),
+('diseño', '["Dibujo","Historia del Arte","Teoría del Color","Composición","Tipografía","Diseño Gráfico","Ilustración","Fotografía","Diseño UX/UI","Modelado","Animación","Portafolio"]'::jsonb, '["Dibujo básico","Creatividad","Composición visual","Manejo básico de software de diseño"]'::jsonb, '["Identidad visual","Cartel","Ilustración editorial","Prototipo UX/UI","Animación corta","Portafolio profesional"]'::jsonb, '[{"url":"https://helpx.adobe.com/learn.html","titulo":"Adobe Learn"},{"url":"https://help.figma.com/hc/en-us/categories/360002051613-Learn-design","titulo":"Figma Learn"}]'::jsonb),
+('educacion', '["Pedagogía","Didáctica","Psicología del Desarrollo","Evaluación Educativa","Currículo","Investigación Educativa","Inclusión Educativa","Tecnologías Educativas","Gestión Educativa","Filosofía de la Educación","Práctica Pedagógica","Comunicación Educativa"]'::jsonb, '["Lectura crítica","Comunicación","Psicología básica","Investigación","Manejo de herramientas digitales"]'::jsonb, '["Secuencia didáctica","Clase interactiva","Material educativo digital","Proyecto de inclusión","Instrumento de evaluación","Investigación educativa"]'::jsonb, '[{"url":"https://www.mineducacion.gov.co/","titulo":"Ministerio de Educación Nacional"},{"url":"https://www.colombiaaprende.edu.co/","titulo":"Colombia Aprende"}]'::jsonb),
+('humanidades', '["Filosofía","Historia","Literatura","Ética","Lógica","Epistemología","Antropología Filosófica","Estética","Lenguaje y Comunicación","Historia del Pensamiento","Metodología de la Investigación","Cultura y Sociedad"]'::jsonb, '["Lectura crítica","Escritura académica","Historia general","Pensamiento crítico","Cultura general"]'::jsonb, '["Ensayo filosófico","Club de lectura","Línea de tiempo histórica","Debate argumentativo","Investigación sobre un movimiento cultural"]'::jsonb, '[{"url":"https://www.bibliotecanacional.gov.co/","titulo":"Biblioteca Nacional de Colombia"},{"url":"https://www.mincultura.gov.co/","titulo":"Ministerio de Cultura"}]'::jsonb),
+('juridico', '["Introducción al Derecho","Derecho Constitucional","Derecho Civil","Derecho Penal","Derecho Laboral","Derecho Comercial","Derecho Administrativo","Derecho Procesal","Derecho Internacional","Derechos Humanos","Teoría del Estado","Argumentación Jurídica"]'::jsonb, '["Lectura crítica","Redacción","Argumentación","Historia","Constitución Política de Colombia"]'::jsonb, '["Análisis de una sentencia","Simulación de audiencia","Concepto jurídico","Análisis de contrato","Investigación sobre derechos fundamentales"]'::jsonb, '[{"url":"https://www.secretariasenado.gov.co/","titulo":"Secretaría del Senado"},{"url":"https://www.corteconstitucional.gov.co/","titulo":"Corte Constitucional"},{"url":"https://www.minjusticia.gov.co/","titulo":"Ministerio de Justicia"}]'::jsonb),
+('negocios', '["Administración","Contabilidad","Economía","Finanzas","Mercadeo","Gestión Humana","Estadística","Emprendimiento","Planeación Estratégica","Comercio Internacional","Gestión de Operaciones","Gestión de Proyectos"]'::jsonb, '["Matemáticas básicas","Comunicación","Excel","Economía básica","Pensamiento analítico"]'::jsonb, '["Plan de negocio","Presupuesto empresarial","Estudio de mercado","Plan de marketing","Dashboard financiero","Modelo de emprendimiento"]'::jsonb, '[{"url":"https://www.sena.edu.co/","titulo":"SENA"},{"url":"https://www.ccb.org.co/","titulo":"Cámara de Comercio de Bogotá"},{"url":"https://www.banrep.gov.co/","titulo":"Banco de la República"}]'::jsonb),
+('salud', '["Anatomía","Fisiología","Bioquímica","Microbiología","Farmacología","Patología","Epidemiología","Genética","Nutrición","Salud Pública","Bioética","Primeros Auxilios"]'::jsonb, '["Biología","Química","Anatomía básica","Método científico","Lectura crítica"]'::jsonb, '["Mapa del cuerpo humano","Campaña de prevención","Infografía de hábitos saludables","Base de datos epidemiológica","Proyecto de promoción de la salud"]'::jsonb, '[{"url":"https://www.minsalud.gov.co/","titulo":"Ministerio de Salud y Protección Social"},{"url":"https://www.who.int/","titulo":"Organización Mundial de la Salud"}]'::jsonb),
+('social', '["Sociología","Antropología","Historia","Geografía","Ciencia Política","Metodología de Investigación","Estadística Social","Relaciones Internacionales","Derechos Humanos","Teoría Social","Políticas Públicas","Economía Social"]'::jsonb, '["Historia","Lectura crítica","Escritura","Geografía","Investigación básica"]'::jsonb, '["Investigación social","Encuesta comunitaria","Mapa social","Análisis de política pública","Historia local","Proyecto de intervención comunitaria"]'::jsonb, '[{"url":"https://www.dane.gov.co/","titulo":"DANE"},{"url":"https://www.banrep.gov.co/","titulo":"Banco de la República"},{"url":"https://www.mineducacion.gov.co/","titulo":"Ministerio de Educación Nacional"}]'::jsonb),
+('tecnologia', '["Programación I","Programación II","Estructuras de Datos","Bases de Datos","Redes","Ingeniería de Software","Sistemas Operativos","Arquitectura de Software","Desarrollo Web","Seguridad Informática","Inteligencia Artificial","Computación en la Nube"]'::jsonb, '["Lógica de programación","Algoritmos","Matemáticas básicas","Python o JavaScript","Git y GitHub"]'::jsonb, '["Calculadora","To-do list","API REST","Aplicación web CRUD","Sistema de inventario","Chat en tiempo real","Proyecto con inteligencia artificial"]'::jsonb, '[{"url":"https://oferta.senasofiaplus.edu.co/sofia-oferta/","titulo":"SENA Sofia Plus"},{"url":"https://www.freecodecamp.org/","titulo":"freeCodeCamp"},{"url":"https://developer.mozilla.org/","titulo":"MDN Web Docs"},{"url":"https://skills.github.com/","titulo":"GitHub Skills"}]'::jsonb)
+ON CONFLICT (area) DO UPDATE SET
+  materias_comunes = EXCLUDED.materias_comunes,
+  temas_previos     = EXCLUDED.temas_previos,
+  proyectos         = EXCLUDED.proyectos,
+  recursos          = EXCLUDED.recursos;

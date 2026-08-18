@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/Layout/DashboardLayout';
 import { getAreasDisponibles, getRutaPorArea } from '../../services/rutasService';
+import { obtenerPerfil, obtenerResultado } from '../../services/perfilService';
+
+// Mismos 2 alias que backend/src/utils/algoritmoRecomendacion.js — el
+// categoriaPrincipal/Secundaria guardado en resultados.perfil_vocacional
+// puede venir sin normalizar (bug #1 de CLAUDE.md), así que se aplica el
+// mismo mapeo acá para no perder el match contra las claves de área.
+const CATEGORIA_ALIAS = { emprendimiento: 'negocios', ambiente: 'ambiental' };
+const normalizarCategoria = (c) => CATEGORIA_ALIAS[c] ?? c;
 
 // Mismas 14 claves que area_academica en programas/CATEGORIAS de
 // Profesiones.jsx — solo etiquetas, el contenido vive en contenido_rutas
@@ -13,6 +22,23 @@ const AREA_LABELS = {
   humanidades: 'Humanidades', ambiental: 'Ambiental', deporte: 'Deportes',
 };
 
+function Chip({ area, activa, relacionada, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '8px 16px', borderRadius: 999, fontSize: 13, fontWeight: 700,
+        border: activa ? 'none' : `1px solid ${relacionada ? 'var(--primary)' : 'var(--line)'}`,
+        background: activa ? 'var(--primary)' : relacionada ? 'var(--primary-soft)' : 'var(--surface)',
+        color: activa ? 'var(--primary-ink)' : relacionada ? 'var(--primary-deep)' : 'var(--ink)',
+        cursor: 'pointer', fontFamily: 'inherit',
+      }}
+    >
+      {AREA_LABELS[area] || area}
+    </button>
+  );
+}
+
 function Seccion({ titulo, children }) {
   return (
     <div style={{ marginBottom: 22 }}>
@@ -24,12 +50,14 @@ function Seccion({ titulo, children }) {
   );
 }
 
-export default function Rutas({ isDemoMode = false }) {
+export default function Rutas({ user, isDemoMode = false }) {
+  const navigate = useNavigate();
   const [areas, setAreas] = useState([]);
   const [areaActiva, setAreaActiva] = useState(null);
   const [contenido, setContenido] = useState(null);
   const [cargandoAreas, setCargandoAreas] = useState(true);
   const [cargandoContenido, setCargandoContenido] = useState(false);
+  const [categoriasResultado, setCategoriasResultado] = useState(null); // null = todavía cargando/sin test; [] no debería pasar si hizo el test
 
   useEffect(() => {
     getAreasDisponibles().then(({ success, data }) => {
@@ -37,6 +65,21 @@ export default function Rutas({ isDemoMode = false }) {
       setCargandoAreas(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) { setCategoriasResultado([]); return; }
+    obtenerPerfil(user.id).then(({ success, data: perfil }) => {
+      if (!success || !perfil?.id) { setCategoriasResultado([]); return; }
+      obtenerResultado(perfil.id).then(({ success: ok, data: resultado }) => {
+        if (!ok || !resultado?.perfil_vocacional) { setCategoriasResultado([]); return; }
+        const { categoriaPrincipal, categoriaSecundaria } = resultado.perfil_vocacional;
+        const cats = [categoriaPrincipal, categoriaSecundaria]
+          .filter(Boolean)
+          .map(normalizarCategoria);
+        setCategoriasResultado(cats);
+      });
+    });
+  }, [user?.id]);
 
   useEffect(() => {
     if (!areaActiva) return;
@@ -61,25 +104,43 @@ export default function Rutas({ isDemoMode = false }) {
           <p style={{ color: 'var(--ink-soft)', fontSize: 14 }} className="animate-pulse">Cargando…</p>
         ) : (
           <>
+            {categoriasResultado === null ? null : categoriasResultado.length === 0 ? (
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14,
+                background: 'var(--accent-soft)', border: '1px solid var(--accent)', borderRadius: 16,
+                padding: '14px 18px', marginBottom: 20,
+              }}>
+                <p style={{ fontSize: 13, color: 'var(--ink)', margin: 0 }}>
+                  Todavía no hiciste el test vocacional — hacelo para que te marquemos acá las áreas más afines a vos.
+                </p>
+                <button
+                  onClick={() => navigate('/dashboard/test')}
+                  style={{
+                    flexShrink: 0, background: 'var(--accent)', color: '#fff', fontWeight: 700,
+                    fontSize: 12.5, padding: '9px 16px', borderRadius: 10, border: 'none',
+                    cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                  }}
+                >
+                  Hacer el test
+                </button>
+              </div>
+            ) : (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary-deep)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 10 }}>
+                  Relacionadas con tus resultados
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {areas.filter(a => categoriasResultado.includes(a)).map(area => (
+                    <Chip key={area} area={area} activa={area === areaActiva} relacionada onClick={() => setAreaActiva(area)} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 26 }}>
-              {areas.map(area => {
-                const activa = area === areaActiva;
-                return (
-                  <button
-                    key={area}
-                    onClick={() => setAreaActiva(area)}
-                    style={{
-                      padding: '8px 16px', borderRadius: 999, fontSize: 13, fontWeight: 700,
-                      border: activa ? 'none' : '1px solid var(--line)',
-                      background: activa ? 'var(--primary)' : 'var(--surface)',
-                      color: activa ? 'var(--primary-ink)' : 'var(--ink)',
-                      cursor: 'pointer', fontFamily: 'inherit',
-                    }}
-                  >
-                    {AREA_LABELS[area] || area}
-                  </button>
-                );
-              })}
+              {areas.filter(a => !categoriasResultado?.includes(a)).map(area => (
+                <Chip key={area} area={area} activa={area === areaActiva} onClick={() => setAreaActiva(area)} />
+              ))}
             </div>
 
             {!areaActiva && (
