@@ -45,6 +45,7 @@ Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (ses
 - **TopNavbar** (`components/Layout/TopNavbar.jsx`) — navbar horizontal sticky con tabs
 - **DashboardLayout** (`components/Layout/DashboardLayout.jsx`) — wrapper simple con TopNavbar
 - **ELIMINADO**: sidebar vertical (`Sidebar.jsx` ya no se usa en DashboardLayout, pero el archivo sigue existiendo)
+- **Logout por inactividad** (`hooks/useInactivityLogout.js`, inicializado en `TopNavbar.jsx` — cubre todo `/dashboard/*`): 30 min sin interacción (mouse/teclado/scroll/touch) cierra sesión automático; avisa 1 min antes con un banner fijo abajo ("Seguir conectado" / "Cerrar sesión"). Cualquier actividad reinicia el timer, incluso con el aviso abierto.
 
 ### Backend — API (`backend/src/routes/*.js`, montadas bajo `/api`)
 | Router | Base | Contenido |

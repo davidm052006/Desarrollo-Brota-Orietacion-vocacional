@@ -2,6 +2,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { useFontFamily } from '../../hooks/useFontFamily';
+import { useInactivityLogout } from '../../hooks/useInactivityLogout';
 import { handleLogout } from '../../utils/auth';
 
 const NAV_ITEMS = [
@@ -34,6 +35,7 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [dark, toggleDark] = useDarkMode();
   useFontFamily(); // aplica la fuente guardada en cada carga del dashboard — el selector vive en Ajustes.jsx
+  const { mostrarAviso, segundosRestantes, seguirConectado, cerrarSesionAhora } = useInactivityLogout(isDemoMode);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,6 +50,41 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
   };
 
   return (
+    <>
+    {mostrarAviso && (
+      <div style={{
+        position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 100,
+        background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16,
+        boxShadow: 'var(--shadow-md)', padding: '14px 18px',
+        display: 'flex', alignItems: 'center', gap: 14, maxWidth: 420,
+      }}>
+        <div style={{ fontSize: 13, color: 'var(--ink)' }}>
+          Tu sesión se va a cerrar en <strong>{segundosRestantes}s</strong> por inactividad.
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={seguirConectado}
+            style={{
+              background: 'var(--primary)', color: 'var(--primary-ink)',
+              fontWeight: 700, fontSize: 12.5, padding: '8px 14px', borderRadius: 10,
+              border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+            }}
+          >
+            Seguir conectado
+          </button>
+          <button
+            onClick={cerrarSesionAhora}
+            style={{
+              background: 'none', color: 'var(--ink-soft)',
+              fontWeight: 600, fontSize: 12.5, padding: '8px 10px', borderRadius: 10,
+              border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+            }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    )}
     <header style={{
       position: 'sticky', top: 0, zIndex: 30,
       background: 'var(--surface)', borderBottom: '1px solid var(--line)',
@@ -171,5 +208,6 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
       </div>
 
     </header>
+    </>
   );
 }
