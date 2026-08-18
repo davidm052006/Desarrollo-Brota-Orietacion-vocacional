@@ -9,13 +9,16 @@
 -- generar costo ni dependencia externa en /dashboard/rutas.
 
 CREATE TABLE IF NOT EXISTS contenido_rutas (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  area          TEXT UNIQUE NOT NULL,
-  temas_previos JSONB NOT NULL DEFAULT '[]',
-  proyectos     JSONB NOT NULL DEFAULT '[]',
-  recursos      JSONB NOT NULL DEFAULT '[]', -- [{ "titulo": "...", "url": "..." }] — links de búsqueda de YouTube, no videos puntuales (evita links rotos)
-  created_at    TIMESTAMPTZ DEFAULT NOW()
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  area              TEXT UNIQUE NOT NULL,
+  materias_comunes  JSONB NOT NULL DEFAULT '[]', -- pensum real de la carrera, más profundo que temas_previos — agregado agosto 2026, se completa con contenido curado externamente (ver docs/plantilla_materias_rutas.csv)
+  temas_previos     JSONB NOT NULL DEFAULT '[]',
+  proyectos         JSONB NOT NULL DEFAULT '[]',
+  recursos          JSONB NOT NULL DEFAULT '[]', -- [{ "titulo": "...", "url": "..." }] — links de búsqueda de YouTube, no videos puntuales (evita links rotos)
+  created_at        TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE contenido_rutas ADD COLUMN IF NOT EXISTS materias_comunes JSONB NOT NULL DEFAULT '[]';
 
 INSERT INTO contenido_rutas (area, temas_previos, proyectos, recursos) VALUES
 ('tecnologia',

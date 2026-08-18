@@ -100,6 +100,21 @@ export default function Rutas({ isDemoMode = false }) {
                 background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 20,
                 padding: '24px 26px',
               }}>
+                {contenido.materiasComunes?.length > 0 && (
+                  <Seccion titulo="Materias más comunes de la carrera">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                      {contenido.materiasComunes.map((m, i) => (
+                        <span key={i} style={{
+                          fontSize: 12.5, fontWeight: 600, color: 'var(--primary-deep)',
+                          background: 'var(--primary-soft)', padding: '5px 12px', borderRadius: 999,
+                        }}>
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  </Seccion>
+                )}
+
                 <Seccion titulo="Qué estudiar antes de entrar">
                   <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {contenido.temasPrevios.map((t, i) => (

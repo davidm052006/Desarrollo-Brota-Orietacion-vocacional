@@ -25,6 +25,7 @@ const getRutaPorArea = asyncHandler('rutasController.getRutaPorArea', async (req
     success: true,
     data: {
       area: data.area,
+      materiasComunes: data.materias_comunes,
       temasPrevios: data.temas_previos,
       proyectos: data.proyectos,
       recursos: data.recursos,
