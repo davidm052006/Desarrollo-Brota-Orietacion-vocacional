@@ -79,6 +79,13 @@ const AREA_FALLBACK = {
   'ciencias sociales y humanas':                            'social',
 };
 
+// Devuelve null para ~1.342 de 14.644 programas (9.2%, verificado agosto 2026
+// trayendo el dataset completo). NO es un hueco de NBC_MAP: el 99.7% de esos
+// casos tienen nombrenbc/nombreareaconocimiento = "Sin clasificar" en la
+// fuente misma del MEN — no hay NBC real que mapear. Ampliar NBC_MAP no
+// reduce este número. La única vía sería inferir el área por palabras clave
+// del nombre del programa (heurístico, no mapeo exacto) — evaluado y
+// descartado por ahora, ver CLAUDE.md bug #4.
 function getAreaAcademica(nombrenbc, nombreareaconocimiento) {
   const nbcKey = (nombrenbc ?? '').toLowerCase().trim();
   if (NBC_MAP[nbcKey]) return NBC_MAP[nbcKey];
