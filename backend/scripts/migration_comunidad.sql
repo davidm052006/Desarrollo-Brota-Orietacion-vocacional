@@ -113,6 +113,23 @@ CREATE TABLE IF NOT EXISTS convocatorias (
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ─── RLS: todo el acceso real pasa por el backend con SUPABASE_SERVICE_KEY
+-- (bypassea RLS siempre) — el frontend nunca hace .from() directo, solo
+-- supabase.auth.*. Mismo patrón que migration_contactos.sql. No incluye
+-- 'convocatorias' acá: esa tabla puede preexistir con su propia política,
+-- no tocarla desde este script (ver migration_rls_comunidad_rutas.sql si
+-- hace falta revisarla aparte).
+DO $$
+DECLARE t TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['foros', 'posts_foro', 'votos_post', 'respuestas_post', 'historias', 'likes_historia', 'preguntas_comunidad', 'respuestas_pregunta']
+  LOOP
+    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
+    EXECUTE format('DROP POLICY IF EXISTS "solo_service_role" ON %I', t);
+    EXECUTE format('CREATE POLICY "solo_service_role" ON %I FOR ALL TO service_role USING (true) WITH CHECK (true)', t);
+  END LOOP;
+END $$;
+
 -- ─── Índices de rendimiento ────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_posts_foro_foro_id     ON posts_foro(foro_id);
 CREATE INDEX IF NOT EXISTS idx_posts_foro_created_at  ON posts_foro(created_at DESC);

@@ -22,6 +22,11 @@ CREATE TABLE IF NOT EXISTS contenido_rutas (
 
 ALTER TABLE contenido_rutas ADD COLUMN IF NOT EXISTS materias_comunes JSONB NOT NULL DEFAULT '[]';
 
+-- RLS: solo el backend (SUPABASE_SERVICE_KEY) accede.
+ALTER TABLE contenido_rutas ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "solo_service_role" ON contenido_rutas;
+CREATE POLICY "solo_service_role" ON contenido_rutas FOR ALL TO service_role USING (true) WITH CHECK (true);
+
 INSERT INTO contenido_rutas (area, materias_comunes, temas_previos, proyectos, recursos) VALUES
 ('administrativo', '["Administración","Contabilidad","Economía","Finanzas","Mercadeo","Gestión Humana","Estadística","Emprendimiento","Planeación Estratégica","Comercio Internacional","Gestión de Operaciones","Gestión de Proyectos"]'::jsonb, '["Matemáticas básicas","Comunicación","Excel","Economía básica","Pensamiento analítico"]'::jsonb, '["Plan de negocio","Presupuesto empresarial","Estudio de mercado","Plan de marketing","Dashboard financiero","Modelo de emprendimiento"]'::jsonb, '[{"url":"https://www.sena.edu.co/","titulo":"SENA"},{"url":"https://www.ccb.org.co/","titulo":"Cámara de Comercio de Bogotá"},{"url":"https://www.banrep.gov.co/","titulo":"Banco de la República"}]'::jsonb),
 ('ambiental', '["Ecología","Química Ambiental","Biología","Hidrología","Gestión Ambiental","Legislación Ambiental","Cambio Climático","Evaluación de Impacto Ambiental","Manejo de Residuos","Cartografía y SIG","Educación Ambiental","Desarrollo Sostenible"]'::jsonb, '["Biología básica","Química básica","Ecología","Método científico","Actualidad ambiental"]'::jsonb, '["Diagnóstico ambiental de un espacio cercano","Proyecto de reciclaje escolar","Huerta urbana","Campaña de sensibilización ambiental","Monitoreo de un ecosistema local"]'::jsonb, '[{"url":"https://www.minambiente.gov.co/","titulo":"Ministerio de Ambiente y Desarrollo Sostenible"},{"url":"https://www.parquesnacionales.gov.co/","titulo":"Parques Nacionales Naturales de Colombia"},{"url":"https://www.ideam.gov.co/","titulo":"IDEAM"}]'::jsonb),
