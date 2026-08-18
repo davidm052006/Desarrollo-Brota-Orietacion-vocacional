@@ -194,6 +194,9 @@ cp frontend/.env.local.example frontend/.env.local
 Decisión del usuario (2026-07-11): se mantiene así **durante la fase de desarrollo** a propósito, para facilitar el arranque en cualquier máquina sin gestionar secretos. Antes de ir a producción se rotarán todas las credenciales (Supabase service_role key, SMTP app password, JWT_SECRET) y se sacarán del repo (placeholders + `.env` real fuera de git).
 **No volver a reportar esto como hallazgo urgente ni intentar "arreglarlo" de forma proactiva** — es un riesgo aceptado temporalmente. Sí se puede recordar como pendiente si se habla de checklist de despliegue a producción.
 
+### RLS (Row Level Security)
+Todas las tablas de `public` tienen RLS habilitado con una policy `"solo_service_role"` (`FOR ALL TO service_role`) — el backend con `SUPABASE_SERVICE_KEY` bypassea RLS igual, así que es defensa en profundidad, no algo que cambie el comportamiento actual. El frontend nunca hace `.from()` directo (solo `supabase.auth.*`), así que no hace falta ninguna policy para `anon`/`authenticated`. **Si se crea una tabla nueva, agregarle RLS en el mismo script de migración** (`ALTER TABLE x ENABLE ROW LEVEL SECURITY` + la policy de `service_role`, ver `migration_contactos.sql` o `migration_rls_comunidad_rutas.sql` como plantilla) — 10 tablas se quedaron sin esto por varias migraciones seguidas (agosto 2026) hasta que el linter de seguridad de Supabase lo marcó.
+
 ## Modo Demo
 Si no hay `VITE_SUPABASE_URL` en `.env`, la app entra en modo demo.
 - Login demo: cualquier email/password
