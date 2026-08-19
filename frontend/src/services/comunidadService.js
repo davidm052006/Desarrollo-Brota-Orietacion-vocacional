@@ -60,5 +60,8 @@ export const reportarPregunta    = (id, motivo)     => post(`/preguntas/${id}/re
 export const getConvocatorias    = ()               => get('/convocatorias');
 export const getConvocatoria     = (id)             => get(`/convocatorias/${id}`);
 
+// ── Feed (últimas publicaciones para el Dashboard) ──────────────────────────────
+export const getFeedReciente     = ()               => get('/feed');
+
 // ── Notificaciones ───────────────────────────────────────────────────────────
 export const getNotificaciones   = ()               => get('/notificaciones');

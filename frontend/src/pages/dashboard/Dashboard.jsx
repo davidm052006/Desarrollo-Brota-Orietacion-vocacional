@@ -1,85 +1,41 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { obtenerPerfil } from "../../services/perfilService";
+import { obtenerPerfil, obtenerResultado } from "../../services/perfilService";
 import DashboardLayout from "../../components/Layout/DashboardLayout";
 import ContinueSection from "./components/ContinueSection";
+import FeedReciente from "./components/FeedReciente";
 
 const FRASE_DEL_DIA = "No se trata de tener todas las respuestas, sino la curiosidad de descubrirlas.";
 
-// ─── Hero banner ─────────────────────────────────────────────────────────────
+// ─── Hero banner (compacto, vive en el sidebar debajo de la racha) ────────────
 
-function HeroBanner({ nombre, estado }) {
+function HeroBannerMini({ nombre, testCompletado }) {
   const navigate = useNavigate();
-  const testCompletado = estado === 'completado';
-
-  const hoy = new Date();
-  const fecha = hoy.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
-  const fechaCap = fecha.charAt(0).toUpperCase() + fecha.slice(1);
 
   return (
     <div style={{
-      position: 'relative', overflow: 'hidden', borderRadius: 24,
-      padding: '26px 28px',
+      borderRadius: 20, padding: 20, color: '#fff',
       background: 'linear-gradient(120deg, var(--primary-deep), var(--primary))',
-      color: '#fff',
-      boxShadow: '0 12px 30px var(--primary-glow)',
+      boxShadow: '0 8px 20px var(--primary-glow)',
     }}>
-      <div style={{ fontSize: 13, fontWeight: 600, opacity: .9 }}>
-        {fechaCap} · ¡A crecer! 🌱
-      </div>
-      <div className="font-display" style={{ fontWeight: 800, fontSize: 30, marginTop: 6, lineHeight: 1.05 }}>
+      <div className="font-display" style={{ fontWeight: 800, fontSize: 17, lineHeight: 1.15 }}>
         Hola, {nombre || 'estudiante'} 👋
       </div>
-      <div style={{ fontSize: 14, opacity: .92, marginTop: 8, maxWidth: 440 }}>
-        Vas por buen camino. {testCompletado ? 'Tu resultado vocacional está listo.' : 'Retoma tu test vocacional y descubre tu próximo paso.'}
+      <div style={{ fontSize: 12, opacity: .92, marginTop: 6 }}>
+        {testCompletado ? 'Tu resultado vocacional está listo.' : 'Retomá tu test vocacional.'}
       </div>
-
-      {/* Card embebida del test */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 16, marginTop: 20,
-        background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.2)',
-        borderRadius: 16, padding: '14px 16px', maxWidth: 520,
-      }}>
-        <div style={{
-          width: 46, height: 46, borderRadius: 13,
-          background: 'rgba(255,255,255,.2)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 24, flexShrink: 0,
-        }}>🎯</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14 }}>
-            Test vocacional · {testCompletado ? '100% completado' : 'Pendiente'}
-          </div>
-          <div style={{
-            height: 7, background: 'rgba(255,255,255,.25)',
-            borderRadius: 999, marginTop: 7, overflow: 'hidden',
-          }}>
-            <div style={{
-              width: testCompletado ? '100%' : '0%',
-              height: '100%', background: '#fff', borderRadius: 999,
-            }} />
-          </div>
-        </div>
-        <button
-          onClick={() => navigate('/dashboard/test')}
-          style={{
-            background: '#fff', color: 'var(--primary-deep)',
-            fontWeight: 800, fontSize: 13,
-            padding: '9px 16px', borderRadius: 999,
-            border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
-          }}
-        >
-          {testCompletado ? 'Ver resultado →' : 'Realizar test →'}
-        </button>
-      </div>
-
-      {/* Decorativo */}
-      <svg width="150" height="150" viewBox="0 0 32 32" fill="none"
-        style={{ position: 'absolute', right: -12, bottom: -26, opacity: .16, pointerEvents: 'none' }}>
-        <path d="M16 31 V13" stroke="#fff" strokeWidth="2.6"/>
-        <path d="M16 17 C16 9 8 6 3 6.5 C3 15 9 18 16 18 Z" fill="#fff"/>
-        <path d="M16 15 C16 7 24 4 29 5 C28 14 23 17 16 17 Z" fill="#fff"/>
-      </svg>
+      <button
+        onClick={() => navigate('/dashboard/test')}
+        style={{
+          marginTop: 14, width: '100%',
+          background: '#fff', color: 'var(--primary-deep)',
+          fontWeight: 800, fontSize: 12.5,
+          padding: '9px 0', borderRadius: 999,
+          border: 'none', cursor: 'pointer',
+        }}
+      >
+        {testCompletado ? 'Ver resultado →' : 'Realizar test →'}
+      </button>
     </div>
   );
 }
@@ -137,7 +93,7 @@ function QuickActions() {
 
 // ─── Sidebar de perfil ────────────────────────────────────────────────────────
 
-function ProfileSidebar({ profile, userEmail, isAdmin }) {
+function ProfileSidebar({ profile, userEmail, isAdmin, testCompletado }) {
   const navigate = useNavigate();
 
   const nombre = [profile?.nombre, profile?.apellido].filter(Boolean).join(' ') ||
@@ -256,6 +212,8 @@ function ProfileSidebar({ profile, userEmail, isAdmin }) {
         </div>
       </div>
 
+      <HeroBannerMini nombre={profile?.nombre || profile?.primer_nombre} testCompletado={testCompletado} />
+
       {/* Frase del día */}
       <div style={{
         flex: 1, background: 'var(--primary-soft)',
@@ -285,6 +243,7 @@ export default function Dashboard({ user, isDemoMode = false }) {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [testCompletado, setTestCompletado] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -294,6 +253,10 @@ export default function Dashboard({ user, isDemoMode = false }) {
         if (!success) throw new Error(err);
         setProfile(data);
         setIsAdmin(data?.rol === 'admin');
+        if (data?.id) {
+          const { success: ok, data: resultado } = await obtenerResultado(data.id);
+          setTestCompletado(Boolean(ok && resultado));
+        }
       } catch (err) {
         console.error('Error al cargar perfil:', err);
         setError(err.message);
@@ -352,7 +315,7 @@ export default function Dashboard({ user, isDemoMode = false }) {
 
         {/* Columna principal */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0 }}>
-          <HeroBanner nombre={profile?.nombre || profile?.primer_nombre} estado={null} />
+          <FeedReciente />
           <QuickActions />
           <ContinueSection perfilUsuarioId={profile?.id} userId={user?.id} />
         </div>
@@ -362,6 +325,7 @@ export default function Dashboard({ user, isDemoMode = false }) {
           profile={profile}
           userEmail={user?.email}
           isAdmin={isAdmin}
+          testCompletado={testCompletado}
         />
 
       </div>

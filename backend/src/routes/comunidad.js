@@ -17,6 +17,9 @@ const {
 const {
   getNotificaciones,
 } = require('../controllers/comunidad/notificacionesController');
+const {
+  getFeedReciente,
+} = require('../controllers/comunidad/feedController');
 
 // ── Foros ─────────────────────────────────────────────────────────────────────
 router.get('/foros',                verificarAuth, getForos);
@@ -48,5 +51,8 @@ router.get('/convocatorias/:id',    verificarAuth, getConvocatoria);
 
 // ── Notificaciones ────────────────────────────────────────────────────────────
 router.get('/notificaciones',       verificarAuth, getNotificaciones);
+
+// ── Feed (últimas publicaciones para el Dashboard) ──────────────────────────────
+router.get('/feed',                 verificarAuth, getFeedReciente);
 
 module.exports = router;

@@ -25,7 +25,7 @@ Referencia rápida para no tener que releer `App.jsx` / routers backend en cada 
 | `/login` | `pages/landing/Login.jsx` | modos `login`/`signup`/`forgotPassword` vía `useAuth` |
 | `/reset-password` | `pages/landing/ResetPassword.jsx` | |
 | `/servicios`, `/saber-mas`, `/privacidad`, `/terminos`, `/contacto` | `pages/landing/*.jsx` | públicas, sin auth |
-| `/dashboard` | `pages/dashboard/Dashboard.jsx` | home, layout 2 columnas + sidebar perfil |
+| `/dashboard` | `pages/dashboard/Dashboard.jsx` | home, layout 2 columnas + sidebar perfil. Columna principal: `FeedReciente` (últimas publicaciones de comunidad) → `QuickActions` → `ContinueSection`. El saludo/CTA del test (antes un banner grande arriba) ahora es `HeroBannerMini`, dentro del sidebar debajo de la racha — agosto 2026 |
 | `/dashboard/test` | `pages/dashboard/test-vocacional/TestVocacional.jsx` | subcomponentes en `test-vocacional/components/` |
 | `/dashboard/profesiones` | `pages/dashboard/Profesiones.jsx` | |
 | `/dashboard/recursos` | `pages/dashboard/Recursos.jsx` | |
@@ -53,7 +53,7 @@ Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (ses
 | `auth.js` | `/api/auth` | `POST /register-perfil` |
 | `perfil.js` | `/api/perfil` | cuestionario, resultado, recomendaciones, `GET/PATCH /:userId` (PATCH = autoedición, usado por `Ajustes.jsx`; el `GET` también actualiza la racha de días como efecto secundario, ver `actualizarRacha()` en el controller) |
 | `programas.js` | `/api/programas` | `GET /`, `GET /stats` |
-| `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas (+ `POST /:id/reportar`), convocatorias, `GET /notificaciones` |
+| `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas (+ `POST /:id/reportar`), convocatorias, `GET /notificaciones`, `GET /feed` (últimas 8 publicaciones mezclando posts/historias/preguntas, para `FeedReciente` del Dashboard) |
 | `contacto.js` | `/api/contacto` | `POST /` |
 | `admin.js` | `/api/admin` | CRUD usuarios/instituciones/programas/cuestionarios/preguntas/contactos + moderación `preguntas-comunidad` (`GET`/`DELETE`) + sincronización MEN |
 | `rutas.js` | `/api/rutas` | `GET /` (áreas disponibles), `GET /:area` (contenido estático — temas previos, proyectos, recursos) |
