@@ -58,6 +58,8 @@ Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (ses
 | `admin.js` | `/api/admin` | CRUD usuarios/instituciones/programas/cuestionarios/preguntas/contactos + moderación `preguntas-comunidad` (`GET`/`DELETE`) + sincronización MEN |
 | `rutas.js` | `/api/rutas` | `GET /` (áreas disponibles), `GET /:area` (contenido estático — temas previos, proyectos, recursos) |
 
+`backend/src/routes/` también tiene un archivo `router.use` (sin extensión `.js`) — es código muerto y roto, un pegado de IA sin limpiar que nunca se importó en ningún lado (detalle completo en `docs/modelo_datos.md`, sección "Tablas huérfanas"). No confundirlo con una ruta real.
+
 Cada router habla con controladores en `backend/src/controllers/` — **ya no son un archivo por router**: `admin.js` reparte entre `controllers/admin/{usuarios,instituciones,programas,cuestionarios,preguntas,contactos,preguntasComunidad}Controller.js`, y `comunidad.js` entre `controllers/comunidad/{foros,historias,preguntas,convocatorias,notificaciones}Controller.js` (split por SOLID/SRP en el commit `ca87128`, agosto 2026 — antes eran `adminController.js`/`comunidadController.js` monolíticos, esos nombres ya no existen). Middlewares: `verificarAuth.js` (JWT), `verificarAdmin.js` (rol admin, ver Bug #8 más abajo — **ojo**: la entrada de ese bug menciona una tabla `roles` separada que ya no existe en el diseño actual, el middleware compara `perfiles_usuario.rol` directo, ver `docs/modelo_datos.md`).
 
 ### Servicios frontend (`frontend/src/services/*.js`)

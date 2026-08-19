@@ -15,7 +15,6 @@
 | `pesos_opciones` | `opcion_id` (FK), `categoria`, `puntos` | N:1 ← `opciones` |
 | `resultados` | `perfil_usuario_id` (FK), `cuestionario_id` (FK), `respuestas` (JSONB), `perfil_vocacional` (JSONB) | 1:N → `recomendaciones` |
 | `recomendaciones` | `programa_id` (FK), `resultado_id` (FK), `compatibilidad`, `razones` (TEXT con JSON serializado, ver bug #2 de `CLAUDE.md`), `vista` | N:1 ← `resultados`, N:1 ← `programas` |
-| `perfiles_vocacionales` | `categoria` (UNIQUE), `emoji`, `titulo`, `descripcion`, `color` | catálogo estático de las áreas vocacionales |
 
 ## Oferta educativa
 
@@ -24,6 +23,12 @@
 | `instituciones` | `nombre`, `tipo`, `ciudad`, `departamento`, `costo_promedio` | 1:N → `programas` |
 | `programas` | `institucion_id` (FK), `nombre`, `area_academica`, `modalidad`, `costo_matricula`, `perfil_compatible` (JSONB) | N:1 ← `instituciones`; sincronizado desde la API del MEN (ver `sincronizacionController.js`) |
 | `men_sincronizacion` | `ejecutada_en`, `remote_timestamp`, `programas_importados`, `instituciones_importadas`, `estado` | registro de auditoría de cada corrida de sync MEN |
+
+## Rutas formativas
+
+| Tabla | Columnas clave | Relaciones |
+|---|---|---|
+| `contenido_rutas` | `area` (UNIQUE, mismas 14 claves que `area_academica`), `materias_comunes`/`temas_previos`/`proyectos`/`recursos` (JSONB) | sin FK; contenido estático curado a mano (agosto 2026, `migration_rutas.sql`), sin llamadas a ningún LLM en tiempo real |
 
 ## Contacto
 
@@ -47,6 +52,22 @@
 | `respuestas_pregunta` | `pregunta_id` (FK → `preguntas_comunidad`), `user_id` (FK), `contenido`, `votos`, `es_mejor` | N:1 ← `preguntas_comunidad` |
 | `reportes_pregunta` | `pregunta_id` (FK → `preguntas_comunidad`), `user_id` (FK), `motivo` | UNIQUE(`pregunta_id`,`user_id`) — un reporte por usuario. Al llegar a 3, `perfiles_usuario.baneado_preguntas_hasta` del autor se pone en `NOW() + 7 días` (ver `preguntasController.reportarPregunta`) |
 | `convocatorias` | `tipo`, `titulo`, `institucion`, `ciudad`, `detalles` (JSONB), `url`, `fecha_cierre`, `activa` | ✅ existe y tiene datos (5 filas semilla). **Ojo:** `backend/setup_database.sql` todavía define `convocatorias` con OTRO esquema (`programa_id`/`nombre`/`fecha_apertura`/`cupos`) que no es el que está realmente en producción — ese archivo quedó desactualizado para esta tabla específica, pendiente de corregir. |
+
+## Tablas huérfanas (existen en Supabase, cero referencias en código vivo)
+
+Verificado con `grep` sobre todo `backend/src` y `frontend/src` (agosto 2026) — ninguna de estas se lee ni se escribe desde ningún archivo que realmente se ejecute:
+
+| Tabla | Filas (2026-08) | Por qué quedó aislada |
+|---|---|---|
+| `perfiles` | 10 | Resto del diseño pre-refactor del bug #8 (`CLAUDE.md`) — reemplazada por `perfiles_usuario` |
+| `roles` | 2 | Idem — reemplazada por la columna directa `perfiles_usuario.rol` |
+| `programa_categorias` | 0 | Sin código que la referencie en ningún commit encontrado, origen desconocido |
+| `perfiles_vocacionales` | — | Su única referencia era `backend/src/routes/router.use` (ver nota abajo) — el catálogo real de categorías vocacionales vive hardcodeado en `frontend/src/utils/vocacionalCategorias.js`, no en esta tabla |
+
+No se borraron — decisión pendiente del usuario, no proactiva.
+
+### `backend/src/routes/router.use` — archivo muerto y roto
+No es un `.js`, es literalmente un pegado de una respuesta de IA sin limpiar (nombre de archivo `router.use`, capturado de la primera línea del código pegado). Le faltan los `require()` de `express`/`supabase`/`router` — ni siquiera correría si se importara. Usa el esquema viejo (`perfiles`, `convocatorias` con `fecha_apertura`/`programa_id`). Termina con instrucciones en texto plano de la IA pegadas después del código (`Actualizar backend/src/server.js...`). Nunca fue importado por ningún archivo (verificado); lo reemplazó `admin.js` + `controllers/admin/*.js`. Candidato a borrar.
 
 ## Notas de consistencia código↔DB encontradas en esta revisión
 
