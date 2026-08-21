@@ -14,6 +14,20 @@ const rutasRoutes     = require('./routes/rutas');
 
 const app = express();
 
+// Necesario para que Express (y express-rate-limit) lean la IP real del
+// visitante desde X-Forwarded-For en vez de ver siempre 127.0.0.1. La
+// cadena real cuando se prueba por túnel es: navegador → borde del túnel
+// (Cloudflare/ngrok) → agente del túnel (local) → proxy /api de Vite →
+// Express — un solo salto agrega ese header (Vite solo lo reenvía tal
+// cual, no agrega otro). Sin esto, express-rate-limit tira
+// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR en cada petición que llega por el
+// túnel y además el límite general terminaba compartido entre TODOS los
+// que probaban a la vez, no por persona.
+// OJO: `true` (confiar en cualquier cantidad de proxies) dispara
+// ERR_ERL_PERMISSIVE_TRUST_PROXY — cualquiera podría spoofear su IP
+// agregando su propio X-Forwarded-For. Usar el número exacto de saltos.
+app.set('trust proxy', 1);
+
 const ORIGENES_PERMITIDOS = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
@@ -27,7 +41,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Límite general para toda la API (protección básica contra abuso/DoS)
+// Límite general para toda la API (protección básica contra abuso/DoS).
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 300,

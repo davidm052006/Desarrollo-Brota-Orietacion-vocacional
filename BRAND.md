@@ -43,45 +43,32 @@ Que ningún estudiante colombiano tome una decisión vocacional sin orientación
 
 ## 3. Paleta de colores
 
-### Colores primarios (definidos en `frontend/src/index.css`)
+> ⚠️ Corregido agosto 2026: esta sección describía una paleta Tailwind (`green-50`…`green-950`, tokens `--color-*`) que ya no existe en el código — quedó desactualizada desde el rediseño de junio 2026. Lo de abajo son los tokens reales definidos en `frontend/src/index.css` (verificado contra el archivo, no contra memoria).
 
-| Token | Hex | Uso |
-|---|---|---|
-| `--color-primary` | `#16A34A` | Verde principal — botones CTA, íconos activos, acentos |
-| `--color-primary-hover` | `#15803D` | Estado hover del verde principal |
-| `--color-text` | `#052e16` | Texto principal en modo claro (verde muy oscuro) |
-| `--color-border` | `#bbf7d0` | Bordes y separadores en modo claro |
+### Tokens de marca (custom properties en `:root` / `html.dark`)
 
-### Colores de fondo
+| Token | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `--bg` | `#F4F3EC` (crema/off-white) | `#0C1310` | Fondo general de toda la app — **no** es blanco puro |
+| `--surface` | `#FFFFFF` | `#151F19` | Cards, modales, navbar |
+| `--surface-2` | `#EFEEE5` | `#1C2A22` | Fondos secundarios dentro de una surface |
+| `--ink` | `#15241B` | `#EAF3EC` | Texto principal |
+| `--ink-soft` | `#67756B` | `#94A69B` | Texto secundario/labels |
+| `--line` | `#E6E4DA` | `#27362D` | Bordes y separadores |
+| `--primary` | `#21BD68` | `#34D27D` | Verde principal — CTAs, íconos activos, acentos |
+| `--primary-deep` | `#0E7D43` | `#1FA862` | Hover / variante oscura del primario |
+| `--primary-ink` | `#FFFFFF` | `#04301C` | Texto sobre fondo `--primary` |
+| `--primary-soft` | `#E2F6EC` | `#16301F` | Fondos sutiles con tinte primario (badges, chips) |
+| `--primary-glow` | `rgba(33,189,104,.28)` | `rgba(52,210,125,.22)` | Sombras/glow alrededor de elementos primarios |
+| `--accent` | `#E07A42` (naranja) | `#F0996A` | Segundo color de acento, uso puntual |
+| `--accent-soft` | `#FBE8DC` | `#2C2018` | Fondos sutiles con tinte de acento |
 
-| Contexto | Hex / Clase Tailwind | Modo |
-|---|---|---|
-| Fondo app general | `#ffffff` | Claro |
-| Fondo app general | `#060d07` | Oscuro |
-| Fondo dashboard (gradiente) | `#f0fdf4` → `#dcfce7` (`green-50` → `green-100`) | Claro |
-| Fondo dashboard (gradiente) | `#0a1a0a` → `#060d07` | Oscuro |
-| Fondo auth (login/registro) | `#f2efea` | Claro (crema/off-white) |
-| Fondo auth (login/registro) | `#0d110e` | Oscuro |
-| Hero banner | `green-600` → `green-700` | Claro |
-| Hero banner | `green-700` → `green-800` | Oscuro |
-| Surface oscuro (cards, modales) | `#1a1d24` / `#2c3140` | Oscuro |
-
-### Escala de verde (Tailwind)
-
-```
-green-50   → fondos muy sutiles
-green-100  → fondos de sección
-green-200  → bordes suaves
-green-400  → acentos en modo oscuro (#4ade80)
-green-600  → color primario acción (#16a34a)
-green-700  → hover / hero banner
-green-950  → texto principal en claro (#052e16)
-```
+El modo oscuro se activa con la clase `html.dark` (`hooks/useDarkMode.js`) — cada token cambia de valor, no hay que recalcular nada a mano en los componentes, solo usar `var(--token)`.
 
 ### Reglas de color
-- **Nunca** usar el verde primario como fondo de texto largo — solo para acentos, botones e íconos
-- En modo oscuro los verdes shiftan hacia tonos más suaves (`green-400` en lugar de `green-600`)
-- El crema `#f2efea` es exclusivo de las pantallas de auth — no usar en el dashboard
+- **Nunca** usar el verde primario como fondo de texto largo — solo para acentos, botones e íconos.
+- El fondo base (`--bg`) es un crema cálido, no blanco — si un componente nuevo usa `#fff`/`white` a mano en vez de `var(--surface)` o `var(--bg)`, se va a ver desalineado del resto de la app en modo claro (y directamente roto en modo oscuro).
+- Todo color debe salir de estos tokens vía `var(--token)`, no hardcodear hex nuevos — así el dark mode funciona gratis en cualquier componente nuevo.
 
 ---
 
@@ -133,29 +120,29 @@ El headline usa `<em className="not-italic text-green-600">` para destacar palab
 
 ## 7. Componentes clave de UI
 
-### Botón primario
+> ⚠️ Corregido agosto 2026: los snippets de abajo (con clases Tailwind `bg-green-*` fijas) eran del sistema pre-rediseño. **Conviven hoy dos convenciones reales en el código, no una sola** — importa saber cuál tocar según qué archivo se está editando:
+
+- **La mayoría de `pages/dashboard/*.jsx`** (Dashboard, Racha, Rutas, Ajustes, Notificaciones, Comunidad, TestVocacional…) usa **`style={{}}` inline con `var(--token)`** — ver ejemplo real abajo. Se adapta a dark mode automático (los tokens cambian de valor con la clase `html.dark`, no hay que escribir nada extra).
+- **`pages/dashboard/admin/sections/*.jsx` y `pages/landing/*.jsx`** todavía usan **clases de Tailwind con verdes hardcodeados y variantes `dark:` manuales** (`bg-green-600 dark:bg-green-900/50`, etc.) — no leen los tokens de `index.css`. Es deuda de migración, no un patrón a copiar para código nuevo: si el `--primary` cambia de tono, estos archivos no lo reflejan automático.
+
+**Para código nuevo: seguir el patrón de `var(--token)` inline**, no el de Tailwind con verdes fijos, aunque en el panel admin sea lo que más se vea hoy.
+
+### Botón primario (patrón real, `var(--token)`)
 ```jsx
-className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors"
+style={{
+  background: 'var(--primary)', color: 'var(--primary-ink)',
+  fontWeight: 800, padding: '9px 0', borderRadius: 999, border: 'none', cursor: 'pointer',
+}}
 ```
 
-### Botón secundario
+### Superficie tenue con tinte primario (badges, chips, fondos sutiles)
 ```jsx
-className="border border-green-600 text-green-600 hover:bg-green-50 font-semibold px-6 py-2.5 rounded-lg transition-colors"
+style={{ background: 'var(--primary-soft)', color: 'var(--primary-deep)' }}
 ```
 
-### Card estándar (modo claro)
+### Card estándar
 ```jsx
-className="bg-white border border-green-100 rounded-xl shadow-sm p-5"
-```
-
-### Card estándar (modo oscuro)
-```jsx
-className="bg-[#1a1d24] border border-[#2c3140] rounded-xl p-5"
-```
-
-### Badge de rol admin
-```jsx
-className="text-[10px] font-semibold bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full"
+style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 20 }}
 ```
 
 ---
@@ -181,5 +168,5 @@ className="text-[10px] font-semibold bg-green-100 dark:bg-green-900/50 text-gree
 
 ### Restricciones de diseño importantes
 - **TailwindCSS v4**: el oxide scanner requiere `@source` explícitos en `frontend/src/index.css` — no eliminarlos
-- **Dark mode**: implementado con clase `.dark` en `<html>` — todos los componentes deben tener variante `dark:`
+- **Dark mode**: implementado con clase `.dark` en `<html>` (`hooks/useDarkMode.js`). En `pages/dashboard/*.jsx` (fuera del panel admin) esto es automático usando `var(--token)` — no hace falta variante `dark:` ahí. En el panel admin y landing, que siguen en Tailwind con verdes hardcodeados, sí hace falta escribir `dark:` a mano en cada clase (ver sección 7).
 - **Sin sidebar**: el dashboard usa TopNavbar horizontal (no sidebar vertical)

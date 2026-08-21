@@ -10,6 +10,24 @@ Cualquier cambio visual debe respetar la paleta y los tokens definidos ahí.
 - **DB/Auth**: Supabase (PostgreSQL + Supabase Auth)
 - **Dev server frontend**: `npm run dev` desde `frontend/` — corre en puerto 5173 o 5174
 
+## Túnel de pruebas (para que compañeros prueben desde internet, fase de beta con el equipo — el despliegue real es a fin de semestre)
+Solo hace falta tunelizar el **frontend** (puerto 5173) — el `/api` del frontend ya proxea a `localhost:3001` vía `vite.config.js` (`server.proxy['/api']`), así que el backend no necesita exponerse por separado.
+
+**Con ngrok (actual, agosto 2026)** — se prefirió sobre cloudflared por tener dominio estático gratis (no cambia entre reinicios, a diferencia del quick tunnel de cloudflared):
+```bash
+ngrok http 5173
+```
+Requiere cuenta gratuita en ngrok.com + `ngrok config add-authtoken <token>` una vez (token en `~/.config/ngrok/ngrok.yml`, no versionado). El plan gratis da 1 dominio estático — reclamarlo desde el dashboard de ngrok (Domains → Create) y correr `ngrok http --domain=<tu-dominio>.ngrok-free.app 5173` para que la URL no cambie más entre reinicios.
+
+**Alternativa sin cuenta:** `cloudflared tunnel --url http://localhost:5173` — funciona igual pero la URL es aleatoria y cambia en cada reinicio del proceso, con el aviso propio de Cloudflare de que estos "quick tunnels" no tienen garantía de uptime.
+
+Tres cosas que hay que tener en cuenta o el registro/login falla en silencio o con error de servidor:
+1. **`vite.config.js`** tiene `server.allowedHosts: true` (Vite 5+ rechaza por defecto cualquier `Host` header que no sea localhost — necesario para que el dev server acepte el dominio del túnel, sea `*.ngrok-free.app` o `*.trycloudflare.com`).
+2. **`backend/.env` → `FRONTEND_URL`** debe apuntar a la URL del túnel (no a `localhost:5173`) y el backend debe reiniciarse después de cambiarla (nodemon no vigila `.env`). El navegador manda el header `Origin` del túnel en cada POST aunque la request sea "same-origin" desde su perspectiva (pasa por el proxy de Vite hacia el backend), y `ORIGENES_PERMITIDOS` en `server.js` lo rechaza si no está en la lista → CORS bloquea silenciosamente `register-perfil` y cualquier otra llamada a la API, lo que se siente como "me regresa al login" sin mensaje de error claro (el signUp de Supabase Auth sí funciona porque pega directo a Supabase, no pasa por nuestro backend/CORS; el que falla es el segundo paso que crea la fila en `perfiles_usuario`).
+3. **`server.js` → `app.set('trust proxy', 1)`**: tanto ngrok como cloudflared agregan `X-Forwarded-For` con la IP real del visitante. Sin esto, `express-rate-limit` tira `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR` en cada petición que pasa por el túnel (Express ve el header pero no hay proxy de confianza declarado) — se manifestaba como "Error del servidor (429)" en el frontend. **Ojo:** usar `true` (confiar en cualquier cantidad de proxies) en vez de `1` dispara otro error, `ERR_ERL_PERMISSIVE_TRUST_PROXY` — `1` es el valor correcto porque solo el agente del túnel agrega ese header (Vite solo lo reenvía tal cual al proxear `/api`, no agrega otro salto). Si en el despliegue final hay más capas de proxy delante de Express (ej. el load balancer de Render/Railway), este número hay que revisarlo.
+
+Si no está claro cuál es la URL del túnel activa en un momento dado, `ps -ef | grep -E "ngrok|cloudflared"` + revisar `backend/.env` (`FRONTEND_URL`) da el estado real.
+
 ## TailwindCSS v4 — IMPORTANTE
 El oxide scanner NO recursiona subdirectorios profundos sin `@source` explícito.
 Ver `frontend/src/index.css` — tiene `@source` explícitos por cada subdirectorio (`pages/**`, `components/**`, etc.).
@@ -74,6 +92,8 @@ Estos tres eran archivos únicos de 280-760 líneas mezclando fetch de datos, es
 
 - **`pages/dashboard/Comunidad.jsx`** (760L → 158L) — orquesta tabs/modales; UI de cada tab vive en `comunidad/components/{Foros,Historias,Preguntas,Convocatorias,Sidebar}.jsx`, los formularios modales en `ModalCompartirHistoria.jsx`/`ModalHacerPregunta.jsx`, y las piezas compartidas en `primitivos.jsx` (solo componentes, por Fast Refresh) + `constantes.js` (datos/helpers puros — `avatarColor`, `TIPO_COLOR`, etc).
 - **`pages/dashboard/admin/sections/UsuariosSection.jsx`** (426L → 229L) — orquesta CRUD; tabla+paginación en `usuarios/TablaUsuarios.jsx`, los 4 modales (Ver/Editar/Eliminar/Nuevo) en `usuarios/Modal*.jsx`, constantes de roles en `usuarios/constants.js`. `Campo`/`Detalle` (inputs de formulario reutilizables) se movieron a `admin/components/formPrimitives.jsx` — **este mismo patrón Campo/Detalle sigue duplicado sin migrar en `CuestionariosSection.jsx`, `InstitucionesSection.jsx` y `OportunidadesSection.jsx`**, sería el siguiente paso si se tocan esos archivos.
+  **Carga masiva de usuarios (CSV, agregada por Julián, commit `a4d5bd2`)**: parseo client-side con `papaparse` (columnas esperadas en `COLUMNAS_CSV_ESPERADAS`), previsualización de filas y reporte por fila tras importar. **No hay endpoint de bulk-insert en el backend** — `adminService.createUsuariosMasivo()` es un loop que llama `POST /api/admin/usuarios` (creación individual) una vez por fila. Para un CSV grande esto son N requests secuenciales contra el límite general de 300/15min (`server.js`); con las clases/grupos actuales (decenas de filas) no es problema, pero si se sube a cientos de usuarios de una sola vez conviene revisarlo antes (subir el límite puntualmente o, mejor, agregar un endpoint real de bulk-insert).
+  **`OportunidadesSection.jsx` es un nombre engañoso**: pese a llamarse "Oportunidades" en el menú, hace CRUD de **`programas`** (académicos), no de `convocatorias` (becas/eventos). `convocatorias` **no tiene CRUD en el panel admin** — solo lectura pública (`GET /api/comunidad/convocatorias`) y las 5 filas semilla de `migration_comunidad.sql`; para agregar una convocatoria nueva hoy hay que hacerlo a mano en Supabase.
 - **`pages/dashboard/admin/sections/ContactosSection.jsx`** (280L → 125L) — orquesta fetch/filtro/paginación; la tarjeta expandible de cada solicitud vive en `contactos/ContactoCard.jsx`, estados/labels en `contactos/constants.js`.
 
 **Backend (agosto 2026, commit `ca87128`):** `adminController.js` (~630L) y `comunidadController.js` (~700L) monolíticos se dividieron en un archivo por entidad, sin capa orquestadora — cada router (`routes/admin.js`, `routes/comunidad.js`) importa directo de `controllers/admin/*.js` / `controllers/comunidad/*.js`. Al agregar un endpoint nuevo de un dominio existente, va en el controller de ese dominio (ej. moderación de preguntas de comunidad → `controllers/admin/preguntasComunidadController.js`), no en un archivo nuevo por endpoint.
@@ -198,6 +218,24 @@ Decisión del usuario (2026-07-11): se mantiene así **durante la fase de desarr
 
 ### RLS (Row Level Security)
 Todas las tablas de `public` tienen RLS habilitado con una policy `"solo_service_role"` (`FOR ALL TO service_role`) — el backend con `SUPABASE_SERVICE_KEY` bypassea RLS igual, así que es defensa en profundidad, no algo que cambie el comportamiento actual. El frontend nunca hace `.from()` directo (solo `supabase.auth.*`), así que no hace falta ninguna policy para `anon`/`authenticated`. **Si se crea una tabla nueva, agregarle RLS en el mismo script de migración** (`ALTER TABLE x ENABLE ROW LEVEL SECURITY` + la policy de `service_role`, ver `migration_contactos.sql` o `migration_rls_comunidad_rutas.sql` como plantilla) — 10 tablas se quedaron sin esto por varias migraciones seguidas (agosto 2026) hasta que el linter de seguridad de Supabase lo marcó.
+
+## Deuda técnica y decisiones abiertas conocidas (auditoría agosto 2026)
+Consolidado en un solo lugar — antes esto vivía disperso en historial de conversación, no en el repo.
+
+| Ítem | Estado | Detalle |
+|---|---|---|
+| `GET /api/programas` y `/api/programas/stats` sin `verificarAuth` | ✅ Intencional, confirmado | Son el catálogo de programas del MEN, dataset público (CC-BY-SA) — no hay dato sensible que proteger. No agregarle auth por reflejo si se vuelve a tocar ese router. |
+| `JWT_SECRET` en `.env` | Variable muerta | `verificarAuth.js` valida con `supabase.auth.getUser(token)`, no con JWT propio (el comentario del propio archivo lo dice). Queda en `.env.example` por inercia; se puede quitar cuando se limpien credenciales para producción (ver sección de arriba). |
+| `Campo`/`Detalle` duplicados | Sin resolver | Ya migrado a `admin/components/formPrimitives.jsx` solo en `UsuariosSection.jsx`/`ContactosSection.jsx`. Sigue copiado en `CuestionariosSection.jsx`, `InstitucionesSection.jsx`, `OportunidadesSection.jsx`. |
+| Panel admin y landing sin migrar al sistema de tokens | Deuda de diseño | El resto del dashboard (`Dashboard.jsx`, `Racha.jsx`, `Rutas.jsx`, `Ajustes.jsx`, etc.) usa `style={{}}` inline con `var(--primary)`/`var(--surface)`/etc. (dark mode automático). `admin/sections/*.jsx` y `pages/landing/*.jsx` todavía usan clases Tailwind con verdes hardcodeados (`bg-green-600 dark:bg-green-900/50`) que no leen esos tokens — si se cambia `--primary` en `index.css`, el panel admin no lo refleja. Detalle completo en `BRAND.md` sección 7. |
+| Taxonomía de 14 áreas académicas | Cuadruplicada | Definida por separado en `Profesiones.jsx`, `TestResult.jsx`, `utils/vocacionalCategorias.js` y `Rutas.jsx`. Si se agrega/renombra un área, tocar las 4. |
+| Responsive / mobile | **Cero `@media` queries en todo el proyecto** | Todo el dashboard usa `style={{}}` inline con grids fijos (ej. `gridTemplateColumns: '1fr 1fr'` en `Dashboard.jsx`, `Profesiones.jsx`, `Ajustes.jsx`). En una pantalla angosta el layout se rompe (columnas no colapsan a 1). Hubo un prompt de rediseño mobile generado en junio 2026 para explorar en una herramienta de diseño externa, pero **nunca se llevó a código** — sigue siendo 100% desktop-only. Alto impacto si el usuario final (estudiantes de colegio) navega mayormente desde el celular. |
+| Tests automatizados | **No existen** | Cero archivos `*.test.js`/`*.spec.js` en todo el repo (frontend y backend). Todo el QA de esta sesión fue manual (curl + revisión visual). |
+| CI/CD | **No existe** | No hay `.github/workflows/` — nada corre lint/tests automático en cada push o PR. |
+| Rate limiting en `/api/auth` | Solo el general (300/15min, compartido con toda la API) | No hay un límite específico y más estricto para intentos de login/registro (a diferencia de `/api/contacto`, que sí tiene el suyo de 5/15min). Para un despliegue público real, un atacante podría intentar fuerza bruta contra una cuenta puntual sin un límite dedicado a ese endpoint. |
+| `backend/src/routes/router.use` | Código muerto, no borrado | Ver detalle en `docs/modelo_datos.md` — pegado de IA roto de junio 2026, nunca importado. Candidato a borrar, decisión pendiente del usuario. |
+| Tablas huérfanas (`perfiles`, `roles`, `programa_categorias`, `perfiles_vocacionales`) | Sin borrar | Ver `docs/modelo_datos.md` — decisión pendiente del usuario, no proactiva. |
+| `/dashboard/favoritos` | Placeholder sin implementar | Renderiza `PaginaEnConstruccion` en `App.jsx`; el link ya existe en la navegación pero no hay funcionalidad detrás. |
 
 ## Modo Demo
 Si no hay `VITE_SUPABASE_URL` en `.env`, la app entra en modo demo.
