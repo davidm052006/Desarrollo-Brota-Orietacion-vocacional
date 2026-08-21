@@ -120,12 +120,13 @@ El headline usa `<em className="not-italic text-green-600">` para destacar palab
 
 ## 7. Componentes clave de UI
 
-> ⚠️ Corregido agosto 2026: los snippets de abajo (con clases Tailwind `bg-green-*` fijas) eran del sistema pre-rediseño. **Conviven hoy dos convenciones reales en el código, no una sola** — importa saber cuál tocar según qué archivo se está editando:
+> ✅ Resuelto agosto 2026: hasta hace poco esta sección tenía snippets con `bg-green-*` fijos, del sistema pre-rediseño, y el panel admin + landing usaban esas clases sin leer los tokens de `index.css`. Ya se migró: `frontend/src/index.css` define `--color-primary`/`--color-primary-hover`/`--color-primary-deep`/`--color-primary-soft` como referencias vivas a `var(--primary)` etc. dentro del bloque `@theme` de Tailwind, así que `bg-primary`/`text-primary`/`border-primary`/`ring-primary` (con opacidad: `ring-primary/40`) ya se adaptan solos a dark mode sin `dark:` manual. Las ~250 ocurrencias de `bg-green-*`/`dark:*-green-*` en `admin/sections/*.jsx` y `pages/landing/*.jsx` quedaron migradas a estas clases.
 
-- **La mayoría de `pages/dashboard/*.jsx`** (Dashboard, Racha, Rutas, Ajustes, Notificaciones, Comunidad, TestVocacional…) usa **`style={{}}` inline con `var(--token)`** — ver ejemplo real abajo. Se adapta a dark mode automático (los tokens cambian de valor con la clase `html.dark`, no hay que escribir nada extra).
-- **`pages/dashboard/admin/sections/*.jsx` y `pages/landing/*.jsx`** todavía usan **clases de Tailwind con verdes hardcodeados y variantes `dark:` manuales** (`bg-green-600 dark:bg-green-900/50`, etc.) — no leen los tokens de `index.css`. Es deuda de migración, no un patrón a copiar para código nuevo: si el `--primary` cambia de tono, estos archivos no lo reflejan automático.
+**Conviven dos convenciones reales en el código, ambas correctas hoy:**
+- **La mayoría de `pages/dashboard/*.jsx`** (Dashboard, Racha, Rutas, Ajustes, Notificaciones, Comunidad, TestVocacional…) usa **`style={{}}` inline con `var(--token)`** directo — ver ejemplo real abajo.
+- **`pages/dashboard/admin/sections/*.jsx` y `pages/landing/*.jsx`** usan **clases de Tailwind** (`bg-primary`, `text-primary`, `border-primary`, etc.) — mismo resultado final, sintaxis distinta porque ahí ya existía una base de clases Tailwind y migrar a inline `style` hubiera sido un diff enorme sin beneficio real.
 
-**Para código nuevo: seguir el patrón de `var(--token)` inline**, no el de Tailwind con verdes fijos, aunque en el panel admin sea lo que más se vea hoy.
+**Para código nuevo, cualquiera de las dos está bien** — lo que ya no vale es escribir un hex nuevo a mano (`#21BD68`, `green-600`, etc.) en ningún archivo.
 
 ### Botón primario (patrón real, `var(--token)`)
 ```jsx
