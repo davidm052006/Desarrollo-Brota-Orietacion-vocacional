@@ -12,6 +12,17 @@ export const getStats = async () => {
   }
 };
 
+export const getAnalytics = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/analytics`, { headers });
+    return parseResponse(res);
+  } catch (err) {
+    console.error('adminService.getAnalytics:', err);
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
 // ─── Usuarios ──────────────────────────────────────────────────────────────
 
 // Parámetros opcionales: pagina, limite, busqueda, rol

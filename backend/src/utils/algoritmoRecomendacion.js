@@ -199,4 +199,4 @@ const generarRecomendaciones = async (resultadoId, perfilVocacional, supabase) =
   }
 };
 
-module.exports = { generarRecomendaciones };
+module.exports = { generarRecomendaciones, CATEGORIA_ALIAS, normalizarScore, pctAbsoluto };

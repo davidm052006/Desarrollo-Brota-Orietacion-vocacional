@@ -1,6 +1,14 @@
 // Conectado a Supabase via perfilService — carga recomendaciones reales.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend,
+} from 'chart.js';
+import { Radar } from 'react-chartjs-2';
 import { obtenerRecomendaciones, marcarRecomendacionVista } from '../../../../services/perfilService';
+import { getAreaChartColor, getCssVar } from '../../../../utils/areaColors';
+import { exportarElementoAPDF } from '../../../../utils/exportarPDF';
+
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 const AREA_INFO = {
   tecnologia:     { label: 'Tecnología',        emoji: '💻', icono: '/icons/icon-categoria-tecnologia.svg' },
@@ -104,6 +112,8 @@ export default function TestResult({
   const [recomendaciones, setRecomendaciones] = useState([]);
   const [cargando, setCargando]               = useState(!!resultadoId);
   const [error, setError]                     = useState(null);
+  const [exportando, setExportando]           = useState(false);
+  const exportRef = useRef(null);
 
   useEffect(() => {
     if (!resultadoId) return;
@@ -132,14 +142,48 @@ export default function TestResult({
     onVerPrograma(rec);
   };
 
-  const perfil = perfilPrincipal ?? { emoji: '🎯', titulo: 'Tu perfil', descripcion: '', color: 'emerald' };
+  const perfil = perfilPrincipal ?? { emoji: '🎯', titulo: 'Tu perfil', descripcion: '', clave: null };
+  const colorPerfil = getAreaChartColor(perfil.clave);
+
+  const handleExportar = async () => {
+    setExportando(true);
+    await exportarElementoAPDF(exportRef.current, 'brota-resultado-vocacional.pdf');
+    setExportando(false);
+  };
+
+  const radarData = {
+    labels: scores.map(s => s.categoria),
+    datasets: [{
+      label: 'Tu perfil',
+      data: scores.map(s => s.porcentaje),
+      backgroundColor: colorPerfil.fill,
+      borderColor: colorPerfil.line,
+      borderWidth: 2,
+      pointBackgroundColor: colorPerfil.line,
+    }],
+  };
+  const radarOptions = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      r: {
+        beginAtZero: true, max: 100,
+        ticks: { display: false },
+        grid: { color: getCssVar('--line', '#E6E4DA') },
+        angleLines: { color: getCssVar('--line', '#E6E4DA') },
+        pointLabels: { color: getCssVar('--ink-soft', '#67756B'), font: { size: 11 } },
+      },
+    },
+  };
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
 
+      <div ref={exportRef} style={{ display: 'flex', flexDirection: 'column', gap: 18, background: 'var(--bg)', padding: 2 }}>
+
       {/* Perfil principal */}
       <div style={{
-        background: 'var(--primary-soft)', border: '1px solid var(--line)',
+        background: colorPerfil.fill, border: '1px solid var(--line)',
         borderRadius: 24, padding: '36px 32px', textAlign: 'center',
       }}>
         <div style={{ fontSize: 52, marginBottom: 14 }}>
@@ -148,7 +192,7 @@ export default function TestResult({
         <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>
           Tu perfil vocacional
         </div>
-        <div className="font-display" style={{ fontWeight: 800, fontSize: 26, color: 'var(--primary-deep)', marginBottom: 10 }}>
+        <div className="font-display" style={{ fontWeight: 800, fontSize: 26, color: colorPerfil.line, marginBottom: 10 }}>
           {perfil.titulo}
         </div>
         {perfil.descripcion && (
@@ -168,13 +212,18 @@ export default function TestResult({
         )}
       </div>
 
-      {/* Distribución */}
+      {/* Distribución: radar + detalle numérico */}
       {scores.length > 0 && (
         <div style={{
           background: 'var(--surface)', border: '1px solid var(--line)',
           borderRadius: 20, padding: 24, boxShadow: 'var(--shadow)',
         }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 18 }}>📊 Distribución de tu perfil</div>
+
+          <div style={{ maxWidth: 340, margin: '0 auto 20px' }}>
+            <Radar data={radarData} options={radarOptions} />
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {scores.map(({ categoria, porcentaje, emoji }, idx) => (
               <div key={categoria} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -183,13 +232,12 @@ export default function TestResult({
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                     <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ink)' }}>{categoria}</span>
                     {idx === 0 && (
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--primary-deep)' }}>Principal</span>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: colorPerfil.line }}>Principal</span>
                     )}
                   </div>
                   <div style={{ height: 8, borderRadius: 999, background: 'var(--surface-2)', overflow: 'hidden' }}>
                     <div style={{
-                      height: '100%', borderRadius: 999,
-                      background: 'linear-gradient(90deg, var(--primary-deep), var(--primary))',
+                      height: '100%', borderRadius: 999, background: colorPerfil.line,
                       width: `${porcentaje}%`, transition: 'width .7s ease',
                     }} />
                   </div>
@@ -200,6 +248,19 @@ export default function TestResult({
           </div>
         </div>
       )}
+
+      </div>
+
+      <button onClick={handleExportar} disabled={exportando} style={{
+        alignSelf: 'center', display: 'flex', alignItems: 'center', gap: 8,
+        background: 'var(--surface)', color: 'var(--ink)', border: '1px solid var(--line)',
+        fontWeight: 700, fontSize: 13, padding: '10px 20px', borderRadius: 999,
+        cursor: 'pointer', fontFamily: 'inherit', opacity: exportando ? .6 : 1,
+      }}>
+        {exportando ? (
+          <><span className="animate-spin" style={{ width: 14, height: 14, border: '2px solid var(--line)', borderTopColor: 'var(--ink)', borderRadius: '50%' }} /> Generando PDF...</>
+        ) : <>⬇ Descargar resultado en PDF</>}
+      </button>
 
       {/* Recomendaciones */}
       <div style={{

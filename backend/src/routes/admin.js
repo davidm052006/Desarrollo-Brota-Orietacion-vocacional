@@ -23,10 +23,12 @@ const {
   getPreguntasComunidad, deletePreguntaComunidad,
 } = require('../controllers/admin/preguntasComunidadController');
 const { getEstado, ejecutarSincronizacion } = require('../controllers/sincronizacionController');
+const { getAnalytics } = require('../controllers/admin/analyticsController');
 
 router.use(verificarAdmin);
 
 router.get('/stats', getStats);
+router.get('/analytics', getAnalytics);
 
 router.get   ('/usuarios',     getUsuarios);
 router.get   ('/usuarios/:id', getUsuario);

@@ -13,6 +13,7 @@ import PreguntasSection from './sections/PreguntasSection';
 import PreguntasComunidadSection from './sections/PreguntasComunidadSection';
 import ConfiguracionSection from './sections/ConfiguracionSection';
 import ContactosSection from './sections/ContactosSection';
+import AnaliticasSection from './sections/AnaliticasSection';
 
 const SECTIONS = {
   usuarios:      UsuariosSection,
@@ -22,6 +23,7 @@ const SECTIONS = {
   preguntas:     PreguntasSection,
   preguntas_comunidad: PreguntasComunidadSection,
   contactos:     ContactosSection,
+  analiticas:    AnaliticasSection,
   configuracion: ConfiguracionSection,
 };
 

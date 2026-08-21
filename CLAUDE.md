@@ -73,7 +73,7 @@ Todas las `/dashboard/*` se protegen inline en `App.jsx` con `puedeAcceder` (ses
 | `programas.js` | `/api/programas` | `GET /`, `GET /stats` |
 | `comunidad.js` | `/api/comunidad` | foros, posts, historias, preguntas (+ `POST /:id/reportar`), convocatorias, `GET /notificaciones`, `GET /feed` (últimas 8 publicaciones mezclando posts/historias/preguntas, para `FeedReciente` del Dashboard) |
 | `contacto.js` | `/api/contacto` | `POST /` |
-| `admin.js` | `/api/admin` | CRUD usuarios/instituciones/programas/cuestionarios/preguntas/contactos + moderación `preguntas-comunidad` (`GET`/`DELETE`) + sincronización MEN |
+| `admin.js` | `/api/admin` | CRUD usuarios/instituciones/programas/cuestionarios/preguntas/contactos + moderación `preguntas-comunidad` (`GET`/`DELETE`) + sincronización MEN + `GET /analytics` (agosto 2026) |
 | `rutas.js` | `/api/rutas` | `GET /` (áreas disponibles), `GET /:area` (contenido estático — temas previos, proyectos, recursos) |
 
 `backend/src/routes/` también tiene un archivo `router.use` (sin extensión `.js`) — es código muerto y roto, un pegado de IA sin limpiar que nunca se importó en ningún lado (detalle completo en `docs/modelo_datos.md`, sección "Tablas huérfanas"). No confundirlo con una ruta real.
@@ -149,6 +149,13 @@ Se implementaron todos los cambios visuales basados en los 8 archivos PNG de dis
 ### Archivos creados/modificados
 - `backend/src/controllers/sincronizacionController.js` — lógica completa de sync
 - `backend/src/routes/admin.js` — rutas `GET /api/admin/sincronizacion/estado` y `POST /api/admin/sincronizacion/ejecutar`
+
+## Analíticas y exportación a PDF (agosto 2026)
+- **Panel admin → pestaña "Analíticas"** (`admin/sections/AnaliticasSection.jsx`): radar (promedio de afinidad % por categoría, entre todos los `resultados` guardados) + barras (cuántos usuarios tienen cada categoría como principal). Datos de `GET /api/admin/analytics` (`controllers/admin/analyticsController.js`), que reutiliza `CATEGORIA_ALIAS`/`normalizarScore`/`pctAbsoluto` de `utils/algoritmoRecomendacion.js` (ahora exportados) en vez de duplicar la normalización de categorías otra vez.
+- **Resultado del test vocacional** (`test-vocacional/components/TestResult.jsx`): mismo radar por usuario individual, coloreado según la familia (verde primario / naranja acento) de su categoría principal.
+- **`frontend/src/utils/areaColors.js`** — NUEVO, única fuente de la asignación de familia de color por área académica (misma que usa `Profesiones.jsx` para las 14 categorías) + `normalizarCategoria` (mismo alias que `Rutas.jsx`/backend, sin duplicarlo por 5ta vez) + `getCssVar` (lee custom properties resueltas para pasarle colores reales a Chart.js, que no siempre resuelve `var(--x)` dentro de `<canvas>`).
+- **`frontend/src/utils/exportarPDF.js`** — NUEVO, `exportarElementoAPDF(elemento, nombreArchivo)` con `html2canvas` + `jsPDF`, usado por ambas pantallas. Ambas librerías se importan con `import()` dinámico dentro de la función (no en el top del archivo) para no sumar ~180kB al bundle inicial de toda la app — solo se descargan cuando alguien hace clic en "Descargar PDF".
+- Librerías nuevas: `chart.js` + `react-chartjs-2` (gráficas), `jspdf` + `html2canvas` (export PDF).
 - `frontend/src/services/adminService.js` — `getSincronizacionEstado()` y `ejecutarSincronizacion()`
 - `frontend/src/pages/dashboard/admin/sections/ConfiguracionSection.jsx` — panel de sync con estado, botones verificar/sincronizar
 - `backend/scripts/migration_men_sincronizacion.sql` — **EJECUTAR EN SUPABASE antes de usar**

@@ -8,6 +8,7 @@ import TestQuestion from './components/TestQuestion';
 import TestProgress from './components/TestProgress';
 import TestResult   from './components/TestResult';
 import { getCategoriaInfo, storageKey } from '../../../utils/vocacionalCategorias';
+import { normalizarCategoria } from '../../../utils/areaColors';
 
 // Calcula el perfil localmente usando los pesos ya cargados en las preguntas.
 // Se usa como respaldo cuando el backend no está disponible o el usuario es anónimo.
@@ -43,11 +44,16 @@ function calcToUI(perfilVocacional) {
     ? getCategoriaInfo(perfilVocacional.categoriaSecundaria, 1)
     : null;
   const scores = (perfilVocacional.scores ?? []).slice(0, 5).map(({ categoria, porcentaje }, i) => ({
+    clave:     normalizarCategoria(categoria),
     categoria: getCategoriaInfo(categoria, i).titulo,
     porcentaje,
     emoji:     getCategoriaInfo(categoria, i).emoji,
   }));
-  return { perfilPrincipal: principal, perfilSecundario: secundaria, scores };
+  return {
+    perfilPrincipal: { ...principal, clave: normalizarCategoria(perfilVocacional.categoriaPrincipal) },
+    perfilSecundario: secundaria,
+    scores,
+  };
 }
 
 // ── Progress band (full-width bar below TopNavbar) ────────────────────────────
