@@ -2,7 +2,7 @@
 
 > Reemplaza a `docs/archivo/02-Desarrollo/2.1 Arquitectura/Base_de_datos.md`, que describe un diseño conceptual previo (PKs `INT`, tablas `Usuario`/`Carrera`/`PerfilVocacional` en singular) que **no coincide con la implementación real**. Ese archivo se deja en `archivo/` como referencia histórica, no se actualiza más.
 >
-> Generado a partir de `backend/setup_database.sql` + `backend/scripts/migration_*.sql`, y verificado contra la base de Supabase real (2026-08-15). Todas las PK son `UUID DEFAULT gen_random_uuid()` salvo donde se indica.
+> Generado a partir de `backend/setup_database.sql` (consolidado agosto 2026 — antes eran varios `backend/scripts/migration_*.sql` sueltos, ahora archivados en `backend/scripts/historico/` solo como registro), y verificado contra la base de Supabase real (2026-08-15). Todas las PK son `UUID DEFAULT gen_random_uuid()` salvo donde se indica.
 
 ## Núcleo: usuarios y test vocacional
 
