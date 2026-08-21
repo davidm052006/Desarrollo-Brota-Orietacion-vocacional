@@ -45,4 +45,24 @@ async function getNombreUsuario(userId) {
   return data?.nombre || 'Usuario';
 }
 
-module.exports = { timeAgo, incrementarContador, getNombreUsuario };
+// admin y moderador pueden moderar publicaciones de comunidad (ocultar/
+// eliminar/ver autor real) — orientador y estudiante no.
+async function esModerador(userId) {
+  if (!userId) return false;
+  const { data } = await supabase.from('perfiles_usuario').select('rol').eq('user_id', userId).single();
+  return data?.rol === 'admin' || data?.rol === 'moderador';
+}
+
+// Nombre a mostrar de un autor: el real si no es anónimo, "Anónimo" si lo es
+// y quien mira no modera, o el real (marcado con esAnonimoReal) si quien
+// mira sí modera — para poder ver quién publicó incluso lo anónimo.
+async function resolverAutor({ userId, anonimo, autorNombreGuardado, puedeModerar }) {
+  if (!anonimo) return { display: autorNombreGuardado || 'Usuario', esAnonimoReal: false };
+  if (puedeModerar) {
+    const real = await getNombreUsuario(userId);
+    return { display: real, esAnonimoReal: true };
+  }
+  return { display: 'Anónimo', esAnonimoReal: false };
+}
+
+module.exports = { timeAgo, incrementarContador, getNombreUsuario, esModerador, resolverAutor };

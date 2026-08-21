@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
 import { getPost, votarPost, responderPost, getPregunta, responderPregunta, reportarPregunta } from '../../../services/comunidadService';
+import { ModeracionBar } from './components/primitivos';
 
 const AV_PALETTE = ['#16A34A', '#2563eb', '#db2777', '#d97706', '#7c3aed', '#0891b2'];
 function avatarColor(str = '') {
@@ -158,7 +159,11 @@ export default function PostDetalle() {
                 {reporteEstado && reporteEstado !== 'enviando' && reporteEstado !== 'ok' && (
                   <div style={{ fontSize: 12, color: '#dc2626', marginBottom: 10 }}>{reporteEstado}</div>
                 )}
-                <div style={{ fontSize: 14.5, lineHeight: 1.75, color: 'var(--ink)' }}>
+                <ModeracionBar
+                  tipo={tipo} id={id} autorId={datos.autor_id}
+                  onCambio={() => navigate('/dashboard/comunidad')}
+                />
+                <div style={{ fontSize: 14.5, lineHeight: 1.75, color: 'var(--ink)', marginTop: 14 }}>
                   {datos.body || datos.contenido}
                 </div>
               </div>

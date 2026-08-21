@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
 import { getHistoria, toggleLikeHistoria } from '../../../services/comunidadService';
+import { ModeracionBar } from './components/primitivos';
 
 const AV_PALETTE = ['#16A34A', '#2563eb', '#db2777', '#d97706', '#7c3aed', '#0891b2'];
 function avatarColor(str = '') {
@@ -119,6 +120,10 @@ export default function HistoriaDetalle() {
                 background: 'none', border: 'none', cursor: 'pointer',
                 fontSize: 13, color: 'var(--ink-soft)', fontFamily: 'inherit', fontWeight: 600,
               }}>← Más historias</button>
+              <ModeracionBar
+                tipo="historia" id={id} autorId={datos.autor_id}
+                onCambio={() => navigate('/dashboard/comunidad')}
+              />
             </div>
           </div>
 

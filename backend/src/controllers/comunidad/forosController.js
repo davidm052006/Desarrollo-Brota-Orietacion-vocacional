@@ -1,6 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
-const { timeAgo, incrementarContador, getNombreUsuario } = require('../../utils/comunidadHelpers');
+const { timeAgo, incrementarContador, getNombreUsuario, esModerador, resolverAutor } = require('../../utils/comunidadHelpers');
 
 const getForos = asyncHandler('comunidad/forosController.getForos', async (req, res) => {
   const { data: foros, error } = await supabase
@@ -26,11 +26,13 @@ const getForos = asyncHandler('comunidad/forosController.getForos', async (req, 
 const getPostsByForo = asyncHandler('comunidad/forosController.getPostsByForo', async (req, res) => {
   const { id: foroId } = req.params;
   const orden = req.query.orden === 'votados' ? 'votos' : 'created_at';
+  const puedeModerar = await esModerador(req.user?.id);
 
   const { data, error } = await supabase
     .from('posts_foro')
-    .select('id, titulo, contenido, anonimo, autor_nombre, votos, created_at')
+    .select('id, user_id, titulo, contenido, anonimo, autor_nombre, votos, created_at')
     .eq('foro_id', foroId)
+    .eq('oculta', false)
     .order(orden, { ascending: false })
     .limit(50);
 
@@ -44,16 +46,23 @@ const getPostsByForo = asyncHandler('comunidad/forosController.getPostsByForo', 
     (resps ?? []).forEach(r => { conteoResp[r.post_id] = (conteoResp[r.post_id] ?? 0) + 1; });
   }
 
-  const result = (data ?? []).map(p => ({
-    id:            p.id,
-    foro_id:       foroId,
-    titulo:        p.titulo,
-    preview:       p.contenido.slice(0, 200),
-    autor_display: p.anonimo ? 'Anónimo' : (p.autor_nombre || 'Usuario'),
-    ini:           (p.anonimo ? 'A' : (p.autor_nombre || 'U').charAt(0).toUpperCase()),
-    time:          timeAgo(p.created_at),
-    votos:         p.votos ?? 0,
-    respuestas:    conteoResp[p.id] ?? 0,
+  const result = await Promise.all((data ?? []).map(async p => {
+    const autor = await resolverAutor({
+      userId: p.user_id, anonimo: p.anonimo, autorNombreGuardado: p.autor_nombre, puedeModerar,
+    });
+    return {
+      id:            p.id,
+      foro_id:       foroId,
+      titulo:        p.titulo,
+      preview:       p.contenido.slice(0, 200),
+      autor_display: autor.display,
+      es_anonimo_real: autor.esAnonimoReal,
+      autor_id:      puedeModerar ? p.user_id : undefined,
+      ini:           autor.display.charAt(0).toUpperCase(),
+      time:          timeAgo(p.created_at),
+      votos:         p.votos ?? 0,
+      respuestas:    conteoResp[p.id] ?? 0,
+    };
   }));
 
   return res.json({ success: true, data: result });
@@ -90,6 +99,7 @@ const createPost = asyncHandler('comunidad/forosController.createPost', async (r
 const getPost = asyncHandler('comunidad/forosController.getPost', async (req, res) => {
   const { id: postId } = req.params;
   const userId = req.user?.id ?? null;
+  const puedeModerar = await esModerador(userId);
 
   const { data: post, error } = await supabase
     .from('posts_foro')
@@ -113,6 +123,10 @@ const getPost = asyncHandler('comunidad/forosController.getPost', async (req, re
     miVoto = voto?.direccion ?? null;
   }
 
+  const autorPost = await resolverAutor({
+    userId: post.user_id, anonimo: post.anonimo, autorNombreGuardado: post.autor_nombre, puedeModerar,
+  });
+
   return res.json({
     success: true,
     data: {
@@ -120,8 +134,11 @@ const getPost = asyncHandler('comunidad/forosController.getPost', async (req, re
       foro:          post.foros,
       titulo:        post.titulo,
       body:          post.contenido,
-      autor_display: post.anonimo ? 'Anónimo' : (post.autor_nombre || 'Usuario'),
-      ini:           (post.anonimo ? 'A' : (post.autor_nombre || 'U').charAt(0).toUpperCase()),
+      autor_display: autorPost.display,
+      es_anonimo_real: autorPost.esAnonimoReal,
+      autor_id:      puedeModerar ? post.user_id : undefined,
+      oculta:        post.oculta ?? false,
+      ini:           autorPost.display.charAt(0).toUpperCase(),
       time:          timeAgo(post.created_at),
       votos:         post.votos ?? 0,
       mi_voto:       miVoto,

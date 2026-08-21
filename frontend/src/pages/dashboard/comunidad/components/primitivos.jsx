@@ -1,7 +1,54 @@
 // Piezas de UI genéricas compartidas por las pestañas y modales de Comunidad.
 // Solo componentes en este archivo (ver constantes.js para datos/helpers) —
 // así Vite puede aplicar Fast Refresh correctamente.
+import { useNavigate } from 'react-router-dom';
 import { AREAS_CHIPS } from './constantes';
+import { ocultarPublicacion, eliminarPublicacion } from '../../../../services/comunidadService';
+
+const modBtnStyle = {
+  fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 8,
+  border: '1px solid var(--line)', background: 'var(--surface)', color: 'var(--ink-soft)',
+  cursor: 'pointer', fontFamily: 'inherit',
+};
+
+// Barra de acciones de moderación (ocultar/eliminar/ver autor real). El
+// backend solo manda `autorId` en la respuesta cuando quien pide es
+// admin/moderador (ver resolverAutor en comunidadHelpers.js) — si no viene,
+// esto no renderiza nada, así que la autorización real vive en el backend,
+// no acá. tipo: 'post' | 'historia' | 'pregunta'.
+export function ModeracionBar({ tipo, id, autorId, onCambio }) {
+  const navigate = useNavigate();
+  if (!autorId) return null;
+
+  const parar = (e) => e.stopPropagation();
+
+  const handleOcultar = async (e) => {
+    parar(e);
+    if (!confirm('¿Ocultar esta publicación? Deja de verse para todos, pero no se borra.')) return;
+    const { success } = await ocultarPublicacion(tipo, id);
+    if (success) onCambio?.();
+  };
+
+  const handleEliminar = async (e) => {
+    parar(e);
+    if (!confirm('¿Eliminar esta publicación de forma permanente? No se puede deshacer.')) return;
+    const { success } = await eliminarPublicacion(tipo, id);
+    if (success) onCambio?.();
+  };
+
+  const handleAutor = (e) => {
+    parar(e);
+    navigate(`/dashboard/comunidad/autor/${autorId}`);
+  };
+
+  return (
+    <div onClick={parar} style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+      <button onClick={handleAutor} style={modBtnStyle}>👤 Ver autor</button>
+      <button onClick={handleOcultar} style={modBtnStyle}>🙈 Ocultar</button>
+      <button onClick={handleEliminar} style={{ ...modBtnStyle, color: '#dc2626', borderColor: '#fca5a5' }}>🗑 Eliminar</button>
+    </div>
+  );
+}
 
 export function Backdrop({ onClose, children }) {
   return (

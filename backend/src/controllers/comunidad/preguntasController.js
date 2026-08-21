@@ -1,11 +1,14 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
-const { timeAgo, getNombreUsuario } = require('../../utils/comunidadHelpers');
+const { timeAgo, getNombreUsuario, esModerador, resolverAutor } = require('../../utils/comunidadHelpers');
 
 const getPreguntas = asyncHandler('comunidad/preguntasController.getPreguntas', async (req, res) => {
+  const puedeModerar = await esModerador(req.user?.id);
+
   const { data, error } = await supabase
     .from('preguntas_comunidad')
-    .select('id, titulo, area, anonimo, autor_nombre, resuelta, created_at')
+    .select('id, user_id, titulo, area, anonimo, autor_nombre, resuelta, created_at')
+    .eq('oculta', false)
     .order('created_at', { ascending: false })
     .limit(30);
 
@@ -19,15 +22,22 @@ const getPreguntas = asyncHandler('comunidad/preguntasController.getPreguntas', 
     (resps ?? []).forEach(r => { conteoResp[r.pregunta_id] = (conteoResp[r.pregunta_id] ?? 0) + 1; });
   }
 
-  const result = (data ?? []).map(p => ({
-    id:       p.id,
-    title:    p.titulo,
-    area:     p.area,
-    ini:      p.anonimo ? 'A' : (p.autor_nombre || 'U').charAt(0).toUpperCase(),
-    name:     p.anonimo ? 'Anónimo' : (p.autor_nombre || 'Usuario'),
-    time:     timeAgo(p.created_at),
-    answers:  conteoResp[p.id] ?? 0,
-    resolved: p.resuelta ?? false,
+  const result = await Promise.all((data ?? []).map(async p => {
+    const autor = await resolverAutor({
+      userId: p.user_id, anonimo: p.anonimo, autorNombreGuardado: p.autor_nombre, puedeModerar,
+    });
+    return {
+      id:       p.id,
+      title:    p.titulo,
+      area:     p.area,
+      ini:      autor.display.charAt(0).toUpperCase(),
+      name:     autor.display,
+      es_anonimo_real: autor.esAnonimoReal,
+      autor_id: puedeModerar ? p.user_id : undefined,
+      time:     timeAgo(p.created_at),
+      answers:  conteoResp[p.id] ?? 0,
+      resolved: p.resuelta ?? false,
+    };
   }));
 
   return res.json({ success: true, data: result });
@@ -35,6 +45,7 @@ const getPreguntas = asyncHandler('comunidad/preguntasController.getPreguntas', 
 
 const getPregunta = asyncHandler('comunidad/preguntasController.getPregunta', async (req, res) => {
   const { id: preguntaId } = req.params;
+  const puedeModerar = await esModerador(req.user?.id);
 
   const { data: pregunta, error } = await supabase
     .from('preguntas_comunidad')
@@ -51,14 +62,21 @@ const getPregunta = asyncHandler('comunidad/preguntasController.getPregunta', as
     .order('es_mejor', { ascending: false })
     .order('votos', { ascending: false });
 
+  const autor = await resolverAutor({
+    userId: pregunta.user_id, anonimo: pregunta.anonimo, autorNombreGuardado: pregunta.autor_nombre, puedeModerar,
+  });
+
   return res.json({
     success: true,
     data: {
       id:         pregunta.id,
       title:      pregunta.titulo,
       area:       pregunta.area,
-      ini:        pregunta.anonimo ? 'A' : (pregunta.autor_nombre || 'U').charAt(0).toUpperCase(),
-      name:       pregunta.anonimo ? 'Anónimo' : (pregunta.autor_nombre || 'Usuario'),
+      ini:        autor.display.charAt(0).toUpperCase(),
+      name:       autor.display,
+      es_anonimo_real: autor.esAnonimoReal,
+      autor_id:   puedeModerar ? pregunta.user_id : undefined,
+      oculta:     pregunta.oculta ?? false,
       time:       timeAgo(pregunta.created_at),
       resuelta:   pregunta.resuelta ?? false,
       es_autor:   pregunta.user_id === req.user.id,

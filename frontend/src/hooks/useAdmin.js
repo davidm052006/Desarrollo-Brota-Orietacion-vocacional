@@ -30,9 +30,9 @@ export function useAdmin() {
       }
 
       const { data } = await supabase
-        .from('perfiles')
+        .from('perfiles_usuario')
         .select('rol')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
 
       setIsAdmin(data?.rol === 'admin');

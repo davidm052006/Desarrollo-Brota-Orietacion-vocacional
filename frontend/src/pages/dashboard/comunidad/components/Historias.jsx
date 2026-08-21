@@ -1,8 +1,8 @@
-import { Spinner } from './primitivos';
+import { Spinner, ModeracionBar } from './primitivos';
 import { avatarColor } from './constantes';
 
 // Pestaña "Historias reales": banner para compartir + listado de historias.
-export default function Historias({ data, cargando, onCompartir, onLeer }) {
+export default function Historias({ data, cargando, onCompartir, onLeer, onModerar }) {
   if (cargando) return <Spinner />;
   return (
     <>
@@ -66,6 +66,7 @@ export default function Historias({ data, cargando, onCompartir, onLeer }) {
                 <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>· {h.date}</span>
               </div>
               <div style={{ flex: 1 }} />
+              <ModeracionBar tipo="historia" id={h.id} autorId={h.autor_id} onCambio={onModerar} />
               <div onClick={() => onLeer(h)} style={{ color: 'var(--primary)', fontWeight: 700, fontSize: 13.5, marginTop: 14, cursor: 'pointer' }}>
                 Leer historia →
               </div>

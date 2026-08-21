@@ -1,6 +1,7 @@
-const express       = require('express');
-const router        = express.Router();
-const verificarAuth = require('../middlewares/verificarAuth');
+const express             = require('express');
+const router              = express.Router();
+const verificarAuth       = require('../middlewares/verificarAuth');
+const verificarModeracion = require('../middlewares/verificarModeracion');
 
 const {
   getForos, getPostsByForo, createPost, getPost, votarPost, responderPost,
@@ -20,6 +21,9 @@ const {
 const {
   getFeedReciente,
 } = require('../controllers/comunidad/feedController');
+const {
+  ocultarPublicacion, eliminarPublicacion, getInfoAutor,
+} = require('../controllers/comunidad/moderacionController');
 
 // ── Foros ─────────────────────────────────────────────────────────────────────
 router.get('/foros',                verificarAuth, getForos);
@@ -54,5 +58,11 @@ router.get('/notificaciones',       verificarAuth, getNotificaciones);
 
 // ── Feed (últimas publicaciones para el Dashboard) ──────────────────────────────
 router.get('/feed',                 verificarAuth, getFeedReciente);
+
+// ── Moderación (solo admin/moderador) ────────────────────────────────────────
+// :tipo es 'post' | 'historia' | 'pregunta' — ver TABLAS en moderacionController.js
+router.patch('/moderacion/:tipo/:id/ocultar', verificarModeracion, ocultarPublicacion);
+router.delete('/moderacion/:tipo/:id',        verificarModeracion, eliminarPublicacion);
+router.get('/moderacion/autor/:userId',       verificarModeracion, getInfoAutor);
 
 module.exports = router;

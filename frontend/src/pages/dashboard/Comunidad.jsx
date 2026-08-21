@@ -125,12 +125,14 @@ export default function Comunidad() {
             <Historias data={historias} cargando={cargando.historias}
               onCompartir={() => setModalHistoria(true)}
               onLeer={h => navigate(`/dashboard/comunidad/historia/${h.id}`, { state: { historia: h } })}
+              onModerar={cargar}
             />
           )}
           {tabActiva === 'preguntas' && (
             <Preguntas data={preguntas} cargando={cargando.preguntas}
               onPreguntar={() => setModalPregunta(true)}
               onPreguntaClick={q => navigate(`/dashboard/comunidad/post/${q.id}`, { state: { post: q, tipo: 'pregunta' } })}
+              onModerar={cargar}
             />
           )}
           {tabActiva === 'convocatorias' && (

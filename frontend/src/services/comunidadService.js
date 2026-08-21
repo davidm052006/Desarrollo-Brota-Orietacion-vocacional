@@ -32,6 +32,16 @@ const patch = async (path) => {
   }
 };
 
+const del = async (path) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/comunidad${path}`, { method: 'DELETE', headers });
+    return parseResponse(res);
+  } catch (err) {
+    return { success: false, error: 'Error de conexión' };
+  }
+};
+
 // ── Foros ─────────────────────────────────────────────────────────────────────
 export const getForos            = ()               => get('/foros');
 export const getPostsByForo      = (foroId, orden)  => get(`/foros/${foroId}/posts?orden=${orden ?? 'recientes'}`);
@@ -65,3 +75,9 @@ export const getFeedReciente     = ()               => get('/feed');
 
 // ── Notificaciones ───────────────────────────────────────────────────────────
 export const getNotificaciones   = ()               => get('/notificaciones');
+
+// ── Moderación (admin/moderador) ─────────────────────────────────────────────
+// tipo: 'post' | 'historia' | 'pregunta'
+export const ocultarPublicacion  = (tipo, id)       => patch(`/moderacion/${tipo}/${id}/ocultar`);
+export const eliminarPublicacion = (tipo, id)       => del(`/moderacion/${tipo}/${id}`);
+export const getInfoAutor        = (userId)         => get(`/moderacion/autor/${userId}`);

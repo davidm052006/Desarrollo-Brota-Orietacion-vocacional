@@ -1,8 +1,9 @@
-export const ROLES_FILTRO   = ['Todos los roles', 'admin', 'estudiante', 'orientador'];
-export const ROLES_OPCIONES = ['estudiante', 'orientador', 'admin'];
+export const ROLES_FILTRO   = ['Todos los roles', 'admin', 'moderador', 'estudiante', 'orientador'];
+export const ROLES_OPCIONES = ['estudiante', 'orientador', 'moderador', 'admin'];
 
 export const ROL_COLORS = {
   admin:      'bg-purple-100 text-purple-700',
+  moderador:  'bg-primary-soft text-primary',
   orientador: 'bg-orange-100 text-orange-700',
   estudiante: 'bg-blue-100 text-blue-700',
 };

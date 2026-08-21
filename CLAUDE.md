@@ -247,6 +247,20 @@ Consolidado en un solo lugar — antes esto vivía disperso en historial de conv
 | Tablas huérfanas (`perfiles`, `roles`, `programa_categorias`, `perfiles_vocacionales`) | Sin borrar | Ver `docs/modelo_datos.md` — decisión pendiente del usuario, no proactiva. |
 | `/dashboard/favoritos` | Placeholder sin implementar | Renderiza `PaginaEnConstruccion` en `App.jsx`; el link ya existe en la navegación pero no hay funcionalidad detrás. |
 
+## Rol "moderador" y moderación de comunidad (agosto 2026)
+
+**⚠️ Requiere correr `backend/scripts/migration_moderacion_comunidad.sql` en Supabase antes de probar** — agrega la columna `oculta BOOLEAN DEFAULT false` a `posts_foro`/`historias`/`preguntas_comunidad`. Sin esto, `GET /api/comunidad/{foros/:id/posts,historias,preguntas}` van a tirar error porque las queries ya filtran `.eq('oculta', false)`.
+
+- **Rol nuevo**: `rol` en `perfiles_usuario` sigue siendo texto libre sin CHECK (igual que `orientador`, que ya existía sin lógica real detrás) — `'moderador'` se agrega a `ROLES_OPCIONES`/`ROLES_FILTRO`/`ROL_COLORS` en `admin/sections/usuarios/constants.js`, se asigna desde el CRUD de Usuarios como cualquier otro rol. No hay todavía una forma más específica de asignarlo (el usuario dijo que lo resuelve después).
+- **`backend/src/middlewares/verificarModeracion.js`** — mismo patrón self-contained que `verificarAdmin.js` (verifica el token él mismo), pero acepta `rol IN ('admin', 'moderador')`.
+- **`backend/src/controllers/comunidad/moderacionController.js`** — 3 endpoints bajo `/api/comunidad/moderacion/*`, todos protegidos por `verificarModeracion`:
+  - `PATCH /:tipo/:id/ocultar` — marca `oculta=true` (no borra la fila). **No hay endpoint para des-ocultar todavía.**
+  - `DELETE /:tipo/:id` — hard delete (mismo `:tipo` en `{post, historia, pregunta}` → `posts_foro`/`historias`/`preguntas_comunidad`).
+  - `GET /autor/:userId` — perfil completo + email real (vía `supabase.auth.admin.getUserById`, requiere `SUPABASE_SERVICE_KEY` que el backend ya usa) de quien hizo una publicación, para la página privada `/dashboard/comunidad/autor/:userId` (`AutorInfo.jsx`, guardada con `useModeracion()`).
+- **Autor real en publicaciones anónimas**: `user_id` siempre se guarda en la fila aunque `anonimo=true` (nunca se pierde) — `comunidadHelpers.resolverAutor()` centraliza la lógica: admin/moderador ven el nombre real con `es_anonimo_real: true`, el resto sigue viendo "Anónimo". Aplicado en `getPostsByForo`/`getPost` (foros), `getHistorias`/`getHistoria`, `getPreguntas`/`getPregunta` — **solo en las publicaciones de nivel superior, no en las respuestas/comentarios anidados** (decisión de alcance, no un olvido — si se pide después, es el mismo patrón).
+- **`autor_id`** solo viaja en la respuesta del backend cuando quien pide es admin/moderador (`puedeModerar ? row.user_id : undefined`) — la autorización real de qué se puede ver vive en el backend, no en el frontend. `frontend/src/pages/dashboard/comunidad/components/primitivos.jsx` → `<ModeracionBar tipo id autorId onCambio />`: si no le llega `autorId`, no renderiza nada. Montado en `ForoDetalle.jsx`, `PostDetalle.jsx`, `HistoriaDetalle.jsx`, `Historias.jsx`, `Preguntas.jsx`.
+- **`frontend/src/hooks/useModeracion.js`** — NUEVO, mismo patrón que `useAdmin.js` (consulta `perfiles_usuario` directo desde el cliente) pero devuelve `puedeModerar` (admin O moderador). De paso se corrigió un bug real en `useAdmin.js`: consultaba la tabla/columna viejas (`perfiles`/`id` en vez de `perfiles_usuario`/`user_id`), el mismo error que tenía `AdminPanel.jsx` antes de corregirse — por eso el botón "Panel Admin" del navbar nunca aparecía en modo real (no demo), aunque `/dashboard/admin` funcionaba igual porque hace su propio chequeo correcto por separado.
+
 ## Modo Demo
 Si no hay `VITE_SUPABASE_URL` en `.env`, la app entra en modo demo.
 - Login demo: cualquier email/password

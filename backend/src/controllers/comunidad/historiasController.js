@@ -1,12 +1,15 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
-const { timeAgo, incrementarContador, getNombreUsuario } = require('../../utils/comunidadHelpers');
+const { timeAgo, incrementarContador, getNombreUsuario, esModerador, resolverAutor } = require('../../utils/comunidadHelpers');
 
 const getHistorias = asyncHandler('comunidad/historiasController.getHistorias', async (req, res) => {
+  const puedeModerar = await esModerador(req.user?.id);
+
   const { data, error } = await supabase
     .from('historias')
-    .select('id, titulo, contenido, area, carrera, institucion, anonimo, autor_nombre, likes, created_at')
+    .select('id, user_id, titulo, contenido, area, carrera, institucion, anonimo, autor_nombre, likes, created_at')
     .eq('publicada', true)
+    .eq('oculta', false)
     .order('created_at', { ascending: false })
     .limit(20);
 
@@ -23,18 +26,25 @@ const getHistorias = asyncHandler('comunidad/historiasController.getHistorias', 
     (likes ?? []).forEach(l => misLikes.add(l.historia_id));
   }
 
-  const result = (data ?? []).map(h => ({
-    id:         h.id,
-    ini:        h.anonimo ? 'A' : (h.autor_nombre || 'U').charAt(0).toUpperCase(),
-    name:       h.anonimo ? 'Anónimo' : (h.autor_nombre || 'Usuario'),
-    carrera:    h.carrera || '',
-    inst:       h.institucion || '',
-    title:      h.titulo,
-    excerpt:    h.contenido.slice(0, 160),
-    tag:        h.area,
-    likes:      h.likes ?? 0,
-    yo_di_like: misLikes.has(h.id),
-    date:       timeAgo(h.created_at),
+  const result = await Promise.all((data ?? []).map(async h => {
+    const autor = await resolverAutor({
+      userId: h.user_id, anonimo: h.anonimo, autorNombreGuardado: h.autor_nombre, puedeModerar,
+    });
+    return {
+      id:         h.id,
+      ini:        autor.display.charAt(0).toUpperCase(),
+      name:       autor.display,
+      es_anonimo_real: autor.esAnonimoReal,
+      autor_id:   puedeModerar ? h.user_id : undefined,
+      carrera:    h.carrera || '',
+      inst:       h.institucion || '',
+      title:      h.titulo,
+      excerpt:    h.contenido.slice(0, 160),
+      tag:        h.area,
+      likes:      h.likes ?? 0,
+      yo_di_like: misLikes.has(h.id),
+      date:       timeAgo(h.created_at),
+    };
   }));
 
   return res.json({ success: true, data: result });
@@ -43,6 +53,7 @@ const getHistorias = asyncHandler('comunidad/historiasController.getHistorias', 
 const getHistoria = asyncHandler('comunidad/historiasController.getHistoria', async (req, res) => {
   const { id } = req.params;
   const userId = req.user?.id ?? null;
+  const puedeModerar = await esModerador(userId);
 
   const { data, error } = await supabase
     .from('historias')
@@ -69,6 +80,10 @@ const getHistoria = asyncHandler('comunidad/historiasController.getHistoria', as
     .neq('id', id)
     .limit(4);
 
+  const autor = await resolverAutor({
+    userId: data.user_id, anonimo: data.anonimo, autorNombreGuardado: data.autor_nombre, puedeModerar,
+  });
+
   return res.json({
     success: true,
     data: {
@@ -77,8 +92,11 @@ const getHistoria = asyncHandler('comunidad/historiasController.getHistoria', as
       area:         data.area,
       carrera:      data.carrera || '',
       inst:         data.institucion || '',
-      ini:          data.anonimo ? 'A' : (data.autor_nombre || 'U').charAt(0).toUpperCase(),
-      name:         data.anonimo ? 'Anónimo' : (data.autor_nombre || 'Usuario'),
+      ini:          autor.display.charAt(0).toUpperCase(),
+      name:         autor.display,
+      es_anonimo_real: autor.esAnonimoReal,
+      autor_id:     puedeModerar ? data.user_id : undefined,
+      oculta:       data.oculta ?? false,
       likes:        data.likes ?? 0,
       yo_di_like:   yoDiLike,
       date:         timeAgo(data.created_at),

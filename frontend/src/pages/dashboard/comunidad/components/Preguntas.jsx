@@ -1,8 +1,8 @@
-import { Spinner } from './primitivos';
+import { Spinner, ModeracionBar } from './primitivos';
 import { avatarColor } from './constantes';
 
 // Pestaña "Preguntas": barra para preguntar + listado de preguntas de la comunidad.
-export default function Preguntas({ data, cargando, onPreguntar, onPreguntaClick }) {
+export default function Preguntas({ data, cargando, onPreguntar, onPreguntaClick, onModerar }) {
   if (cargando) return <Spinner />;
   return (
     <>
@@ -66,6 +66,7 @@ export default function Preguntas({ data, cargando, onPreguntar, onPreguntaClick
                 </span>
                 <span style={{ fontSize: 12.5, color: 'var(--ink-soft)' }}>💬 {q.answers} respuestas</span>
               </div>
+              <ModeracionBar tipo="pregunta" id={q.id} autorId={q.autor_id} onCambio={onModerar} />
             </div>
           ))}
         </div>

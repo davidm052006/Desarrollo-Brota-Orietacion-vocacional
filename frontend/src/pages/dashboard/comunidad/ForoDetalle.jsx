@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
 import { getPostsByForo, createPost } from '../../../services/comunidadService';
+import { ModeracionBar } from './components/primitivos';
 
 const AV_PALETTE = ['#16A34A', '#2563eb', '#db2777', '#d97706', '#7c3aed', '#0891b2'];
 function avatarColor(str = '') {
@@ -196,6 +197,10 @@ export default function ForoDetalle() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                       <span style={{ fontSize: 12.5, color: 'var(--ink-soft)' }}>💬 {p.respuestas} respuestas</span>
                     </div>
+                    <ModeracionBar
+                      tipo="post" id={p.id} autorId={p.autor_id}
+                      onCambio={() => setPosts(prev => prev.filter(x => x.id !== p.id))}
+                    />
                   </div>
                 </div>
               ))}
