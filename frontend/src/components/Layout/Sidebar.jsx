@@ -22,12 +22,12 @@ export default function Sidebar() {
 
   return (
     <aside className="w-56 h-screen bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col fixed left-0 top-0 z-30 overflow-hidden">
-      <div className="px-5 pt-6 pb-5 border-b border-gray-100 dark:border-green-950">
+      <div className="px-5 pt-6 pb-5 border-b border-gray-100 ">
         <div className="flex items-center gap-2.5 mb-1">
           <img src="/logo-brota.png" alt="Brota" className="h-8 w-auto" />
-          <span className="text-lg font-bold text-green-900 dark:text-green-100 tracking-tight">BROTA</span>
+          <span className="text-lg font-bold text-primary tracking-tight">BROTA</span>
         </div>
-        <p className="text-[11px] text-gray-400 dark:text-green-400/50 leading-tight pl-[42px]">
+        <p className="text-[11px] text-gray-400 leading-tight pl-[42px]">
           Descubre tu camino,<br />construye tu futuro
         </p>
       </div>
@@ -56,8 +56,8 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-5 py-2.5 mx-2 rounded-lg text-sm transition-all duration-150 mb-0.5 ` +
               (isActive
-                ? "bg-green-600 text-white font-semibold shadow-sm"
-                : "text-gray-500 hover:bg-green-50 hover:text-green-700")
+                ? "bg-primary text-white font-semibold shadow-sm"
+                : "text-gray-500 hover:bg-primary-soft hover:text-primary")
             }
           >
             <span className="text-base w-5 text-center">{icon}</span>
@@ -66,7 +66,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="m-3 rounded-xl bg-green-600 p-4 text-white relative overflow-hidden">
+      <div className="m-3 rounded-xl bg-primary p-4 text-white relative overflow-hidden">
         <p className="text-xs font-semibold leading-snug relative z-10">
           Crece hoy,<br />inspira tu mañana.
         </p>

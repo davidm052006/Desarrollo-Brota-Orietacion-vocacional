@@ -52,7 +52,7 @@ export default function PreguntasComunidadSection() {
 
       <div className="overflow-x-auto">
         {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-green-500" /></div>
+          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>
         ) : preguntas.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-gray-400"><span className="text-4xl mb-2">❓</span><p className="text-sm">No hay preguntas publicadas</p></div>
         ) : (
@@ -91,7 +91,7 @@ export default function PreguntasComunidadSection() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.resuelta ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.resuelta ? 'bg-primary-soft text-primary' : 'bg-gray-100 text-gray-500'}`}>
                           {p.resuelta ? 'Resuelta' : 'Abierta'}
                         </span>
                       </td>
@@ -105,11 +105,11 @@ export default function PreguntasComunidadSection() {
                         <td colSpan={8} className="px-5 py-3">
                           <div className="flex flex-col gap-2">
                             {p.respuestas.map(r => (
-                              <div key={r.id} className={`text-sm rounded-lg p-2.5 ${r.mejor ? 'bg-green-50 border border-green-200' : 'bg-white border border-gray-100'}`}>
+                              <div key={r.id} className={`text-sm rounded-lg p-2.5 ${r.mejor ? 'bg-primary-soft border border-primary/25' : 'bg-white border border-gray-100'}`}>
                                 <div className="flex items-center gap-2 mb-1">
                                   <span className="text-xs font-semibold text-gray-700">{r.autor}</span>
                                   <span className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString('es-CO')}</span>
-                                  {r.mejor && <span className="text-xs font-semibold text-green-700">★ Mejor respuesta</span>}
+                                  {r.mejor && <span className="text-xs font-semibold text-primary">★ Mejor respuesta</span>}
                                 </div>
                                 <p className="text-gray-800">{r.contenido}</p>
                               </div>

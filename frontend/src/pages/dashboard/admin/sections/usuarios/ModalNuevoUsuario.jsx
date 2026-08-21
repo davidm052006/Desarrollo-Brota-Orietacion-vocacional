@@ -21,7 +21,7 @@ export default function ModalNuevoUsuario({ form, setForm, formError, guardando,
           <select
             value={form.rol}
             onChange={e => setForm(f => ({ ...f, rol: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 bg-white"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white"
           >
             {ROLES_OPCIONES.map(r => <option key={r}>{r}</option>)}
           </select>
@@ -34,7 +34,7 @@ export default function ModalNuevoUsuario({ form, setForm, formError, guardando,
           Cancelar
         </button>
         <button onClick={onCrear} disabled={guardando}
-          className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50">
+          className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors disabled:opacity-50">
           {guardando ? 'Creando...' : 'Crear usuario'}
         </button>
       </div>

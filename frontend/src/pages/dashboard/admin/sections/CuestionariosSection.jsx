@@ -9,7 +9,7 @@ function Campo({ label, name, form, setForm }) {
     <div>
       <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
       <input value={form[name] ?? ''} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
     </div>
   );
 }
@@ -22,10 +22,10 @@ function FormCampos({ f, setF }) {
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">Descripción</label>
         <textarea value={f.descripcion} onChange={e => setF(p => ({ ...p, descripcion: e.target.value }))} rows={2}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 resize-none" />
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
       </div>
       <div className="flex items-center gap-2">
-        <input type="checkbox" id="activo-c" checked={f.activo} onChange={e => setF(p => ({ ...p, activo: e.target.checked }))} className="accent-green-600" />
+        <input type="checkbox" id="activo-c" checked={f.activo} onChange={e => setF(p => ({ ...p, activo: e.target.checked }))} className="accent-primary" />
         <label htmlFor="activo-c" className="text-sm text-gray-700">Activo (desactivará los demás)</label>
       </div>
     </div>
@@ -104,14 +104,14 @@ export default function CuestionariosSection({ onVerPreguntas }) {
           <h2 className="text-lg font-bold text-gray-900">Cuestionarios</h2>
           <p className="text-sm text-gray-400">Gestiona las versiones del test vocacional.</p>
         </div>
-        <button onClick={abrirNuevo} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        <button onClick={abrirNuevo} className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
           <span className="text-lg leading-none">+</span> Nuevo cuestionario
         </button>
       </div>
 
       <div className="overflow-x-auto">
         {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-green-500" /></div>
+          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>
         ) : cuestionarios.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-gray-400"><span className="text-4xl mb-2">📋</span><p className="text-sm">No hay cuestionarios</p></div>
         ) : (
@@ -134,7 +134,7 @@ export default function CuestionariosSection({ onVerPreguntas }) {
                   <td className="px-5 py-3.5 text-sm text-gray-500">{new Date(c.created_at).toLocaleDateString('es-CO')}</td>
                   <td className="px-5 py-3.5">
                     <button onClick={() => toggleActivo(c)}
-                      className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-opacity hover:opacity-75 ${c.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-opacity hover:opacity-75 ${c.activo ? 'bg-primary-soft text-primary' : 'bg-gray-100 text-gray-500'}`}>
                       {c.activo ? 'Activo' : 'Inactivo'}
                     </button>
                   </td>
@@ -145,7 +145,7 @@ export default function CuestionariosSection({ onVerPreguntas }) {
                         title="Ver preguntas de este cuestionario">
                         ❓ Ver preguntas
                       </button>
-                      <button onClick={() => abrirEditar(c)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="Editar">✏️</button>
+                      <button onClick={() => abrirEditar(c)} className="p-1.5 text-primary hover:bg-primary-soft rounded-lg" title="Editar">✏️</button>
                       <button onClick={() => { setFormError(null); setModalEliminar(c); }} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg" title="Eliminar">🗑️</button>
                     </div>
                   </td>
@@ -162,7 +162,7 @@ export default function CuestionariosSection({ onVerPreguntas }) {
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalNuevo(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-            <button onClick={crearCuestionario} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50">
+            <button onClick={crearCuestionario} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg disabled:opacity-50">
               {guardando ? 'Creando...' : 'Crear cuestionario'}
             </button>
           </div>
@@ -175,7 +175,7 @@ export default function CuestionariosSection({ onVerPreguntas }) {
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalEditar(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-            <button onClick={guardarEdicion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50">
+            <button onClick={guardarEdicion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg disabled:opacity-50">
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>

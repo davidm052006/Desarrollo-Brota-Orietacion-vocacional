@@ -4,7 +4,7 @@ import Modal from '../components/Modal';
 
 const TIPO_COLORS = {
   'Universidad': 'bg-blue-100 text-blue-700',
-  'SENA':        'bg-green-100 text-green-700',
+  'SENA':        'bg-primary-soft text-primary',
   'Tecnológica': 'bg-purple-100 text-purple-700',
   'Técnica':     'bg-yellow-100 text-yellow-700',
 };
@@ -19,7 +19,7 @@ function Campo({ label, name, type = 'text', form, setForm }) {
         type={type}
         value={form[name] ?? ''}
         onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300"
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
       />
     </div>
   );
@@ -40,10 +40,10 @@ function FormCampos({ f, setF }) {
       <div className="col-span-2">
         <label className="block text-xs font-semibold text-gray-600 mb-1">Dirección</label>
         <input value={f.direccion} onChange={e => setF(p => ({ ...p, direccion: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
       </div>
       <div className="flex items-center gap-2">
-        <input type="checkbox" id="activa" checked={f.activa} onChange={e => setF(p => ({ ...p, activa: e.target.checked }))} className="accent-green-600" />
+        <input type="checkbox" id="activa" checked={f.activa} onChange={e => setF(p => ({ ...p, activa: e.target.checked }))} className="accent-primary" />
         <label htmlFor="activa" className="text-sm text-gray-700">Activa</label>
       </div>
     </div>
@@ -118,7 +118,7 @@ export default function InstitucionesSection() {
           <h2 className="text-lg font-bold text-gray-900">Instituciones</h2>
           <p className="text-sm text-gray-400">{meta.total > 0 ? `${meta.total} instituciones registradas` : 'Gestiona las instituciones educativas'}</p>
         </div>
-        <button onClick={abrirNuevo} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        <button onClick={abrirNuevo} className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
           <span className="text-lg leading-none">+</span> Nueva institución
         </button>
       </div>
@@ -126,12 +126,12 @@ export default function InstitucionesSection() {
       <div className="px-5 py-3 border-b border-gray-100">
         <input type="text" placeholder="Buscar por nombre o ciudad..." value={busqueda}
           onChange={e => { setBusqueda(e.target.value); setPagina(1); }}
-          className="w-full max-w-sm pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+          className="w-full max-w-sm pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
       </div>
 
       <div className="overflow-x-auto">
         {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-green-500" /></div>
+          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>
         ) : instituciones.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-gray-400"><span className="text-4xl mb-2">🏫</span><p className="text-sm">No se encontraron instituciones</p></div>
         ) : (
@@ -153,13 +153,13 @@ export default function InstitucionesSection() {
                   <td className="px-5 py-3.5 text-sm text-gray-500">{inst.ciudad || '—'}</td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">{inst.telefono || '—'}</td>
                   <td className="px-5 py-3.5">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${inst.activa ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${inst.activa ? 'bg-primary-soft text-primary' : 'bg-red-100 text-red-600'}`}>
                       {inst.activa ? 'Activa' : 'Inactiva'}
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
-                      <button onClick={() => abrirEditar(inst)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Editar">✏️</button>
+                      <button onClick={() => abrirEditar(inst)} className="p-1.5 text-primary hover:bg-primary-soft rounded-lg transition-colors" title="Editar">✏️</button>
                       <button onClick={() => { setFormError(null); setModalEliminar(inst); }} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">🗑️</button>
                     </div>
                   </td>
@@ -188,7 +188,7 @@ export default function InstitucionesSection() {
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalNuevo(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-            <button onClick={crearInstitucion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50">
+            <button onClick={crearInstitucion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg disabled:opacity-50">
               {guardando ? 'Creando...' : 'Crear institución'}
             </button>
           </div>
@@ -201,7 +201,7 @@ export default function InstitucionesSection() {
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalEditar(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-            <button onClick={guardarEdicion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50">
+            <button onClick={guardarEdicion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg disabled:opacity-50">
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>

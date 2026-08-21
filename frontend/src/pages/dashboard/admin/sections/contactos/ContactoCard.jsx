@@ -105,7 +105,7 @@ export default function ContactoCard({ contacto, onActualizar }) {
               <button
                 onClick={() => cambiarEstado('respondido')}
                 disabled={guardando}
-                className="text-xs px-3 py-1.5 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 disabled:opacity-50 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-lg border border-primary/25 text-primary hover:bg-primary-soft disabled:opacity-50 transition-colors"
               >
                 ✅ Marcar como respondido
               </button>

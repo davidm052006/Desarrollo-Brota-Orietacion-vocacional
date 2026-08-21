@@ -9,7 +9,7 @@ export default function TablaUsuarios({ usuarios, meta, loading, pagina, setPagi
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-green-500" />
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" />
           </div>
         ) : usuarios.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
@@ -43,7 +43,7 @@ export default function TablaUsuarios({ usuarios, meta, loading, pagina, setPagi
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
                       <button onClick={() => onEditar(u)}
-                        className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Editar">✏️</button>
+                        className="p-1.5 text-primary hover:bg-primary-soft rounded-lg transition-colors" title="Editar">✏️</button>
                       <button onClick={() => onVer(u)}
                         className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Ver detalle">👁️</button>
                       <button onClick={() => onEliminar(u)}
@@ -71,7 +71,7 @@ export default function TablaUsuarios({ usuarios, meta, loading, pagina, setPagi
               const n = Math.max(1, Math.min(pagina - 2, meta.totalPaginas - 4)) + i;
               return (
                 <button key={n} onClick={() => setPagina(n)}
-                  className={`w-8 h-8 text-sm rounded-lg transition-colors ${pagina === n ? 'bg-green-600 text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'}`}>
+                  className={`w-8 h-8 text-sm rounded-lg transition-colors ${pagina === n ? 'bg-primary text-white font-semibold' : 'text-gray-500 hover:bg-gray-100'}`}>
                   {n}
                 </button>
               );

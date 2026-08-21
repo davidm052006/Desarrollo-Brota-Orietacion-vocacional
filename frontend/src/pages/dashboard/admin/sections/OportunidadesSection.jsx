@@ -16,7 +16,7 @@ function Campo({ label, name, type = 'text', form, setForm }) {
       <label className="block text-xs font-semibold text-gray-600 mb-1">{label}</label>
       <input type={type} value={form[name] ?? ''}
         onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
     </div>
   );
 }
@@ -32,7 +32,7 @@ function FormCampos({ f, setF, instituciones }) {
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">Institución</label>
         <select value={f.institucion_id} onChange={e => setF(p => ({ ...p, institucion_id: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 bg-white">
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
           <option value="">Sin institución</option>
           {instituciones.map(i => <option key={i.id} value={i.id}>{i.nombre}</option>)}
         </select>
@@ -40,10 +40,10 @@ function FormCampos({ f, setF, instituciones }) {
       <div className="col-span-2">
         <label className="block text-xs font-semibold text-gray-600 mb-1">Descripción</label>
         <textarea value={f.descripcion} onChange={e => setF(p => ({ ...p, descripcion: e.target.value }))} rows={2}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 resize-none" />
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
       </div>
       <div className="flex items-center gap-2">
-        <input type="checkbox" id="activo" checked={f.activo} onChange={e => setF(p => ({ ...p, activo: e.target.checked }))} className="accent-green-600" />
+        <input type="checkbox" id="activo" checked={f.activo} onChange={e => setF(p => ({ ...p, activo: e.target.checked }))} className="accent-primary" />
         <label htmlFor="activo" className="text-sm text-gray-700">Activo</label>
       </div>
     </div>
@@ -125,7 +125,7 @@ export default function OportunidadesSection() {
           <h2 className="text-lg font-bold text-gray-900">Programas</h2>
           <p className="text-sm text-gray-400">{meta.total > 0 ? `${meta.total} programas registrados` : 'Gestiona convocatorias y programas disponibles'}</p>
         </div>
-        <button onClick={abrirNuevo} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        <button onClick={abrirNuevo} className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
           <span className="text-lg leading-none">+</span> Nuevo programa
         </button>
       </div>
@@ -133,12 +133,12 @@ export default function OportunidadesSection() {
       <div className="px-5 py-3 border-b border-gray-100">
         <input type="text" placeholder="Buscar programas..." value={busqueda}
           onChange={e => { setBusqueda(e.target.value); setPagina(1); }}
-          className="w-full max-w-sm pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+          className="w-full max-w-sm pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
       </div>
 
       <div className="overflow-x-auto">
         {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-green-500" /></div>
+          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>
         ) : programas.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-gray-400"><span className="text-4xl mb-2">📚</span><p className="text-sm">No se encontraron programas</p></div>
         ) : (
@@ -160,13 +160,13 @@ export default function OportunidadesSection() {
                   </td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">{p.area_academica || '—'}</td>
                   <td className="px-5 py-3.5">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${p.activo ? 'bg-primary-soft text-primary' : 'bg-red-100 text-red-600'}`}>
                       {p.activo ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
-                      <button onClick={() => abrirEditar(p)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="Editar">✏️</button>
+                      <button onClick={() => abrirEditar(p)} className="p-1.5 text-primary hover:bg-primary-soft rounded-lg" title="Editar">✏️</button>
                       <button onClick={() => { setFormError(null); setModalEliminar(p); }} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg" title="Eliminar">🗑️</button>
                     </div>
                   </td>
@@ -193,7 +193,7 @@ export default function OportunidadesSection() {
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalNuevo(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-            <button onClick={crearPrograma} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50">
+            <button onClick={crearPrograma} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg disabled:opacity-50">
               {guardando ? 'Creando...' : 'Crear programa'}
             </button>
           </div>
@@ -206,7 +206,7 @@ export default function OportunidadesSection() {
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalEditar(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-            <button onClick={guardarEdicion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50">
+            <button onClick={guardarEdicion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg disabled:opacity-50">
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>

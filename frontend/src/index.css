@@ -10,10 +10,19 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Puente Tailwind v4 → tokens de marca: estas @theme quedan como referencias
+   vivas a las custom properties de abajo (var(--primary), etc.), no valores
+   fijos — por eso clases como bg-primary/text-primary/border-primary (y sus
+   variantes con opacidad, ej. ring-primary/40) se adaptan solas a dark mode
+   sin necesitar dark: en cada una. Ver BRAND.md sección 7. */
 @theme {
-  --color-primary:       #21BD68;
-  --color-primary-hover: #0E7D43;
-  --color-accent:        #E07A42;
+  --color-primary:       var(--primary);
+  --color-primary-hover: var(--primary-deep);
+  --color-primary-deep:  var(--primary-deep);
+  --color-primary-soft:  var(--primary-soft);
+  --color-primary-ink:   var(--primary-ink);
+  --color-accent:        var(--accent);
+  --color-accent-soft:   var(--accent-soft);
   --radius-md:           12px;
 }
 

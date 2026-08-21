@@ -7,8 +7,8 @@ const ACTIONS = [
     title: 'Explorar profesiones',
     desc: 'Descubre carreras que se alinean contigo',
     to: '/dashboard/profesiones',
-    color: 'bg-green-50 dark:bg-[#111c14]',
-    iconBg: 'bg-green-100 dark:bg-[#14532d]',
+    color: 'bg-primary-soft dark:bg-[#111c14]',
+    iconBg: 'bg-primary-soft dark:bg-[#14532d]',
   },
   {
     icon: '✅',
@@ -49,14 +49,14 @@ export default function QuickActions() {
           <button
             key={to}
             onClick={() => navigate(to)}
-            className={`${color} rounded-2xl p-5 text-left border border-transparent hover:border-green-200 hover:shadow-sm transition-all duration-200 group`}
+            className={`${color} rounded-2xl p-5 text-left border border-transparent hover:border-primary/25 hover:shadow-sm transition-all duration-200 group`}
           >
             <div className={`${iconBg} w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3`}>
               {icon}
             </div>
             <p className="text-sm font-semibold text-gray-800 leading-snug mb-1">{title}</p>
             <p className="text-xs text-gray-500 leading-snug mb-3">{desc}</p>
-            <span className="text-green-600 text-lg group-hover:translate-x-1 inline-block transition-transform duration-200">→</span>
+            <span className="text-primary text-lg group-hover:translate-x-1 inline-block transition-transform duration-200">→</span>
           </button>
         ))}
       </div>

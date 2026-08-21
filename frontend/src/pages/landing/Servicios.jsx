@@ -82,7 +82,7 @@ export default function Servicios() {
       <LoginNavbar />
 
       {/* ── Hero ── */}
-      <section className="pt-28 pb-16 px-6 text-center bg-gradient-to-b from-green-50 to-white dark:from-[#0d1a12] dark:to-[#111318]">
+      <section className="pt-28 pb-16 px-6 text-center bg-gradient-to-b from-primary-soft to-white dark:from-[#0d1a12] dark:to-[#111318]">
         <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-3">
           Nuestros servicios 🌿
         </h1>
@@ -99,7 +99,7 @@ export default function Servicios() {
           </button>
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--color-primary)] text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-[#0d1a12] transition-all duration-200"
+            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--color-primary)] text-primary hover:bg-primary-soft dark:hover:bg-[#0d1a12] transition-all duration-200"
           >
             Explorar profesiones ✓
           </button>
@@ -112,18 +112,18 @@ export default function Servicios() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {serviciosDestacados.map((s) => (
             <div key={s.titulo} className="border border-gray-100 dark:border-[#2c3140] bg-white dark:bg-[#1a1d24] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 rounded-xl bg-green-50 dark:bg-[#0d1a12] flex items-center justify-center text-2xl mb-3">{s.icon}</div>
+              <div className="w-12 h-12 rounded-xl bg-primary-soft dark:bg-[#0d1a12] flex items-center justify-center text-2xl mb-3">{s.icon}</div>
               <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm mb-0.5">{s.titulo}</h3>
               <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">{s.subtitulo}</p>
               <ul className="space-y-1 mb-3">
                 {s.items.map((item) => (
                   <li key={item} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
-                    <span className="text-green-500 mt-0.5">●</span> {item}
+                    <span className="text-primary mt-0.5">●</span> {item}
                   </li>
                 ))}
               </ul>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{s.descripcion}</p>
-              <span className="text-green-600 dark:text-green-400 text-sm">→</span>
+              <span className="text-primary text-sm">→</span>
             </div>
           ))}
         </div>
@@ -136,12 +136,12 @@ export default function Servicios() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {serviciosSecundarios.map((s) => (
               <div key={s.titulo} className="bg-white dark:bg-[#1a1d24] border border-gray-100 dark:border-[#2c3140] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 rounded-xl bg-green-50 dark:bg-[#0d1a12] flex items-center justify-center text-2xl mb-3">{s.icon}</div>
+                <div className="w-12 h-12 rounded-xl bg-primary-soft dark:bg-[#0d1a12] flex items-center justify-center text-2xl mb-3">{s.icon}</div>
                 <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm mb-2">{s.titulo}</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{s.descripcion}</p>
                 <button
                   onClick={() => navigate('/saber-mas')}
-                  className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 font-medium hover:underline"
+                  className="flex items-center gap-2 text-xs text-primary font-medium hover:underline"
                 >
                   <span>→</span> <span>Saber más</span>
                 </button>
@@ -161,7 +161,7 @@ export default function Servicios() {
               {razones.map((r) => (
                 <li key={r} className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
                   <span>{r}</span>
-                  <span className="w-6 h-6 rounded-full bg-green-100 dark:bg-[#0d1a12] flex items-center justify-center text-green-600 dark:text-green-400 text-xs">✓</span>
+                  <span className="w-6 h-6 rounded-full bg-primary-soft dark:bg-[#0d1a12] flex items-center justify-center text-primary text-xs">✓</span>
                 </li>
               ))}
             </ul>
@@ -171,8 +171,8 @@ export default function Servicios() {
             <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">Nuestro proceso</h2>
             <div className="grid grid-cols-2 gap-4">
               {pasos.map((p) => (
-                <div key={p.num} className="bg-green-50 dark:bg-[#0d1a12] rounded-2xl p-4">
-                  <div className="w-7 h-7 rounded-full bg-green-600 text-white text-xs font-bold flex items-center justify-center mb-2">{p.num}</div>
+                <div key={p.num} className="bg-primary-soft dark:bg-[#0d1a12] rounded-2xl p-4">
+                  <div className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center mb-2">{p.num}</div>
                   <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">{p.titulo}</h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{p.desc}</p>
                 </div>
@@ -198,7 +198,7 @@ export default function Servicios() {
       </section>
 
       {/* ── CTA final ── */}
-      <section className="py-14 px-6 bg-green-50 dark:bg-[#0d1a12] text-center">
+      <section className="py-14 px-6 bg-primary-soft dark:bg-[#0d1a12] text-center">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">¿Listo para descubrir tu futuro? 🌿</h2>
         <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
           Miles de posibilidades te esperan.<br />
@@ -213,7 +213,7 @@ export default function Servicios() {
           </button>
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--color-primary)] text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-[#112010] transition-all duration-200"
+            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--color-primary)] text-primary hover:bg-primary-soft dark:hover:bg-[#112010] transition-all duration-200"
           >
             Explorar profesiones ✓
           </button>

@@ -14,12 +14,12 @@ export default function UserMenu({ profile, isDemoMode = false }) {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex h-10 items-center gap-3 rounded-full bg-white px-3 pl-4 border border-gray-200 shadow-sm hover:shadow-md hover:border-green-200 transition-all dark:bg-[#1a2e1f] dark:border-[#334155]"
+        className="flex h-10 items-center gap-3 rounded-full bg-white px-3 pl-4 border border-gray-200 shadow-sm hover:shadow-md hover:border-primary/25 transition-all dark:bg-[#1a2e1f] dark:border-[#334155]"
       >
         <span className="max-w-40 truncate text-sm font-medium text-gray-700">
           Hola, {userName}
         </span>
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-600 text-sm font-bold text-white">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
           {initial}
         </span>
       </button>

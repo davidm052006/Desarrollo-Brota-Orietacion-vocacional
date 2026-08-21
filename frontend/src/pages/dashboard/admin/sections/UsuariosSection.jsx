@@ -232,7 +232,7 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
           </button>
           <button
             onClick={abrirNuevo}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
           >
             <span className="text-lg leading-none">+</span>
             Nuevo usuario
@@ -248,14 +248,14 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
             placeholder="Buscar por nombre o ciudad..."
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-full pl-4 pr-10 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-transparent"
+            className="w-full pl-4 pr-10 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent"
           />
           <span className="absolute right-3 top-2.5 text-gray-400 text-sm">🔍</span>
         </div>
         <select
           value={rolFiltro}
           onChange={e => cambiarFiltro(setRolFiltro)(e.target.value === 'Todos los roles' ? '' : e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-300 bg-white"
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white"
         >
           {ROLES_FILTRO.map(r => <option key={r}>{r}</option>)}
         </select>
@@ -313,7 +313,7 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
                   type="file"
                   accept=".csv"
                   onChange={handleArchivoCSV}
-                  className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-green-50 file:text-green-700 file:text-sm file:font-semibold file:cursor-pointer hover:file:bg-green-100"
+                  className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-soft file:text-primary file:text-sm file:font-semibold file:cursor-pointer hover:file:bg-primary-soft"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   Columnas esperadas: {COLUMNAS_CSV_ESPERADAS.join(', ')}
@@ -358,7 +358,7 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
                   Cancelar
                 </button>
                 <button onClick={importarMasivo} disabled={importando || csvFilas.length === 0}
-                  className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50">
+                  className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors disabled:opacity-50">
                   {importando ? 'Importando...' : `Importar ${csvFilas.length || ''} usuario(s)`}
                 </button>
               </div>
@@ -382,7 +382,7 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
                         <td className="px-3 py-1.5 text-gray-700">{r.usuario.email || '—'}</td>
                         <td className="px-3 py-1.5">
                           {r.success
-                            ? <span className="text-green-600 font-semibold">✓ Creado</span>
+                            ? <span className="text-primary font-semibold">✓ Creado</span>
                             : <span className="text-red-500">✗ {r.error}</span>}
                         </td>
                       </tr>
@@ -392,7 +392,7 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
               </div>
               <div className="flex justify-end">
                 <button onClick={cerrarMasivo}
-                  className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                  className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors">
                   Cerrar
                 </button>
               </div>

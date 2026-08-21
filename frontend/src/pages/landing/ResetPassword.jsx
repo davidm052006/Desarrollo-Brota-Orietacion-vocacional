@@ -112,7 +112,7 @@ function ResetPassword() {
         >
           {/* Estado: éxito */}
           {success && (
-            <div className="bg-green-500/20 border border-green-500 text-green-800 px-4 py-3 rounded-lg text-sm text-center">
+            <div className="bg-primary/20 border border-primary text-primary px-4 py-3 rounded-lg text-sm text-center">
               ✅ Contraseña actualizada. Redirigiendo al inicio de sesión...
             </div>
           )}
@@ -127,7 +127,7 @@ function ResetPassword() {
           {/* Estado: esperando sesión */}
           {!sessionReady && !success && (
             <div className="flex flex-col items-center gap-3 py-2">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500" />
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary" />
               <p className="text-sm text-gray-500 text-center">
                 Si llegaste desde el correo de recuperación, espera un momento.
               </p>

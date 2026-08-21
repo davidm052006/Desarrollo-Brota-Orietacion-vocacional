@@ -9,7 +9,7 @@ const TIPO_COLORS = {
 
 const CATEGORIA_COLORS = {
   'intereses':   'bg-yellow-100 text-yellow-700',
-  'habilidades': 'bg-green-100 text-green-700',
+  'habilidades': 'bg-primary-soft text-primary',
   'vocacion':    'bg-pink-100 text-pink-700',
   'contexto':    'bg-orange-100 text-orange-700',
 };
@@ -22,7 +22,7 @@ function FormCampos({ f, setF, cuestionarios }) {
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">Cuestionario *</label>
         <select value={f.cuestionario_id} onChange={e => setF(p => ({ ...p, cuestionario_id: e.target.value }))}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 bg-white">
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
           <option value="">Seleccionar cuestionario</option>
           {cuestionarios.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.version}</option>)}
         </select>
@@ -30,13 +30,13 @@ function FormCampos({ f, setF, cuestionarios }) {
       <div>
         <label className="block text-xs font-semibold text-gray-600 mb-1">Texto de la pregunta *</label>
         <textarea value={f.texto} onChange={e => setF(p => ({ ...p, texto: e.target.value }))} rows={2}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 resize-none" />
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none" />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Tipo</label>
           <select value={f.tipo} onChange={e => setF(p => ({ ...p, tipo: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 bg-white">
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
             <option value="opcion_multiple">Opción múltiple</option>
             <option value="likert">Likert</option>
           </select>
@@ -44,7 +44,7 @@ function FormCampos({ f, setF, cuestionarios }) {
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Categoría</label>
           <select value={f.categoria} onChange={e => setF(p => ({ ...p, categoria: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300 bg-white">
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
             <option value="">Sin categoría</option>
             {['intereses', 'habilidades', 'vocacion', 'contexto'].map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -52,12 +52,12 @@ function FormCampos({ f, setF, cuestionarios }) {
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Orden</label>
           <input type="number" value={f.orden} onChange={e => setF(p => ({ ...p, orden: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Peso</label>
           <input type="number" step="0.1" value={f.peso} onChange={e => setF(p => ({ ...p, peso: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
         </div>
       </div>
     </div>
@@ -148,7 +148,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
           <h2 className="text-lg font-bold text-gray-900">Preguntas</h2>
           <p className="text-sm text-gray-400">{preguntas.length > 0 ? `${preguntas.length} preguntas` : 'Gestiona las preguntas del test vocacional'}</p>
         </div>
-        <button onClick={abrirNuevo} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        <button onClick={abrirNuevo} className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
           <span className="text-lg leading-none">+</span> Nueva pregunta
         </button>
       </div>
@@ -156,9 +156,9 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
       <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3">
         <input type="text" placeholder="Buscar preguntas..." value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
-          className="flex-1 max-w-sm pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-300" />
+          className="flex-1 max-w-sm pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
         <select value={filtroC} onChange={e => setFiltroC(e.target.value)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-300 bg-white">
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
           <option value="">Todos los cuestionarios</option>
           {cuestionarios.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.version}</option>)}
         </select>
@@ -166,7 +166,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
 
       <div className="overflow-x-auto">
         {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-green-500" /></div>
+          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>
         ) : preguntas.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-gray-400"><span className="text-4xl mb-2">❓</span><p className="text-sm">No se encontraron preguntas</p></div>
         ) : (
@@ -194,7 +194,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
                   <td className="px-5 py-3.5 text-sm text-gray-500">{p.peso}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
-                      <button onClick={() => abrirEditar(p)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="Editar">✏️</button>
+                      <button onClick={() => abrirEditar(p)} className="p-1.5 text-primary hover:bg-primary-soft rounded-lg" title="Editar">✏️</button>
                       <button onClick={() => { setFormError(null); setModalEliminar(p); }} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg" title="Eliminar">🗑️</button>
                     </div>
                   </td>
@@ -211,7 +211,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalNuevo(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-            <button onClick={crearPregunta} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50">
+            <button onClick={crearPregunta} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg disabled:opacity-50">
               {guardando ? 'Creando...' : 'Crear pregunta'}
             </button>
           </div>
@@ -224,7 +224,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalEditar(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
-            <button onClick={guardarEdicion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50">
+            <button onClick={guardarEdicion} disabled={guardando} className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg disabled:opacity-50">
               {guardando ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>

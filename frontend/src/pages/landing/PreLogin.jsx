@@ -76,7 +76,7 @@ function PreLogin({ isDemoMode = false }) {
       <PreLoginNavbar />
       <div className="flex w-full pt-24 pb-12 px-20">
         <div className="w-1/2 flex flex-col justify-center pr-10">
-          <h1 className="text-green-600 mb-4 text-6xl font-bold tracking-tight">🌱 BROTA</h1>
+          <h1 className="text-primary mb-4 text-6xl font-bold tracking-tight">🌱 BROTA</h1>
           <h2 className="text-3xl font-medium text-black mb-10 leading-snug">
             Potenciando el crecimiento digital <br /> de tu negocio desde la raíz.
           </h2>

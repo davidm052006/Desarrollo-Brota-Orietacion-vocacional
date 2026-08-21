@@ -60,7 +60,7 @@ function MenSyncPanel() {
   };
 
   const msgCls = {
-    ok:    'bg-green-50 dark:bg-[#0a2018] border-green-200 dark:border-[#1a4030] text-green-700 dark:text-green-400',
+    ok:    'bg-primary-soft dark:bg-[#0a2018] border-primary/25 dark:border-[#1a4030] text-primary ',
     info:  'bg-blue-50 dark:bg-[#0d1a30] border-blue-200 dark:border-[#1a3060] text-blue-700 dark:text-blue-400',
     error: 'bg-red-50 dark:bg-[#200a0a] border-red-200 dark:border-[#401a1a] text-red-700 dark:text-red-400',
   };
@@ -78,7 +78,7 @@ function MenSyncPanel() {
           cargando ? 'bg-gray-100 text-gray-400 dark:bg-white/10 dark:text-gray-500'
           : estado?.hayActualizacion
             ? 'bg-amber-100 text-amber-700 dark:bg-[#2a1800] dark:text-amber-400'
-            : 'bg-green-100 text-green-700 dark:bg-[#0a2018] dark:text-green-400'
+            : 'bg-primary-soft text-primary dark:bg-[#0a2018] '
         }`}>
           {cargando ? 'Verificando...' : estado?.hayActualizacion ? 'Actualización disponible' : 'Al día'}
         </span>
@@ -133,7 +133,7 @@ function MenSyncPanel() {
         <button
           onClick={sincronizar}
           disabled={sincronizando || verificando}
-          className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl bg-green-600 hover:bg-green-700 text-white transition disabled:opacity-50"
+          className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl bg-primary hover:bg-primary-hover text-white transition disabled:opacity-50"
         >
           {sincronizando ? (
             <><span className="animate-spin inline-block w-3.5 h-3.5 border border-white/60 border-t-white rounded-full" /> Sincronizando...</>
@@ -173,7 +173,7 @@ export default function ConfiguracionSection() {
               <p className="text-sm text-gray-700 dark:text-gray-200 font-medium">Permitir nuevos registros</p>
               <p className="text-xs text-gray-400">Habilita el formulario de registro público</p>
             </div>
-            <div className="w-11 h-6 bg-green-500 rounded-full relative cursor-pointer flex-shrink-0">
+            <div className="w-11 h-6 bg-primary rounded-full relative cursor-pointer flex-shrink-0">
               <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 shadow-sm" />
             </div>
           </div>
@@ -183,12 +183,12 @@ export default function ConfiguracionSection() {
             <input
               type="number"
               defaultValue={20}
-              className="w-28 px-3 py-1.5 border border-gray-200 dark:border-[#1e2a21] rounded-lg text-sm bg-white dark:bg-[#0d110e] text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-300"
+              className="w-28 px-3 py-1.5 border border-gray-200 dark:border-[#1e2a21] rounded-lg text-sm bg-white dark:bg-[#0d110e] text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
         </div>
 
-        <button className="mt-5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-5 py-2 rounded-xl transition">
+        <button className="mt-5 bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-5 py-2 rounded-xl transition">
           Guardar cambios
         </button>
       </div>

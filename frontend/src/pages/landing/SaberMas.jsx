@@ -36,8 +36,8 @@ const obtienes = [
 ];
 
 const resultadoFortalezas = [
-  { emoji: '🎨', label: 'Creatividad',           tag: 'Alta',  color: 'bg-green-100 text-green-700 dark:bg-[#0d1a12] dark:text-green-400' },
-  { emoji: '🧠', label: 'Pensamiento Analítico', tag: 'Alta',  color: 'bg-green-100 text-green-700 dark:bg-[#0d1a12] dark:text-green-400' },
+  { emoji: '🎨', label: 'Creatividad',           tag: 'Alta',  color: 'bg-primary-soft text-primary dark:bg-[#0d1a12] ' },
+  { emoji: '🧠', label: 'Pensamiento Analítico', tag: 'Alta',  color: 'bg-primary-soft text-primary dark:bg-[#0d1a12] ' },
   { emoji: '💬', label: 'Comunicación',           tag: 'Media', color: 'bg-yellow-100 text-yellow-700 dark:bg-[#1a1500] dark:text-yellow-400' },
   { emoji: '⭐', label: 'Liderazgo',             tag: 'Media', color: 'bg-yellow-100 text-yellow-700 dark:bg-[#1a1500] dark:text-yellow-400' },
   { emoji: '🤝', label: 'Trabajo en Equipo',      tag: 'Media', color: 'bg-yellow-100 text-yellow-700 dark:bg-[#1a1500] dark:text-yellow-400' },
@@ -69,12 +69,12 @@ export default function SaberMas() {
       <LoginNavbar />
 
       {/* ── Hero ── */}
-      <section className="pt-28 pb-16 px-6 bg-gradient-to-b from-green-50 to-white dark:from-[#0d1a12] dark:to-[#111318]">
+      <section className="pt-28 pb-16 px-6 bg-gradient-to-b from-primary-soft to-white dark:from-[#0d1a12] dark:to-[#111318]">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10">
           <div className="flex-1">
             <button
               onClick={() => navigate('/servicios')}
-              className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400 font-medium mb-6 hover:underline"
+              className="flex items-center gap-1 text-sm text-primary font-medium mb-6 hover:underline"
             >
               ← Volver a servicios
             </button>
@@ -86,7 +86,7 @@ export default function SaberMas() {
               que se ajusten a ti. Conoce cómo funciona nuestro test vocacional inteligente.
             </p>
           </div>
-          <div className="flex-shrink-0 w-48 h-48 bg-green-50 dark:bg-[#0d1a12] rounded-3xl flex items-center justify-center text-8xl shadow-sm">
+          <div className="flex-shrink-0 w-48 h-48 bg-primary-soft dark:bg-[#0d1a12] rounded-3xl flex items-center justify-center text-8xl shadow-sm">
             📋
           </div>
         </div>
@@ -99,11 +99,11 @@ export default function SaberMas() {
           {pasosFuncionamiento.map((p, i) => (
             <div key={p.num} className="flex-1 flex flex-col items-center text-center relative">
               {i < pasosFuncionamiento.length - 1 && (
-                <div className="hidden lg:block absolute top-10 left-full w-8 text-green-300 dark:text-green-800 text-xl z-10 -translate-x-1/2">
+                <div className="hidden lg:block absolute top-10 left-full w-8 text-primary dark:text-primary text-xl z-10 -translate-x-1/2">
                   --→
                 </div>
               )}
-              <div className="w-8 h-8 rounded-full bg-green-600 text-white text-sm font-bold flex items-center justify-center mb-3">
+              <div className="w-8 h-8 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center mb-3">
                 {p.num}
               </div>
               <div className="text-5xl mb-3">{p.emoji}</div>
@@ -149,14 +149,14 @@ export default function SaberMas() {
                   <span className="text-xl w-6">{b.emoji}</span>
                   <span className="text-sm text-gray-700 dark:text-gray-300 w-44">{b.label}</span>
                   <div className="flex-1 bg-gray-100 dark:bg-[#2c3140] rounded-full h-2.5">
-                    <div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${b.pct}%` }} />
+                    <div className="bg-primary h-2.5 rounded-full" style={{ width: `${b.pct}%` }} />
                   </div>
                   <span className="text-xs text-gray-500 dark:text-gray-400 w-16 text-right">{b.nivel}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="bg-green-50 dark:bg-[#0d1a12] border border-green-100 dark:border-[#1a3020] rounded-2xl p-6">
+          <div className="bg-primary-soft dark:bg-[#0d1a12] border border-primary/20 dark:border-[#1a3020] rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">🌱</span>
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">Perfil único</h3>
@@ -177,7 +177,7 @@ export default function SaberMas() {
             <ul className="space-y-3">
               {obtienes.map((o) => (
                 <li key={o} className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
-                  <span className="text-green-500 text-lg">✅</span> {o}
+                  <span className="text-primary text-lg">✅</span> {o}
                 </li>
               ))}
             </ul>
@@ -188,7 +188,7 @@ export default function SaberMas() {
             <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">Este es un ejemplo de lo que verás al finalizar tu test.</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-3">Fortalezas principales</p>
+                <p className="text-xs font-semibold text-primary mb-3">Fortalezas principales</p>
                 <div className="space-y-2">
                   {resultadoFortalezas.map((f) => (
                     <div key={f.label} className="flex items-center justify-between text-xs">
@@ -201,14 +201,14 @@ export default function SaberMas() {
                 </div>
               </div>
               <div>
-                <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-3">Carreras recomendadas</p>
+                <p className="text-xs font-semibold text-primary mb-3">Carreras recomendadas</p>
                 <div className="space-y-2">
                   {carrerasRecomendadas.map((c) => (
                     <div key={c.label} className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300">
                       <span>{c.emoji}</span> {c.label}
                     </div>
                   ))}
-                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">Y más opciones para ti...</p>
+                  <p className="text-xs text-primary font-medium mt-1">Y más opciones para ti...</p>
                 </div>
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function SaberMas() {
       </section>
 
       {/* ── CTA final ── */}
-      <section className="py-14 px-6 bg-green-50 dark:bg-[#0d1a12]">
+      <section className="py-14 px-6 bg-primary-soft dark:bg-[#0d1a12]">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-5">
             <span className="text-6xl">🌱</span>
@@ -237,7 +237,7 @@ export default function SaberMas() {
             </button>
             <button
               onClick={() => navigate('/servicios')}
-              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--color-primary)] text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-[#112010] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--color-primary)] text-primary hover:bg-primary-soft dark:hover:bg-[#112010] transition-all duration-200"
             >
               Explorar profesiones ✓
             </button>

@@ -7,7 +7,7 @@ export default function Avatar({ name = '', size = 'md' }) {
     lg: 'w-12 h-12 text-lg',
   };
   return (
-    <div className={`${sizes[size]} rounded-full bg-green-600 text-white font-bold flex items-center justify-center select-none`}>
+    <div className={`${sizes[size]} rounded-full bg-primary text-white font-bold flex items-center justify-center select-none`}>
       {initial}
     </div>
   );
