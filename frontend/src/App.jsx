@@ -20,7 +20,9 @@ import ForoDetalle          from './pages/dashboard/comunidad/ForoDetalle';
 import HistoriaDetalle      from './pages/dashboard/comunidad/HistoriaDetalle';
 import ConvocatoriaDetalle  from './pages/dashboard/comunidad/ConvocatoriaDetalle';
 import PostDetalle          from './pages/dashboard/comunidad/PostDetalle';
+import AutorInfo             from './pages/dashboard/comunidad/AutorInfo';
 import Ajustes              from './pages/dashboard/Ajustes';
+import Perfil                from './pages/dashboard/Perfil';
 import Racha                from './pages/dashboard/Racha';
 import Notificaciones       from './pages/dashboard/Notificaciones';
 import Rutas                from './pages/dashboard/Rutas';
@@ -159,6 +161,10 @@ function App() {
           path="/dashboard/comunidad/post/:id"
           element={loading ? spinner : puedeAcceder ? <PostDetalle /> : <Navigate to="/login" replace />}
         />
+        <Route
+          path="/dashboard/comunidad/autor/:userId"
+          element={loading ? spinner : puedeAcceder ? <AutorInfo /> : <Navigate to="/login" replace />}
+        />
         {[
           { path: '/dashboard/favoritos', titulo: 'Favoritos' },
         ].map(({ path, titulo }) => (
@@ -179,6 +185,10 @@ function App() {
         <Route
           path="/dashboard/ajustes"
           element={loading ? spinner : puedeAcceder ? <Ajustes user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/perfil"
+          element={loading ? spinner : puedeAcceder ? <Perfil user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/dashboard/racha"

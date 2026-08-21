@@ -59,6 +59,14 @@ export default function Comunidad() {
     }
   }, [location.state?.resetAt]);
 
+  // Llegar desde otra pantalla con una pestaña específica en mente
+  // (ej. el feed del Dashboard, cuando el destino no es un detalle real).
+  useEffect(() => {
+    if (location.state?.tab && TABS.some(t => t.key === location.state.tab)) {
+      setTabActiva(location.state.tab);
+    }
+  }, [location.state?.tab]);
+
   function handleFAB() {
     if (tabActiva === 'historias') setModalHistoria(true);
     else setModalPregunta(true);

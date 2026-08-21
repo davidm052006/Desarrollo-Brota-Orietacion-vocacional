@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { obtenerResultado, eliminarResultado } from '../../../services/perfilService';
 import { storageKey, getCategoriaInfo } from '../../../utils/vocacionalCategorias';
 
-const QUOTE = 'No se trata de tener todas las respuestas, sino de tener la curiosidad de descubrirlas.';
-
 export default function ContinueSection({ perfilUsuarioId, userId }) {
   const navigate = useNavigate();
   const [estado, setEstado]       = useState('cargando');
@@ -70,11 +68,6 @@ export default function ContinueSection({ perfilUsuarioId, userId }) {
 
   return (
     <div>
-      <div className="font-display" style={{ fontSize: 18, fontWeight: 800, marginBottom: 13 }}>
-        ¿Qué te gustaría hacer hoy?
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-
         {/* Test vocacional card */}
         <div style={{
           background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 18,
@@ -141,25 +134,6 @@ export default function ContinueSection({ perfilUsuarioId, userId }) {
             </div>
           </div>
         </div>
-
-        {/* Frase motivacional */}
-        <div style={{
-          background: 'var(--primary-soft)', border: '1px solid var(--line)', borderRadius: 18,
-          padding: 18, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center',
-        }}>
-          <div style={{
-            position: 'absolute', top: -8, left: 8, fontSize: 60, opacity: .15,
-            fontFamily: 'serif', color: 'var(--primary)', lineHeight: 1, userSelect: 'none',
-          }}>❝</div>
-          <div style={{
-            fontSize: 14, color: 'var(--ink)', lineHeight: 1.5, fontStyle: 'italic',
-            position: 'relative', zIndex: 1,
-          }}>
-            {QUOTE}
-          </div>
-        </div>
-
-      </div>
     </div>
   );
 }

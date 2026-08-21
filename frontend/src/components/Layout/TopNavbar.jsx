@@ -1,9 +1,20 @@
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { useFontFamily } from '../../hooks/useFontFamily';
 import { useInactivityLogout } from '../../hooks/useInactivityLogout';
 import { handleLogout } from '../../utils/auth';
+
+// Mismos 5 campos que se pueden completar en /dashboard/perfil — el % de la
+// card usa estos, pero se muestran agrupados (nombre completo en una fila).
+const CAMPOS_PERFIL = ['nombre', 'apellido', 'ciudad', 'edad', 'nivel_educativo'];
+const DATOS_PERFIL = [
+  { label: 'Nombre',          valor: (p) => [p?.nombre, p?.apellido].filter(Boolean).join(' ') || null },
+  { label: 'Ciudad',          valor: (p) => p?.ciudad || null },
+  { label: 'Edad',            valor: (p) => p?.edad ? `${p.edad} años` : null },
+  { label: 'Nivel educativo', valor: (p) => p?.nivel_educativo || null },
+];
 
 const NAV_ITEMS = [
   { to: '/dashboard',             label: 'Inicio',         end: true },
@@ -38,6 +49,22 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
   const { mostrarAviso, segundosRestantes, seguirConectado, cerrarSesionAhora } = useInactivityLogout(isDemoMode);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [perfilAbierto, setPerfilAbierto] = useState(false);
+  const perfilRef = useRef(null);
+
+  // Cerrar la card al hacer clic afuera
+  useEffect(() => {
+    if (!perfilAbierto) return;
+    const onClickFuera = (e) => {
+      if (perfilRef.current && !perfilRef.current.contains(e.target)) setPerfilAbierto(false);
+    };
+    document.addEventListener('mousedown', onClickFuera);
+    return () => document.removeEventListener('mousedown', onClickFuera);
+  }, [perfilAbierto]);
+
+  const camposCompletos = CAMPOS_PERFIL.filter(c => Boolean(profile?.[c])).length;
+  const porcentajePerfil = Math.round((camposCompletos / CAMPOS_PERFIL.length) * 100);
 
   const nombre = profile?.nombre || profile?.primer_nombre || '';
   const rol = isAdmin ? 'Administrador' : 'Estudiante';
@@ -180,25 +207,95 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
           {dark ? '☀️' : '🌙'}
         </button>
 
-        <div style={{ width: 1, height: 26, background: 'var(--line)', margin: '0 2px' }} />
-
         <button
           onClick={() => navigate('/dashboard/ajustes')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 9,
-            cursor: 'pointer', background: 'none', border: 'none', padding: '4px 6px',
-            borderRadius: 10,
-          }}
-          title="Mi perfil"
-        >
-          <Avatar nombre={nombre} />
-          <div style={{ lineHeight: 1.15, textAlign: 'left' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap' }}>
-              {nombre || 'Mi perfil'}
+          title="Configuración"
+          style={iconBtn}
+        ><img src="/icons/icon-ajustes.svg" alt="Configuración" style={{ width: 18, height: 18 }} /></button>
+
+        <div style={{ width: 1, height: 26, background: 'var(--line)', margin: '0 2px' }} />
+
+        <div ref={perfilRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setPerfilAbierto(o => !o)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 9,
+              cursor: 'pointer', background: perfilAbierto ? 'var(--surface-2)' : 'none',
+              border: 'none', padding: '4px 6px', borderRadius: 10,
+            }}
+            title="Mi perfil"
+          >
+            <Avatar nombre={nombre} />
+            <div style={{ lineHeight: 1.15, textAlign: 'left' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap' }}>
+                {nombre || 'Mi perfil'}
+              </div>
+              <div style={{ fontSize: 10.5, color: 'var(--ink-soft)' }}>{rol}</div>
             </div>
-            <div style={{ fontSize: 10.5, color: 'var(--ink-soft)' }}>{rol}</div>
+          </button>
+
+          {/* Card flotante — animación rápida de opacidad + escala, sin navegar */}
+          <div style={{
+            position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 260, zIndex: 40,
+            background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 18,
+            boxShadow: 'var(--shadow-md)', padding: 18,
+            opacity: perfilAbierto ? 1 : 0,
+            transform: perfilAbierto ? 'translateY(0) scale(1)' : 'translateY(-6px) scale(.97)',
+            pointerEvents: perfilAbierto ? 'auto' : 'none',
+            transformOrigin: 'top right',
+            transition: 'opacity 160ms ease, transform 160ms ease',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+              <Avatar nombre={nombre} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {nombre || 'Mi perfil'}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--ink-soft)' }}>{rol}</div>
+              </div>
+            </div>
+
+            <div style={{
+              height: 6, background: 'var(--surface-2)', borderRadius: 999,
+              margin: '14px 0 6px', overflow: 'hidden',
+            }}>
+              <div style={{
+                width: `${porcentajePerfil}%`, height: '100%',
+                background: 'linear-gradient(90deg, var(--primary), var(--accent))',
+                borderRadius: 999,
+              }} />
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 12 }}>
+              Perfil {porcentajePerfil}% completo
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 14 }}>
+              {DATOS_PERFIL.map(({ label, valor }) => {
+                const dato = valor(profile);
+                return (
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12.5 }}>
+                    <span style={{ color: 'var(--ink-soft)' }}>{label}</span>
+                    <span style={{
+                      fontWeight: 600, color: dato ? 'var(--ink)' : 'var(--ink-soft)',
+                      textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140,
+                    }}>{dato || 'Sin definir'}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => { setPerfilAbierto(false); navigate('/dashboard/perfil'); }}
+              style={{
+                width: '100%', background: 'var(--primary)', color: 'var(--primary-ink)',
+                fontWeight: 700, fontSize: 12.5, padding: 10, borderRadius: 10,
+                border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              Editar perfil →
+            </button>
           </div>
-        </button>
+        </div>
 
         <button
           onClick={() => handleLogout(isDemoMode)}

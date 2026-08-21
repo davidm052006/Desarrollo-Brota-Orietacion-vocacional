@@ -1,31 +1,10 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/Layout/DashboardLayout';
 import GlassSelect from '../../components/Shared/GlassSelect';
-import { obtenerPerfil, actualizarPerfil } from '../../services/perfilService';
+import { obtenerPerfil } from '../../services/perfilService';
 import { sendPasswordReset, verifyOtpAndUpdatePassword } from '../../services/authService';
 import { handleLogout } from '../../utils/auth';
-import { CIUDADES_COLOMBIA } from '../../utils/ciudadesColombia';
 import { useFontFamily, FUENTES } from '../../hooks/useFontFamily';
-import { calcularEdad } from '../../utils/calcularEdad';
-
-const NIVELES_EDUCATIVOS = ['Educación media', 'Técnico', 'Tecnólogo', 'Universitario', 'Posgrado'];
-
-const MESES = [
-  { value: '1', label: 'Enero' }, { value: '2', label: 'Febrero' }, { value: '3', label: 'Marzo' },
-  { value: '4', label: 'Abril' }, { value: '5', label: 'Mayo' }, { value: '6', label: 'Junio' },
-  { value: '7', label: 'Julio' }, { value: '8', label: 'Agosto' }, { value: '9', label: 'Septiembre' },
-  { value: '10', label: 'Octubre' }, { value: '11', label: 'Noviembre' }, { value: '12', label: 'Diciembre' },
-];
-
-const ANIO_ACTUAL = new Date().getFullYear();
-// Mismo rango 14–100 años que valida el backend (CHECK de perfiles_usuario)
-const ANIOS = Array.from({ length: 87 }, (_, i) => String(ANIO_ACTUAL - 14 - i));
-
-// Cuántos días tiene el mes elegido (considera bisiestos si ya hay año elegido)
-function diasEnMes(mes, anio) {
-  if (!mes) return 31;
-  return new Date(Number(anio) || 2024, Number(mes), 0).getDate();
-}
 
 const inputStyle = {
   width: '100%', padding: '9px 12px', borderRadius: 10,
@@ -98,11 +77,6 @@ export default function Ajustes({ user, isDemoMode = false }) {
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
-  const [form, setForm] = useState({ nombre: '', apellido: '', ciudad: '', edad: '', nivel_educativo: '' });
-  const [fechaNac, setFechaNac] = useState({ dia: '', mes: '', anio: '' });
-  const [guardandoPerfil, setGuardandoPerfil] = useState(false);
-  const [perfilMsg, setPerfilMsg] = useState(null);
-
   const [passwords, setPasswords] = useState({ nueva: '', confirmar: '' });
   const [codigo, setCodigo] = useState('');
   const [codigoEnviado, setCodigoEnviado] = useState(false);
@@ -113,51 +87,10 @@ export default function Ajustes({ user, isDemoMode = false }) {
   useEffect(() => {
     if (!user?.id) return;
     obtenerPerfil(user.id).then(({ success, data }) => {
-      if (success) {
-        setProfile(data);
-        setForm({
-          nombre: data.nombre || '',
-          apellido: data.apellido || '',
-          ciudad: data.ciudad || '',
-          nivel_educativo: data.nivel_educativo || '',
-        });
-        // Antes solo se guardaba la edad, no la fecha exacta — si ya tenía
-        // edad cargada, solo podemos estimar el año, día y mes quedan vacíos.
-        if (data.edad) {
-          setFechaNac(f => ({ ...f, anio: String(ANIO_ACTUAL - data.edad) }));
-        }
-      }
+      if (success) setProfile(data);
       setLoadingProfile(false);
     });
   }, [user?.id]);
-
-  // Edad derivada de los 3 selects de fecha (misma fórmula que
-  // backend/src/controllers/authController.js en el registro) — si todavía
-  // no se tocó la fecha, cae a la edad ya guardada en el perfil.
-  const edadCalculada = calcularEdad(fechaNac.dia, fechaNac.mes, fechaNac.anio) ?? profile?.edad ?? null;
-
-  async function guardarPerfil() {
-    setPerfilMsg(null);
-
-    const tocoFecha = fechaNac.dia || fechaNac.mes || fechaNac.anio;
-    if (tocoFecha && (!fechaNac.dia || !fechaNac.mes || !fechaNac.anio)) {
-      setPerfilMsg({ tipo: 'error', texto: 'Completá día, mes y año de nacimiento.' });
-      return;
-    }
-    if (edadCalculada && (edadCalculada < 14 || edadCalculada > 100)) {
-      setPerfilMsg({ tipo: 'error', texto: 'La fecha de nacimiento da una edad fuera de 14–100 años.' });
-      return;
-    }
-
-    setGuardandoPerfil(true);
-    const { success, error } = await actualizarPerfil(user.id, { ...form, edad: edadCalculada });
-    setGuardandoPerfil(false);
-    setPerfilMsg(
-      success
-        ? { tipo: 'ok', texto: 'Cambios guardados.' }
-        : { tipo: 'error', texto: error || 'No se pudo guardar. Intentá de nuevo.' }
-    );
-  }
 
   async function enviarCodigo() {
     setPasswordMsg(null);
@@ -212,73 +145,6 @@ export default function Ajustes({ user, isDemoMode = false }) {
           <p style={{ color: 'var(--ink-soft)', fontSize: 14 }} className="animate-pulse">Cargando…</p>
         ) : (
           <>
-            <Card icono="/icons/icon-perfil.svg" titulo="Mi perfil">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-                <Campo label="Nombre" value={form.nombre} onChange={v => setForm(f => ({ ...f, nombre: v }))} />
-                <Campo label="Apellido" value={form.apellido} onChange={v => setForm(f => ({ ...f, apellido: v }))} />
-                <div>
-                  <label style={labelStyle}>Ciudad</label>
-                  <GlassSelect
-                    value={form.ciudad}
-                    onChange={v => setForm(f => ({ ...f, ciudad: v }))}
-                    options={CIUDADES_COLOMBIA}
-                    placeholder="Elegir ciudad"
-                  />
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={labelStyle}>Fecha de nacimiento</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr 1fr', gap: 8 }}>
-                    <GlassSelect
-                      value={fechaNac.dia}
-                      onChange={v => setFechaNac(f => ({ ...f, dia: v }))}
-                      options={Array.from({ length: diasEnMes(fechaNac.mes, fechaNac.anio) }, (_, i) => String(i + 1))}
-                      placeholder="Día"
-                    />
-                    <GlassSelect
-                      value={fechaNac.mes}
-                      onChange={v => setFechaNac(f => ({ ...f, mes: v, dia: '' }))}
-                      options={MESES}
-                      placeholder="Mes"
-                    />
-                    <GlassSelect
-                      value={fechaNac.anio}
-                      onChange={v => setFechaNac(f => ({ ...f, anio: v }))}
-                      options={ANIOS}
-                      placeholder="Año"
-                    />
-                  </div>
-                  {edadCalculada != null && (
-                    <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 6 }}>
-                      Eso te da {edadCalculada} años.
-                    </p>
-                  )}
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={labelStyle}>Nivel educativo</label>
-                  <GlassSelect
-                    value={form.nivel_educativo}
-                    onChange={v => setForm(f => ({ ...f, nivel_educativo: v }))}
-                    options={NIVELES_EDUCATIVOS}
-                    placeholder="Elegir nivel educativo"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={guardarPerfil}
-                disabled={guardandoPerfil || isDemoMode}
-                style={{
-                  background: 'var(--primary)', color: 'var(--primary-ink)', fontWeight: 700,
-                  fontSize: 13, padding: '9px 18px', borderRadius: 10, border: 'none',
-                  cursor: isDemoMode ? 'not-allowed' : 'pointer', opacity: guardandoPerfil || isDemoMode ? 0.6 : 1,
-                  fontFamily: 'inherit',
-                }}
-              >
-                {guardandoPerfil ? 'Guardando…' : 'Guardar cambios'}
-              </button>
-              {isDemoMode && <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 10 }}>No disponible en modo demo.</p>}
-              <Mensaje estado={perfilMsg} />
-            </Card>
-
             <Card icono="/icons/icon-apariencia.svg" titulo="Apariencia">
               <div style={{ maxWidth: 260 }}>
                 <label style={labelStyle}>Tipo de letra</label>
