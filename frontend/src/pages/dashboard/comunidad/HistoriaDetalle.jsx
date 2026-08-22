@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
 import { getHistoria, toggleLikeHistoria } from '../../../services/comunidadService';
 import { ModeracionBar } from './components/primitivos';
+import BrotiAvatar from '../../../components/Shared/BrotiAvatar';
 
 const AV_PALETTE = ['#16A34A', '#2563eb', '#db2777', '#d97706', '#7c3aed', '#0891b2'];
 function avatarColor(str = '') {
@@ -71,12 +72,14 @@ export default function HistoriaDetalle() {
           {/* Cabecera */}
           <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 20, padding: '26px 28px', marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
-              <span style={{
-                width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
-                background: avatarColor(datos.ini), color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 800, fontSize: 22,
-              }}>{datos.ini}</span>
+              {datos.broti_config ? <BrotiAvatar config={datos.broti_config} size={56} /> : (
+                <span style={{
+                  width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+                  background: avatarColor(datos.ini), color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 800, fontSize: 22,
+                }}>{datos.ini}</span>
+              )}
               <div>
                 <div style={{ fontWeight: 700, fontSize: 15 }}>{datos.name}</div>
                 {(datos.carrera || datos.inst) && (

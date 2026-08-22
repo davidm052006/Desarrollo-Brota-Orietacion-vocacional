@@ -5,6 +5,8 @@ import { useDarkMode } from '../../hooks/useDarkMode';
 import { useFontFamily } from '../../hooks/useFontFamily';
 import { useInactivityLogout } from '../../hooks/useInactivityLogout';
 import { handleLogout } from '../../utils/auth';
+import { getNotificaciones } from '../../services/comunidadService';
+import BrotiAvatar from '../Shared/BrotiAvatar';
 
 // Mismos 5 campos que se pueden completar en /dashboard/perfil — el % de la
 // card usa estos, pero se muestran agrupados (nombre completo en una fila).
@@ -25,21 +27,10 @@ const NAV_ITEMS = [
   { to: '/dashboard/comunidad',   label: 'Comunidad' },
 ];
 
-function Avatar({ nombre }) {
-  const initial = (nombre || 'U').charAt(0).toUpperCase();
-  return (
-    <span
-      style={{
-        width: 36, height: 36, borderRadius: '50%',
-        background: 'var(--primary)', color: 'var(--primary-ink)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 800, fontSize: 14,
-        flexShrink: 0,
-      }}
-    >
-      {initial}
-    </span>
-  );
+// El avatar propio siempre es Broti (nunca anónimo para uno mismo) — a
+// diferencia de comunidad, acá no hace falta lógica de fallback a inicial.
+function Avatar({ config }) {
+  return <BrotiAvatar config={config} size={36} />;
 }
 
 export default function TopNavbar({ profile, isDemoMode = false }) {
@@ -65,6 +56,17 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
 
   const camposCompletos = CAMPOS_PERFIL.filter(c => Boolean(profile?.[c])).length;
   const porcentajePerfil = Math.round((camposCompletos / CAMPOS_PERFIL.length) * 100);
+
+  // Punto rojo del ícono de notificaciones: solo si hay alguna real. No hay
+  // estado leído/no-leído (ver CLAUDE.md), así que esto es "tenés algo" más
+  // que "tenés algo nuevo".
+  const [tieneNotificaciones, setTieneNotificaciones] = useState(false);
+  useEffect(() => {
+    if (isDemoMode) return;
+    getNotificaciones().then(({ success, data }) => {
+      if (success) setTieneNotificaciones((data ?? []).length > 0);
+    });
+  }, [isDemoMode]);
 
   const nombre = profile?.nombre || profile?.primer_nombre || '';
   const rol = isAdmin ? 'Administrador' : 'Estudiante';
@@ -192,11 +194,13 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
             title="Notificaciones"
             style={iconBtn}
           ><img src="/icons/icon-mensajes.svg" alt="Notificaciones" style={{ width: 18, height: 18 }} /></button>
-          <span style={{
-            position: 'absolute', top: 6, right: 6,
-            width: 7, height: 7, borderRadius: '50%',
-            background: 'var(--accent)',
-          }} />
+          {tieneNotificaciones && (
+            <span style={{
+              position: 'absolute', top: 6, right: 6,
+              width: 7, height: 7, borderRadius: '50%',
+              background: 'var(--accent)',
+            }} />
+          )}
         </div>
 
         <button
@@ -225,7 +229,7 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
             }}
             title="Mi perfil"
           >
-            <Avatar nombre={nombre} />
+            <Avatar config={profile?.broti_config} />
             <div style={{ lineHeight: 1.15, textAlign: 'left' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap' }}>
                 {nombre || 'Mi perfil'}
@@ -246,7 +250,7 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
             transition: 'opacity 160ms ease, transform 160ms ease',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-              <Avatar nombre={nombre} />
+              <Avatar config={profile?.broti_config} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {nombre || 'Mi perfil'}

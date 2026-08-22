@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
 import { getPostsByForo, createPost } from '../../../services/comunidadService';
 import { ModeracionBar } from './components/primitivos';
+import BrotiAvatar from '../../../components/Shared/BrotiAvatar';
 
 const AV_PALETTE = ['#16A34A', '#2563eb', '#db2777', '#d97706', '#7c3aed', '#0891b2'];
 function avatarColor(str = '') {
@@ -179,12 +180,14 @@ export default function ForoDetalle() {
                   <VoteControl votos={p.votos} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <span style={{
-                        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                        background: avatarColor(p.ini), color: '#fff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 800, fontSize: 12,
-                      }}>{p.ini}</span>
+                      {p.broti_config ? <BrotiAvatar config={p.broti_config} size={28} /> : (
+                        <span style={{
+                          width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                          background: avatarColor(p.ini), color: '#fff',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontWeight: 800, fontSize: 12,
+                        }}>{p.ini}</span>
+                      )}
                       <span style={{ fontSize: 13, fontWeight: 700 }}>{p.autor_display}</span>
                       <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>· {p.time}</span>
                     </div>

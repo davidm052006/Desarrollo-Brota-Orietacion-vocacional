@@ -24,6 +24,7 @@ import AutorInfo             from './pages/dashboard/comunidad/AutorInfo';
 import Ajustes              from './pages/dashboard/Ajustes';
 import Perfil                from './pages/dashboard/Perfil';
 import Racha                from './pages/dashboard/Racha';
+import Broti                 from './pages/dashboard/Broti';
 import Notificaciones       from './pages/dashboard/Notificaciones';
 import Rutas                from './pages/dashboard/Rutas';
 
@@ -193,6 +194,10 @@ function App() {
         <Route
           path="/dashboard/racha"
           element={loading ? spinner : puedeAcceder ? <Racha user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/broti"
+          element={loading ? spinner : puedeAcceder ? <Broti user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
         />
         <Route
           path="/dashboard/admin"

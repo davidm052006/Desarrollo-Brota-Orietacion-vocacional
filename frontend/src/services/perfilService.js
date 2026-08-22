@@ -138,3 +138,18 @@ export const actualizarPerfil = async (userId, datos) => {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
+
+export const actualizarBroti = async (userId, broti_config) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/perfil/${userId}/broti`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ broti_config }),
+    });
+    return parseResponse(res);
+  } catch (err) {
+    console.error('perfilService.actualizarBroti:', err);
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};

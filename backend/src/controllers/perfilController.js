@@ -427,6 +427,41 @@ const actualizarPerfil = async (req, res) => {
   }
 };
 
+// PATCH /api/perfil/:userId/broti — guarda qué items tiene equipados en cada
+// categoría (lentes/fondo/accesorio/etc). Separado de actualizarPerfil
+// porque es un concepto distinto (personalización de la mascota, no datos
+// del usuario) — ver frontend/src/utils/brotiCatalog.js para el catálogo.
+const actualizarBroti = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (userId !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
+    }
+
+    const { broti_config } = req.body;
+    if (typeof broti_config !== 'object' || broti_config === null || Array.isArray(broti_config)) {
+      return res.status(400).json({ success: false, message: 'broti_config inválido' });
+    }
+
+    const { data, error } = await supabase
+      .from('perfiles_usuario')
+      .update({ broti_config })
+      .eq('user_id', userId)
+      .select('broti_config')
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+
+    return res.json({ success: true, data });
+  } catch (err) {
+    console.error('perfilController.actualizarBroti:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   obtenerCuestionario,
   guardarResultado,
@@ -436,4 +471,5 @@ module.exports = {
   eliminarResultado,
   obtenerPerfil,
   actualizarPerfil,
+  actualizarBroti,
 };

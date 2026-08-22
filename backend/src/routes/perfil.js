@@ -10,6 +10,7 @@ const {
   eliminarResultado,
   obtenerPerfil,
   actualizarPerfil,
+  actualizarBroti,
 } = require('../controllers/perfilController');
 
 // Todas las rutas de perfil requieren sesión válida
@@ -30,5 +31,6 @@ router.patch('/recomendaciones/:id/vista',           marcarRecomendacionVista);
 // Perfil de usuario
 router.get  ('/:userId', obtenerPerfil);
 router.patch('/:userId', actualizarPerfil);
+router.patch('/:userId/broti', actualizarBroti);
 
 module.exports = router;

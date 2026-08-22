@@ -1,5 +1,6 @@
 import { Spinner, ModeracionBar } from './primitivos';
 import { avatarColor } from './constantes';
+import BrotiAvatar from '../../../../components/Shared/BrotiAvatar';
 
 // Pestaña "Historias reales": banner para compartir + listado de historias.
 export default function Historias({ data, cargando, onCompartir, onLeer, onModerar }) {
@@ -39,12 +40,14 @@ export default function Historias({ data, cargando, onCompartir, onLeer, onModer
               borderRadius: 12, padding: 18, display: 'flex', flexDirection: 'column',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                <span style={{
-                  width: 42, height: 42, borderRadius: '50%',
-                  background: avatarColor(h.ini), color: '#fff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 800, fontSize: 16, flexShrink: 0,
-                }}>{h.ini}</span>
+                {h.broti_config ? <BrotiAvatar config={h.broti_config} size={42} /> : (
+                  <span style={{
+                    width: 42, height: 42, borderRadius: '50%',
+                    background: avatarColor(h.ini), color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 800, fontSize: 16, flexShrink: 0,
+                  }}>{h.ini}</span>
+                )}
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{h.name}</div>
                   <div style={{ fontSize: 11.5, color: 'var(--ink-soft)' }}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardLayout from '../../components/Layout/DashboardLayout';
 import { obtenerPerfil } from '../../services/perfilService';
+import { getItem } from '../../utils/brotiCatalog';
 
 // Elige mascota + mensaje según el estado real de la racha. "racha_rota"
 // viene del backend (perfilController.actualizarRacha) y solo es true el
@@ -77,6 +78,8 @@ export default function Racha({ user, isDemoMode = false }) {
   const intensidad = profile?.racha_rota ? 0.06 : Math.min(0.35 + (dias / 14) * 0.65, 1);
   const { img, anim, titulo, mensaje } = estadoMascota(profile);
   const diasLlenos = Math.min(dias, 7);
+  const brotiConfig = profile?.broti_config;
+  const fondoItem = brotiConfig?.fondo ? getItem(brotiConfig.fondo) : null;
 
   return (
     <DashboardLayout profile={{ ...profile, email: user?.email }} isDemoMode={isDemoMode}>
@@ -100,13 +103,21 @@ export default function Racha({ user, isDemoMode = false }) {
             borderRadius: 28, padding: '44px 32px', textAlign: 'center', color: '#fff',
           }}
         >
-          <img
-            key={img}
-            src={img}
-            alt=""
-            className={`mascota-entrada ${anim}`}
-            style={{ width: 140, height: 140, margin: '0 auto 18px', display: 'block' }}
-          />
+          <div style={{
+            position: 'relative', width: 140, height: 140, margin: '0 auto 18px',
+            borderRadius: '50%', overflow: 'visible',
+            background: fondoItem?.imagen
+              ? `url(${fondoItem.imagen}) center / cover`
+              : (fondoItem?.color || 'transparent'),
+          }}>
+            <img
+              key={img}
+              src={img}
+              alt=""
+              className={`mascota-entrada ${anim}`}
+              style={{ width: '100%', height: '100%', display: 'block' }}
+            />
+          </div>
           <div className="font-display" style={{ fontSize: 36, fontWeight: 800, lineHeight: 1 }}>
             {dias} {dias === 1 ? 'día' : 'días'}
           </div>
@@ -161,6 +172,20 @@ export default function Racha({ user, isDemoMode = false }) {
             </button>
           </div>
         </div>
+
+        <button
+          onClick={() => navigate('/dashboard/broti')}
+          style={{
+            marginTop: 14, width: '100%', textAlign: 'center',
+            background: 'var(--surface)', border: '1px solid var(--line)', color: 'var(--ink)',
+            fontWeight: 700, fontSize: 13, padding: '13px 14px', borderRadius: 16,
+            cursor: 'pointer', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
+        >
+          <img src="/logos/logo-feliz.svg" alt="" style={{ width: 18, height: 18 }} />
+          Personalizar a Broti →
+        </button>
       </div>
     </DashboardLayout>
   );

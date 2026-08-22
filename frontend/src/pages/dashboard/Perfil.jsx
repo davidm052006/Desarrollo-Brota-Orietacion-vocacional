@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/Layout/DashboardLayout';
 import GlassSelect from '../../components/Shared/GlassSelect';
+import BrotiAvatar from '../../components/Shared/BrotiAvatar';
 import { obtenerPerfil, actualizarPerfil } from '../../services/perfilService';
 import { CIUDADES_COLOMBIA } from '../../utils/ciudadesColombia';
 import { calcularEdad } from '../../utils/calcularEdad';
@@ -139,6 +140,30 @@ export default function Perfil({ user, isDemoMode = false }) {
         {loadingProfile ? (
           <p style={{ color: 'var(--ink-soft)', fontSize: 14 }} className="animate-pulse">Cargando…</p>
         ) : (
+          <>
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 20,
+            padding: '18px 22px', marginBottom: 18,
+            display: 'flex', alignItems: 'center', gap: 16,
+          }}>
+            <BrotiAvatar config={profile?.broti_config} size={64} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700 }}>Tu foto de perfil es Broti</div>
+              <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>
+                Se ve así en tu cuenta y en tus publicaciones de comunidad (si no son anónimas).
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/dashboard/broti')}
+              style={{
+                background: 'var(--primary-soft)', color: 'var(--primary-deep)',
+                fontWeight: 700, fontSize: 12.5, padding: '9px 16px', borderRadius: 10,
+                border: 'none', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, whiteSpace: 'nowrap',
+              }}
+            >
+              Personalizar →
+            </button>
+          </div>
           <div style={{
             background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 20,
             padding: '24px 26px',
@@ -208,6 +233,7 @@ export default function Perfil({ user, isDemoMode = false }) {
             {isDemoMode && <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 10 }}>No disponible en modo demo.</p>}
             <Mensaje estado={msg} />
           </div>
+          </>
         )}
       </div>
     </DashboardLayout>

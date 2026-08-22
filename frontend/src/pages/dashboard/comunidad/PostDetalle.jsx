@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
 import { getPost, votarPost, responderPost, getPregunta, responderPregunta, reportarPregunta } from '../../../services/comunidadService';
 import { ModeracionBar } from './components/primitivos';
+import BrotiAvatar from '../../../components/Shared/BrotiAvatar';
 
 const AV_PALETTE = ['#16A34A', '#2563eb', '#db2777', '#d97706', '#7c3aed', '#0891b2'];
 function avatarColor(str = '') {
@@ -129,12 +130,14 @@ export default function PostDetalle() {
                   {datos.titulo || datos.title}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-                  <span style={{
-                    width: 36, height: 36, borderRadius: '50%',
-                    background: avatarColor(datos.ini), color: '#fff',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 800, fontSize: 14, flexShrink: 0,
-                  }}>{datos.ini}</span>
+                  {datos.broti_config ? <BrotiAvatar config={datos.broti_config} size={36} /> : (
+                    <span style={{
+                      width: 36, height: 36, borderRadius: '50%',
+                      background: avatarColor(datos.ini), color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 800, fontSize: 14, flexShrink: 0,
+                    }}>{datos.ini}</span>
+                  )}
                   <span style={{ fontWeight: 700, fontSize: 13.5 }}>{datos.autor_display || datos.name}</span>
                   <span style={{ fontSize: 12.5, color: 'var(--ink-soft)' }}>· {datos.time}</span>
                   {datos.resuelta && (

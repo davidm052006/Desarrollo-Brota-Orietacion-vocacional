@@ -53,16 +53,26 @@ async function esModerador(userId) {
   return data?.rol === 'admin' || data?.rol === 'moderador';
 }
 
-// Nombre a mostrar de un autor: el real si no es anónimo, "Anónimo" si lo es
-// y quien mira no modera, o el real (marcado con esAnonimoReal) si quien
-// mira sí modera — para poder ver quién publicó incluso lo anónimo.
-async function resolverAutor({ userId, anonimo, autorNombreGuardado, puedeModerar }) {
-  if (!anonimo) return { display: autorNombreGuardado || 'Usuario', esAnonimoReal: false };
-  if (puedeModerar) {
-    const real = await getNombreUsuario(userId);
-    return { display: real, esAnonimoReal: true };
-  }
-  return { display: 'Anónimo', esAnonimoReal: false };
+async function getBrotiConfig(userId) {
+  const { data } = await supabase.from('perfiles_usuario').select('broti_config').eq('user_id', userId).single();
+  return data?.broti_config ?? null;
 }
 
-module.exports = { timeAgo, incrementarContador, getNombreUsuario, esModerador, resolverAutor };
+// Nombre (+ Broti) a mostrar de un autor: el real si no es anónimo, "Anónimo"
+// sin Broti si lo es y quien mira no modera, o el real con Broti (marcado
+// con esAnonimoReal) si quien mira sí modera — mismo criterio para ambos:
+// mostrar el Broti de alguien anónimo lo deanonimizaría igual que el nombre,
+// así que sigue la misma regla.
+async function resolverAutor({ userId, anonimo, autorNombreGuardado, puedeModerar }) {
+  if (!anonimo) {
+    const brotiConfig = await getBrotiConfig(userId);
+    return { display: autorNombreGuardado || 'Usuario', esAnonimoReal: false, brotiConfig };
+  }
+  if (puedeModerar) {
+    const [real, brotiConfig] = await Promise.all([getNombreUsuario(userId), getBrotiConfig(userId)]);
+    return { display: real, esAnonimoReal: true, brotiConfig };
+  }
+  return { display: 'Anónimo', esAnonimoReal: false, brotiConfig: null };
+}
+
+module.exports = { timeAgo, incrementarContador, getNombreUsuario, esModerador, resolverAutor, getBrotiConfig };

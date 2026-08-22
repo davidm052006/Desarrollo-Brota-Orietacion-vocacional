@@ -1,5 +1,6 @@
 import { Spinner, ModeracionBar } from './primitivos';
 import { avatarColor } from './constantes';
+import BrotiAvatar from '../../../../components/Shared/BrotiAvatar';
 
 // Pestaña "Preguntas": barra para preguntar + listado de preguntas de la comunidad.
 export default function Preguntas({ data, cargando, onPreguntar, onPreguntaClick, onModerar }) {
@@ -42,12 +43,14 @@ export default function Preguntas({ data, cargando, onPreguntar, onPreguntaClick
               onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--line)'}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{
-                  width: 34, height: 34, borderRadius: '50%',
-                  background: avatarColor(q.ini), color: '#fff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 800, fontSize: 13, flexShrink: 0,
-                }}>{q.ini}</span>
+                {q.broti_config ? <BrotiAvatar config={q.broti_config} size={34} /> : (
+                  <span style={{
+                    width: 34, height: 34, borderRadius: '50%',
+                    background: avatarColor(q.ini), color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 800, fontSize: 13, flexShrink: 0,
+                  }}>{q.ini}</span>
+                )}
                 <span style={{ fontSize: 13, fontWeight: 700 }}>{q.name}</span>
                 <span style={{ fontSize: 12, color: 'var(--ink-soft)' }}>· {q.time}</span>
                 {q.resolved && (

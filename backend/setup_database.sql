@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS perfiles_usuario (
   racha_dias INT DEFAULT 0,
   -- Ban temporal de 7 días al llegar a 3 reportes en una pregunta de comunidad
   baneado_preguntas_hasta TIMESTAMPTZ,
+  -- Personalización de la mascota "Broti" — { lentes: 'redondos', fondo: 'bosque', ... }
+  -- ver frontend/src/utils/brotiCatalog.js (agosto 2026)
+  broti_config JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(user_id)
