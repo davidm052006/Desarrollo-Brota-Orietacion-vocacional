@@ -10,6 +10,27 @@ import { exportarElementoAPDF } from '../../../../utils/exportarPDF';
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
+// Los títulos de categoría son largos ("Tecnología e Innovación", "Diseño y
+// Comunicación Visual"...) y Chart.js no los envuelve solo — sin esto se
+// cortan contra el borde del contenedor. Chart.js sí soporta un label como
+// array de strings (una línea por elemento), por eso se devuelve así.
+function wrapLabel(str, maxChars = 14) {
+  const palabras = str.split(' ');
+  const lineas = [];
+  let actual = '';
+  for (const palabra of palabras) {
+    const candidata = actual ? `${actual} ${palabra}` : palabra;
+    if (candidata.length > maxChars && actual) {
+      lineas.push(actual);
+      actual = palabra;
+    } else {
+      actual = candidata;
+    }
+  }
+  if (actual) lineas.push(actual);
+  return lineas;
+}
+
 const AREA_INFO = {
   tecnologia:     { label: 'Tecnología',        emoji: '💻', icono: '/icons/icon-categoria-tecnologia.svg' },
   salud:          { label: 'Salud',             emoji: '🏥', icono: '/icons/icon-categoria-salud.svg' },
@@ -152,7 +173,7 @@ export default function TestResult({
   };
 
   const radarData = {
-    labels: scores.map(s => s.categoria),
+    labels: scores.map(s => wrapLabel(s.categoria)),
     datasets: [{
       label: 'Tu perfil',
       data: scores.map(s => s.porcentaje),
@@ -171,7 +192,7 @@ export default function TestResult({
         ticks: { display: false },
         grid: { color: getCssVar('--line', '#E6E4DA') },
         angleLines: { color: getCssVar('--line', '#E6E4DA') },
-        pointLabels: { color: getCssVar('--ink-soft', '#67756B'), font: { size: 11 } },
+        pointLabels: { color: getCssVar('--ink-soft', '#67756B'), font: { size: 11 }, padding: 18 },
       },
     },
   };
@@ -220,7 +241,7 @@ export default function TestResult({
         }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 18 }}>📊 Distribución de tu perfil</div>
 
-          <div style={{ maxWidth: 340, margin: '0 auto 20px' }}>
+          <div style={{ maxWidth: 480, margin: '0 auto 20px' }}>
             <Radar data={radarData} options={radarOptions} />
           </div>
 
