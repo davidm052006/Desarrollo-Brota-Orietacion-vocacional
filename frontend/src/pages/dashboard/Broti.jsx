@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/Layout/DashboardLayout';
 import { obtenerPerfil, actualizarBroti } from '../../services/perfilService';
-import { CATEGORIAS, getItem, getItemsPorCategoria } from '../../utils/brotiCatalog';
+import { CATEGORIAS, getItem, getItemsPorCategoria, MASCOTA_BASE } from '../../utils/brotiCatalog';
 
 function BrotiPreview({ config }) {
   const fondoItem = config?.fondo ? getItem(config.fondo) : null;
+  const varianteItem = config?.variante ? getItem(config.variante) : null;
   return (
     <div style={{
       position: 'relative', width: 220, height: 220, margin: '0 auto',
@@ -14,7 +15,7 @@ function BrotiPreview({ config }) {
       borderRadius: 28,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      <img src="/logos/logo-feliz.svg" alt="Broti" style={{ width: 140, height: 140 }} />
+      <img src={varianteItem?.imagen || MASCOTA_BASE} alt="Broti" style={{ width: 140, height: 140 }} />
     </div>
   );
 }

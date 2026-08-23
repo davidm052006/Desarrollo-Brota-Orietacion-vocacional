@@ -1,19 +1,22 @@
 // Catálogo de personalización de Broti (la mascota perezoso de Brota).
 //
-// Por ahora solo hay categoría `fondo` (fotos reales, cubren el círculo
-// completo). `lentes`/`accesorio` (fusionados dentro del propio SVG del
-// mascota) se probaron y se sacaron — la fusión de piezas sueltas nunca
-// terminó de verse bien y el plan cambió: en vez de piezas combinables,
-// van a ser "variantes" de Broti ya armadas como imagen completa (el
-// usuario las prepara aparte y las pasa listas). Cuando lleguen, agregar
-// una categoría `variante` acá con sus items — el resto del sistema
-// (fondo como capa aparte) se mantiene igual.
+// `fondo` — fotos reales, cubren el círculo completo, detrás de la
+// mascota. `variante` — imágenes completas alternativas de Broti (el
+// usuario las prepara aparte con IA y las pasa ya armadas; reemplazan el
+// `logo-feliz.svg` de base, no se combinan piezas sueltas como se probó
+// antes con lentes/accesorio — ver CLAUDE.md sección "Broti" para el
+// historial). `fondo` y `variante` sí se combinan entre sí (uno detrás,
+// el otro encima).
 
 export const CATEGORIAS = [
+  { key: 'variante', nombre: 'Variante', icono: '🦥' },
   { key: 'fondo', nombre: 'Fondo', icono: '🖼️' },
 ];
 
 export const ITEMS = [
+  { id: 'variante-panda', categoria: 'variante', nombre: 'Panda', imagen: '/broti/variantes/panda.png', swatch: '🐼', color: '#EFEAE0', gratis: true },
+  { id: 'variante-zorro', categoria: 'variante', nombre: 'Zorro', imagen: '/broti/variantes/zorro.png', swatch: '🦊', color: '#FBE0C7', gratis: false },
+
   { id: 'fondo-cielo', categoria: 'fondo', nombre: 'Cielo con arcoíris', imagen: '/broti/fondos/cielo-arcoiris.jpg', swatch: '🌈', color: '#DCEEFB', gratis: true },
   { id: 'fondo-bosque', categoria: 'fondo', nombre: 'Bosque encantado', imagen: '/broti/fondos/bosque-encantado.jpg', swatch: '🌲', color: 'var(--primary-soft)', gratis: true },
   { id: 'fondo-oceano', categoria: 'fondo', nombre: 'Arrecife submarino', imagen: '/broti/fondos/oceano.jpg', swatch: '🐠', color: '#D3EFFB', gratis: false },
@@ -21,6 +24,9 @@ export const ITEMS = [
   { id: 'fondo-ciudad', categoria: 'fondo', nombre: 'Ciudad de noche', imagen: '/broti/fondos/ciudad-noche.jpg', swatch: '🌃', color: '#E4D9FA', gratis: false },
   { id: 'fondo-espacio', categoria: 'fondo', nombre: 'Espacio', imagen: '/broti/fondos/espacio.jpg', swatch: '🌌', color: '#E4E1FA', gratis: false },
 ];
+
+// Imagen base de la mascota (logo-feliz.svg) si no hay variante equipada.
+export const MASCOTA_BASE = '/logos/logo-feliz.svg';
 
 export function getItem(id) {
   return ITEMS.find(i => i.id === id) ?? null;
