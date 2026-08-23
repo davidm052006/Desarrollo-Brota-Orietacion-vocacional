@@ -77,7 +77,14 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
-  console.log(`Servidor iniciado en http://localhost:${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
-});
+// Solo levanta el servidor si este archivo se ejecuta directo (node server.js /
+// nodemon) — al hacer require('./server') desde un test, supertest maneja su
+// propio servidor efímero contra `app`, no hace falta bindear el puerto real.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor iniciado en http://localhost:${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/api/health`);
+  });
+}
+
+module.exports = app;
