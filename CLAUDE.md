@@ -250,7 +250,7 @@ Consolidado en un solo lugar — antes esto vivía disperso en historial de conv
 
 ## Broti — personalización de la mascota (agosto 2026)
 
-**⚠️ Requiere correr `backend/scripts/migration_broti.sql` en Supabase antes de probar** (ya incluida en `backend/setup_database.sql` para instalaciones nuevas) — agrega `perfiles_usuario.broti_config JSONB DEFAULT '{}'`, un objeto `{ variante, fondo }` (ambas claves opcionales, `null`/ausente = nada equipado en esa categoría).
+`perfiles_usuario.broti_config JSONB DEFAULT '{}'` (ya en `backend/setup_database.sql`, corrida contra producción — la migración aislada quedó archivada en `backend/scripts/historico/migration_broti.sql`) guarda un objeto `{ variante, fondo }` (ambas claves opcionales, `null`/ausente = nada equipado en esa categoría).
 
 ### `/dashboard/broti` (`Broti.jsx`)
 Dos pestañas: **"Mi Broti"** (preview grande + lista de lo equipado por categoría con botón "Quitar") y **"Tienda"** (grid de 3 columnas por categoría, cada botón con thumbnail/nombre/badge Gratis-Premium, `disabled` mientras guarda). Se llega desde un botón en `/dashboard/racha` y desde la tarjeta de `Perfil.jsx`. `equipar(itemId)` en `Broti.jsx` hace toggle (clickear el mismo item ya equipado lo quita) y persiste con `actualizarBroti(user.id, nuevoConfig)` — en modo demo actualiza el estado local pero no llama al backend.
