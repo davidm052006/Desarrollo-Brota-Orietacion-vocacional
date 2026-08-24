@@ -187,6 +187,14 @@ function ProgramaDetalleModal({ rec, onClose }) {
           {pct}% de compatibilidad
         </span>
 
+        <div style={{
+          marginTop: 12, padding: '10px 14px', borderRadius: 12,
+          background: 'var(--primary-soft)', color: 'var(--primary-deep)',
+          fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1.35,
+        }}>
+          🎓 <span>Obtendrás el título de: <strong>{rec.nombre}</strong></span>
+        </div>
+
         <div style={{ fontSize: 14, fontWeight: 700, marginTop: 14 }}>{rec.institucion}</div>
         {rec.institucionTipo && (
           <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{rec.institucionTipo}</div>
