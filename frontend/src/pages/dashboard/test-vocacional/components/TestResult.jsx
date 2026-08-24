@@ -115,6 +115,146 @@ function ProgramaCard({ rec, onVer }) {
   );
 }
 
+// El backend guarda `razones` como un string JSON (array de textos cortos,
+// las razones que armó el algoritmo de recomendación) — nunca se parseaba
+// del lado del frontend, así que nunca se mostraba en ningún lado pese a
+// que ya se calculaba y guardaba.
+function parseRazones(razones) {
+  if (!razones) return [];
+  try {
+    const parsed = JSON.parse(razones);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function formatoMoneda(valor) {
+  if (valor == null) return null;
+  return valor.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+}
+
+const chipStyle = {
+  fontSize: 11.5, background: 'var(--surface-2)', color: 'var(--ink-soft)',
+  padding: '3px 10px', borderRadius: 999,
+};
+
+// Card flotante con el detalle completo de una recomendación — se abre al
+// clickear una ProgramaCard. Usa los mismos campos que ya trae
+// obtenerRecomendaciones (ver perfilController.obtenerRecomendaciones en el
+// backend), ampliado para incluir requisitos/costo del programa y
+// tipo/dirección/contacto de la institución.
+function ProgramaDetalleModal({ rec, onClose }) {
+  const areaInfo = AREA_INFO[rec.area] ?? null;
+  const razones = parseRazones(rec.razones);
+  const pct = rec.compatibilidad;
+  const compatColor = pct >= 85 ? 'var(--primary)' : pct >= 70 ? '#4A90D9' : 'var(--ink-soft)';
+  const compatBg    = pct >= 85 ? 'var(--primary-soft)' : pct >= 70 ? '#E8F0FC' : 'var(--surface-2)';
+
+  return (
+    <div
+      onClick={onClose}
+      className="modal-fondo-in"
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20, zIndex: 100,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="modal-card-in"
+        style={{
+          background: 'var(--surface)', borderRadius: 24, padding: 28,
+          maxWidth: 480, width: '100%', maxHeight: '85vh', overflowY: 'auto',
+          boxShadow: 'var(--shadow-md)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+          <div className="font-display" style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.25 }}>
+            {rec.nombre}
+          </div>
+          <button onClick={onClose} style={{
+            background: 'var(--surface-2)', border: 'none', borderRadius: '50%',
+            width: 30, height: 30, flexShrink: 0, cursor: 'pointer', fontSize: 15, color: 'var(--ink-soft)',
+          }}>✕</button>
+        </div>
+
+        <span style={{
+          fontSize: 12, padding: '3px 10px', borderRadius: 999, display: 'inline-block',
+          fontWeight: 700, background: compatBg, color: compatColor, marginTop: 8,
+        }}>
+          {pct}% de compatibilidad
+        </span>
+
+        <div style={{ fontSize: 14, fontWeight: 700, marginTop: 14 }}>{rec.institucion}</div>
+        {rec.institucionTipo && (
+          <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>{rec.institucionTipo}</div>
+        )}
+        {(rec.ciudad || rec.direccion) && (
+          <div style={{ fontSize: 12.5, color: 'var(--ink-soft)', marginTop: 4 }}>
+            📍 {rec.direccion ? `${rec.direccion}, ` : ''}{rec.ciudad}
+            {rec.departamento && rec.departamento !== rec.ciudad ? `, ${rec.departamento}` : ''}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
+          {areaInfo && (
+            <span style={{
+              fontSize: 11.5, background: 'var(--primary-soft)', color: 'var(--primary-deep)',
+              padding: '3px 10px', borderRadius: 999, fontWeight: 600,
+            }}>
+              {areaInfo.icono
+                ? <img src={areaInfo.icono} alt="" style={{ width: 12, height: 12, verticalAlign: '-1px' }} />
+                : areaInfo.emoji} {areaInfo.label}
+            </span>
+          )}
+          {rec.modalidad && <span style={chipStyle}>{rec.modalidad}</span>}
+          {rec.duracion && <span style={chipStyle}>{rec.duracion}</span>}
+          {rec.costoMatricula != null && <span style={chipStyle}>{formatoMoneda(rec.costoMatricula)} matrícula</span>}
+        </div>
+
+        {rec.descripcion && (
+          <p style={{ fontSize: 13, color: 'var(--ink)', lineHeight: 1.5, marginTop: 16 }}>{rec.descripcion}</p>
+        )}
+
+        {razones.length > 0 && (
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 8 }}>💡 Por qué te lo recomendamos</div>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.6, listStyle: 'disc' }}>
+              {razones.map((r, i) => <li key={i}>{r}</li>)}
+            </ul>
+          </div>
+        )}
+
+        {rec.requisitos && (
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 6 }}>📋 Requisitos</div>
+            <p style={{ fontSize: 12.5, color: 'var(--ink-soft)', lineHeight: 1.5, margin: 0 }}>{rec.requisitos}</p>
+          </div>
+        )}
+
+        {(rec.telefono || rec.email || rec.sitioWeb) && (
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 8 }}>Contacto de la institución</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12.5 }}>
+              {rec.telefono && <span>📞 {rec.telefono}</span>}
+              {rec.email && (
+                <a href={`mailto:${rec.email}`} style={{ color: 'var(--primary)' }}>✉️ {rec.email}</a>
+              )}
+              {rec.sitioWeb && (
+                <a href={rec.sitioWeb} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)' }}>
+                  🔗 {rec.sitioWeb}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Props:
 //   resultadoId      : string (UUID)
 //   perfilPrincipal  : { emoji, titulo, descripcion, color }
@@ -134,6 +274,7 @@ export default function TestResult({
   const [cargando, setCargando]               = useState(!!resultadoId);
   const [error, setError]                     = useState(null);
   const [exportando, setExportando]           = useState(false);
+  const [programaAbierto, setProgramaAbierto] = useState(null);
   const exportRef = useRef(null);
 
   useEffect(() => {
@@ -156,6 +297,7 @@ export default function TestResult({
   }, [resultadoId]);
 
   const handleVerPrograma = async (rec) => {
+    setProgramaAbierto(rec);
     if (!rec.vista) {
       await marcarRecomendacionVista(rec.id);
       setRecomendaciones(prev => prev.map(r => r.id === rec.id ? { ...r, vista: true } : r));
@@ -356,6 +498,10 @@ export default function TestResult({
           ↺ Volver a hacer el test
         </button>
       </div>
+
+      {programaAbierto && (
+        <ProgramaDetalleModal rec={programaAbierto} onClose={() => setProgramaAbierto(null)} />
+      )}
 
     </div>
   );

@@ -212,7 +212,8 @@ const obtenerRecomendaciones = async (req, res) => {
         id, compatibilidad, razones, vista,
         programas (
           id, nombre, tipo, area_academica, duracion, modalidad, descripcion,
-          instituciones ( id, nombre, ciudad, departamento )
+          requisitos, costo_matricula,
+          instituciones ( id, nombre, ciudad, departamento, tipo, direccion, telefono, email, sitio_web, costo_promedio )
         )
       `)
       .eq('resultado_id', resultadoId)
@@ -227,7 +228,15 @@ const obtenerRecomendaciones = async (req, res) => {
       id:            r.id,
       nombre:        r.programas?.nombre                        ?? '—',
       descripcion:   r.programas?.descripcion                   ?? '',
+      requisitos:    r.programas?.requisitos                    ?? '',
+      costoMatricula: r.programas?.costo_matricula               ?? null,
       institucion:   r.programas?.instituciones?.nombre         ?? '—',
+      institucionTipo: r.programas?.instituciones?.tipo         ?? '',
+      direccion:     r.programas?.instituciones?.direccion      ?? '',
+      telefono:      r.programas?.instituciones?.telefono       ?? '',
+      email:         r.programas?.instituciones?.email          ?? '',
+      sitioWeb:      r.programas?.instituciones?.sitio_web      ?? '',
+      costoPromedioInstitucion: r.programas?.instituciones?.costo_promedio ?? null,
       ciudad:        r.programas?.instituciones?.ciudad         ?? '',
       departamento:  r.programas?.instituciones?.departamento   ?? '',
       area:          r.programas?.area_academica                ?? '',

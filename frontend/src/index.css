@@ -176,6 +176,19 @@ body {
 
 .dot-pop { animation: dotPop 320ms cubic-bezier(.34,1.56,.64,1) both; }
 
+@keyframes modalFondoIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalCardIn {
+  from { opacity: 0; transform: scale(.9) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-fondo-in { animation: modalFondoIn 180ms ease-out both; }
+.modal-card-in  { animation: modalCardIn 220ms cubic-bezier(.34,1.56,.64,1) both; }
+
 /* ─── Inputs y selects ─────────────────────────────────────────────────────── */
 input::placeholder,
 textarea::placeholder {
