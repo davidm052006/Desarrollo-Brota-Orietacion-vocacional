@@ -10,6 +10,29 @@ Cualquier cambio visual debe respetar la paleta y los tokens definidos ahí.
 - **DB/Auth**: Supabase (PostgreSQL + Supabase Auth)
 - **Dev server frontend**: `npm run dev` desde `frontend/` — corre en puerto 5173 o 5174
 
+## Sincronización con la app móvil (Flutter)
+
+Existe una app móvil hermana en `~/Proyectos/brota_flutter_app/` (Clean
+Architecture, consume este mismo backend). Su documentación de contexto
+(`MOBILE_DESIGN_BRIEF.md`, `FUNCTIONAL_CONTENT_BRIEF.md`,
+`WEB_PARITY_ROADMAP.md`) se escribió auditando este repo en un momento
+dado y **se desactualiza silenciosamente** cada vez que acá se agrega un
+endpoint, se cambia el esquema de una tabla, se agrega/quita una
+pantalla, o se toca algo de marca (colores, tipografía, la mascota
+Broti). La sesión anterior tuvo que hacer una auditoría manual completa
+(backend+frontend+`git log`) para reconstruir 48 commits de diferencia
+— evitable si se deja un rastro incremental.
+
+**Regla:** cuando termines un cambio en este repo que afecte a algo de lo
+de arriba (endpoint nuevo/cambiado/borrado, tabla o columna nueva,
+pantalla nueva o que cambió de alcance, cambio de paleta/tipografía/
+assets de marca, o cualquier decisión de producto que el móvil debería
+replicar), agregá una entrada corta a
+**`CHANGELOG_PARA_MOVIL.md`** (raíz de este repo) — fecha, hash del
+commit, qué cambió, por qué le importa al móvil. Dos líneas alcanzan; no
+hace falta prosa larga, es para que la próxima sesión del lado móvil lea
+el changelog en vez de re-auditar todo el repo desde cero.
+
 ## Túnel de pruebas (para que compañeros prueben desde internet, fase de beta con el equipo — el despliegue real es a fin de semestre)
 Solo hace falta tunelizar el **frontend** (puerto 5173) — el `/api` del frontend ya proxea a `localhost:3001` vía `vite.config.js` (`server.proxy['/api']`), así que el backend no necesita exponerse por separado.
 
