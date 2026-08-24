@@ -256,6 +256,7 @@ export default function TestVocacional({ user, isDemoMode = false }) {
 
     try {
       if (perfilUsuarioId && cuestionarioId) {
+
         const res = await guardarResultado(perfilUsuarioId, cuestionarioId, seleccionadas);
         if (res.success && res.data) {
           setResultado(calcToUI(res.data.perfil_vocacional));

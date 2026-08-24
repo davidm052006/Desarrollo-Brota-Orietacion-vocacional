@@ -8,6 +8,13 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+  },
+
   server: {
     // allowedHosts: true es necesario para exponer el dev server por un túnel
     // (cloudflared/ngrok) — el host header ya no es localhost y Vite lo
