@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../../../config/supabase';
+import { useAdmin } from '../../../hooks/useAdmin';
 import { getStats } from '../../../services/adminService';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
 import StatsCard from './components/StatsCard';
@@ -35,9 +35,9 @@ const STAT_DEFS = [
   { key: 'preguntas',        label: 'Preguntas',     icon: '❓', color: 'red'    },
 ];
 
-export default function AdminPanel({ user, profile }) {
+export default function AdminPanel({ profile }) {
   const [activeSection, setActiveSection] = useState('usuarios');
-  const [isAdmin, setIsAdmin]             = useState(null); // null=checking, true/false
+  const { isAdmin, loading: checkingAdmin } = useAdmin();
   const [stats, setStats]                 = useState({});
 
   // Id del cuestionario a preseleccionar cuando se navega a "Preguntas"
@@ -48,19 +48,6 @@ export default function AdminPanel({ user, profile }) {
   // "Dar credenciales" de una solicitud de contacto institucional — evita
   // que el admin tenga que retipear nombre/email/teléfono a mano.
   const [prefillUsuario, setPrefillUsuario] = useState(null);
-
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      if (!user?.id) { setIsAdmin(false); return; }
-      const { data, error } = await supabase
-        .from('perfiles_usuario')
-        .select('rol')
-        .eq('user_id', user.id)
-        .single();
-      setIsAdmin(!error && data?.rol === 'admin');
-    };
-    checkAdminRole();
-  }, [user]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -84,7 +71,7 @@ export default function AdminPanel({ user, profile }) {
     setActiveSection('usuarios');
   };
 
-  if (isAdmin === null) {
+  if (checkingAdmin) {
     return (
       <DashboardLayout profile={profile}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
