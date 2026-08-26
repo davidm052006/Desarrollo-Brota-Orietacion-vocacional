@@ -201,7 +201,7 @@ function App() {
         />
         <Route
           path="/dashboard/admin"
-          element={loading ? spinner : puedeAcceder ? <AdminPanel user={user} /> : <Navigate to="/login" replace />}
+          element={loading ? spinner : puedeAcceder ? <AdminPanel /> : <Navigate to="/login" replace />}
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />
