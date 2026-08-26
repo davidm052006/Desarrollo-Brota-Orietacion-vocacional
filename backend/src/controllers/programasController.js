@@ -8,7 +8,7 @@ const obtenerProgramas = async (req, res) => {
     .from('programas')
     .select(
       `id, nombre, tipo, area_academica, duracion, modalidad, costo_matricula,
-       instituciones(nombre, tipo, ciudad)`,
+       instituciones(nombre, tipo, ciudad, telefono, email, sitio_web)`,
       { count: 'exact' }
     )
     .eq('activo', true)
