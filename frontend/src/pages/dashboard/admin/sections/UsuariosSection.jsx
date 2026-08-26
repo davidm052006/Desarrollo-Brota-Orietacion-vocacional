@@ -7,13 +7,26 @@ import ModalVerUsuario from './usuarios/ModalVerUsuario';
 import ModalEditarUsuario from './usuarios/ModalEditarUsuario';
 import ModalEliminarUsuario from './usuarios/ModalEliminarUsuario';
 import ModalNuevoUsuario from './usuarios/ModalNuevoUsuario';
-import { ROLES_FILTRO, FORM_VACIO, FORM_NUEVO_VACIO } from './usuarios/constants';
+import {
+  ROLES_FILTRO, ROLES_OPCIONES, NIVEL_EDUCATIVO_OPCIONES, GRADO_OPCIONES,
+  FORM_VACIO, FORM_NUEVO_VACIO,
+} from './usuarios/constants';
 
-// Columnas que debe traer el CSV de carga masiva (mismos nombres que espera createUsuario)
-const COLUMNAS_CSV_ESPERADAS = [
-  'email', 'password', 'nombre', 'apellido', 'ciudad',
-  'nivel_educativo', 'condiciones_socioeconomicas', 'edad', 'rol',
+// Columnas que debe traer el CSV/Excel de carga masiva (mismos nombres que espera
+// createUsuario, y mismo formato que pide el registro público — fecha_nacimiento
+// en vez de una edad suelta, ver ModalNuevoUsuario.jsx)
+const COLUMNAS_ESPERADAS = [
+  'email', 'password', 'nombre', 'apellido', 'ciudad', 'telefono',
+  'nivel_educativo', 'grado', 'fecha_nacimiento', 'condiciones_socioeconomicas', 'rol',
 ];
+
+// Fila de ejemplo para la plantilla descargable
+const FILA_EJEMPLO_PLANTILLA = {
+  email: 'estudiante@ejemplo.com', password: 'clave123',
+  nombre: 'Ana', apellido: 'Gómez', ciudad: 'Bogotá', telefono: '3001234567',
+  nivel_educativo: 'Educacion media', grado: 'Décimo', fecha_nacimiento: '2009-03-12',
+  condiciones_socioeconomicas: 'Estrato 3', rol: 'estudiante',
+};
 
 // Sección "Usuarios" del panel admin: esta pieza solo se encarga de
 //   1. traer la lista de usuarios (paginada/filtrada) del backend,
@@ -80,7 +93,9 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
       nombre:                      usuario.nombre                      || '',
       apellido:                    usuario.apellido                    || '',
       ciudad:                      usuario.ciudad                      || '',
+      telefono:                    usuario.telefono                    || '',
       nivel_educativo:             usuario.nivel_educativo             || '',
+      grado:                       usuario.grado                       || '',
       condiciones_socioeconomicas: usuario.condiciones_socioeconomicas || '',
       edad:                        usuario.edad                        || '',
       rol:                         usuario.rol                         || 'estudiante',
@@ -169,8 +184,11 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
     setReporteImportacion(null);
   };
 
-  // Lee el archivo seleccionado y lo convierte en filas para la previsualización
-  const handleArchivoCSV = (e) => {
+  // Lee el archivo seleccionado (CSV o Excel) y lo convierte en filas para la previsualización.
+  // `xlsx` (SheetJS) se importa dinámicamente (mismo patrón que utils/exportarPDF.js con
+  // jspdf/html2canvas) para no sumarla al bundle inicial de toda la app — solo se descarga
+  // cuando alguien realmente sube un archivo en este modal.
+  const handleArchivo = async (e) => {
     const archivo = e.target.files[0];
     if (!archivo) return;
 
@@ -178,27 +196,66 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
     setReporteImportacion(null);
     setFormError(null);
 
-    Papa.parse(archivo, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (resultado) => {
-        if (resultado.errors.length > 0) {
-          setFormError(`El CSV tiene ${resultado.errors.length} fila(s) con formato inválido`);
-        }
-        setCsvFilas(resultado.data);
-      },
-      error: () => {
-        setFormError('No se pudo leer el archivo CSV');
-      },
-    });
+    const esExcel = /\.(xlsx|xls)$/i.test(archivo.name);
+
+    if (esExcel) {
+      try {
+        const XLSX = await import('xlsx');
+        const buffer = await archivo.arrayBuffer();
+        const libro = XLSX.read(buffer, { type: 'array' });
+        const hoja = libro.Sheets[libro.SheetNames[0]];
+        // defval: '' para que las celdas vacías no desaparezcan de la fila;
+        // se normaliza todo a string (igual que hace Papa.parse con el CSV)
+        // porque SheetJS puede devolver números para columnas como "edad".
+        const filas = XLSX.utils.sheet_to_json(hoja, { defval: '' }).map((fila) => {
+          const normalizada = {};
+          for (const [clave, valor] of Object.entries(fila)) {
+            normalizada[clave.trim()] = valor === null || valor === undefined ? '' : String(valor).trim();
+          }
+          return normalizada;
+        });
+        setCsvFilas(filas);
+      } catch {
+        setFormError('No se pudo leer el archivo Excel');
+      }
+    } else {
+      Papa.parse(archivo, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (resultado) => {
+          if (resultado.errors.length > 0) {
+            setFormError(`El CSV tiene ${resultado.errors.length} fila(s) con formato inválido`);
+          }
+          setCsvFilas(resultado.data);
+        },
+        error: () => {
+          setFormError('No se pudo leer el archivo CSV');
+        },
+      });
+    }
   };
 
-  // Envía todas las filas previsualizadas y guarda el reporte fila por fila
+  // Genera y descarga un .xlsx con las columnas esperadas + una fila de ejemplo
+  const descargarPlantilla = async () => {
+    const XLSX = await import('xlsx');
+    const hoja = XLSX.utils.json_to_sheet([FILA_EJEMPLO_PLANTILLA], { header: COLUMNAS_ESPERADAS });
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, 'Usuarios');
+    XLSX.writeFile(libro, 'plantilla_carga_usuarios.xlsx');
+  };
+
+  // Envía todas las filas previsualizadas en una sola request y guarda el reporte fila por fila
   const importarMasivo = async () => {
     setImportando(true);
     setFormError(null);
 
-    const { resultados } = await adminService.createUsuariosMasivo(csvFilas);
+    const { success, error, resultados } = await adminService.createUsuariosMasivo(csvFilas);
+
+    if (!success) {
+      setFormError(error);
+      setImportando(false);
+      return;
+    }
 
     setReporteImportacion(resultados);
     setImportando(false);
@@ -306,17 +363,28 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
           {!reporteImportacion ? (
             <>
               <div className="mb-4">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  Archivo CSV
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-gray-600">
+                    Archivo CSV o Excel (.xlsx, .xls)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={descargarPlantilla}
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    Descargar plantilla
+                  </button>
+                </div>
                 <input
                   type="file"
-                  accept=".csv"
-                  onChange={handleArchivoCSV}
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleArchivo}
                   className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-soft file:text-primary file:text-sm file:font-semibold file:cursor-pointer hover:file:bg-primary-soft"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Columnas esperadas: {COLUMNAS_CSV_ESPERADAS.join(', ')}
+                  Columnas esperadas: {COLUMNAS_ESPERADAS.join(', ')}.<br />
+                  Rol válido: {ROLES_OPCIONES.join(', ')}. Nivel educativo: {NIVEL_EDUCATIVO_OPCIONES.map(o => o.value).join(', ')}. Grado: {GRADO_OPCIONES.join(', ')}.
+                  Fecha de nacimiento en formato AAAA-MM-DD.
                 </p>
               </div>
 

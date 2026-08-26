@@ -8,12 +8,27 @@ export const ROL_COLORS = {
   estudiante: 'bg-blue-100 text-blue-700',
 };
 
+// Mismos values que usa el registro público (pages/landing/components/SignupCard.jsx)
+// — no inventar otros acá, o los usuarios creados desde el panel admin quedan
+// con valores de nivel_educativo/grado que el resto de la app no reconoce.
+export const NIVEL_EDUCATIVO_OPCIONES = [
+  { value: 'Educacion media', label: 'Educación media' },
+  { value: 'Tecnico',         label: 'Técnico' },
+];
+export const GRADO_OPCIONES = ['Noveno', 'Décimo', 'Once'];
+
+// Usado por "Editar usuario" — el usuario ya existe y solo tiene la edad
+// (entero) guardada, no la fecha de nacimiento original (nunca se persiste,
+// mismo criterio que Perfil.jsx), así que acá se sigue editando como número.
 export const FORM_VACIO = {
   nombre: '', apellido: '', ciudad: '', nivel_educativo: '',
-  condiciones_socioeconomicas: '', edad: '', rol: 'estudiante',
+  condiciones_socioeconomicas: '', edad: '', grado: '', telefono: '', rol: 'estudiante',
 };
 
+// Usado por "Nuevo usuario" — pide fecha de nacimiento en vez de edad suelta,
+// igual que el registro público, y el backend calcula la edad entera.
 export const FORM_NUEVO_VACIO = {
-  ...FORM_VACIO,
-  email: '', password: '',
+  nombre: '', apellido: '', ciudad: '', nivel_educativo: '',
+  condiciones_socioeconomicas: '', fecha_nacimiento: '', grado: '', telefono: '',
+  rol: 'estudiante', email: '', password: '',
 };

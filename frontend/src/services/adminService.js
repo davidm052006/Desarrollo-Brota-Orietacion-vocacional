@@ -43,7 +43,7 @@ export const getUsuarios = async ({ pagina = 1, limite = 10, busqueda = '', rol 
   }
 };
 
-// datos: { email, password, nombre, apellido, ciudad, nivel_educativo, grado, edad, telefono, rol }
+// datos: { email, password, nombre, apellido, ciudad, nivel_educativo, grado, fecha_nacimiento, telefono, condiciones_socioeconomicas, rol }
 export const createUsuario = async (datos) => {
   try {
     const headers = await getAuthHeaders();
@@ -85,23 +85,28 @@ export const deleteUsuario = async (id) => {
   }
 };
 
-// Crea usuarios en lote reutilizando createUsuario fila por fila.
-// usuarios: array de objetos con la misma forma que espera createUsuario.
+// Crea usuarios en lote en una sola request (POST /api/admin/usuarios/masivo).
+// usuarios: array de objetos con la misma forma que espera createUsuario,
+// parseado en el frontend desde CSV o Excel (ver UsuariosSection.jsx).
 // Devuelve { success: true, resultados } donde resultados es un array
-// paralelo con { usuario, success, error } por cada fila del CSV.
+// paralelo con { usuario, success, error } por cada fila del archivo.
 export const createUsuariosMasivo = async (usuarios) => {
-  const resultados = [];
-
-  for (const usuario of usuarios) {
-    const res = await createUsuario(usuario);
-    resultados.push({
-      usuario,
-      success: res.success,
-      error: res.success ? null : res.error,
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/usuarios/masivo`, {
+      method:  'POST',
+      headers,
+      body:    JSON.stringify({ usuarios }),
     });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { success: false, error: body.message || `Error del servidor (${res.status})`, resultados: [] };
+    }
+    return { success: true, resultados: body.resultados };
+  } catch (err) {
+    console.error('adminService.createUsuariosMasivo:', err);
+    return { success: false, error: 'Error de conexión con el servidor', resultados: [] };
   }
-
-  return { success: true, resultados };
 };
 
 // ─── Instituciones ─────────────────────────────────────────────────────────

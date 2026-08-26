@@ -2,7 +2,7 @@ const express        = require('express');
 const router         = express.Router();
 const verificarAdmin = require('../middlewares/verificarAdmin');
 const {
-  getUsuarios, getUsuario, createUsuario, updateUsuario, deleteUsuario, getStats,
+  getUsuarios, getUsuario, createUsuario, createUsuariosMasivo, updateUsuario, deleteUsuario, getStats,
 } = require('../controllers/admin/usuariosController');
 const {
   getInstituciones, createInstitucion, updateInstitucion, deleteInstitucion,
@@ -30,11 +30,12 @@ router.use(verificarAdmin);
 router.get('/stats', getStats);
 router.get('/analytics', getAnalytics);
 
-router.get   ('/usuarios',     getUsuarios);
-router.get   ('/usuarios/:id', getUsuario);
-router.post  ('/usuarios',     createUsuario);
-router.patch ('/usuarios/:id', updateUsuario);
-router.delete('/usuarios/:id', deleteUsuario);
+router.get   ('/usuarios',        getUsuarios);
+router.post  ('/usuarios/masivo', createUsuariosMasivo); // antes de /usuarios/:id para que no lo capture como :id
+router.get   ('/usuarios/:id',    getUsuario);
+router.post  ('/usuarios',        createUsuario);
+router.patch ('/usuarios/:id',    updateUsuario);
+router.delete('/usuarios/:id',    deleteUsuario);
 
 router.get   ('/instituciones',     getInstituciones);
 router.post  ('/instituciones',     createInstitucion);

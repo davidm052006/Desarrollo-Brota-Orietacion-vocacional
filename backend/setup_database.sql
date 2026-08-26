@@ -41,6 +41,11 @@ CREATE TABLE IF NOT EXISTS perfiles_usuario (
   ciudad VARCHAR(100),
   nivel_educativo VARCHAR(100),
   condiciones_socioeconomicas JSONB DEFAULT '{}',
+  -- Mismo formato que pide el registro público (SignupCard.jsx) — agregadas
+  -- agosto 2026 para que la creación desde el panel admin (individual y carga
+  -- masiva) capture lo mismo que el registro real, no solo un subconjunto
+  grado VARCHAR(50),
+  telefono VARCHAR(50),
   -- Racha de días activos (agosto 2026, antes hardcodeada en 3 en el frontend)
   ultima_actividad DATE,
   racha_dias INT DEFAULT 0,

@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const { calcularEdadDesdeFecha } = require('../utils/calcularEdad');
 
 /**
  * POST /api/auth/register-perfil
@@ -12,26 +13,14 @@ const supabase = require('../config/supabase');
  */
 const registerPerfil = async (req, res) => {
   try {
-    const { nombre, apellido, fechaNacimiento, ciudad, nivelEducativo } = req.body;
+    const { nombre, apellido, fechaNacimiento, ciudad, nivelEducativo, grado, telefono } = req.body;
 
     if (!nombre) {
       return res.status(400).json({ success: false, message: 'El campo nombre es requerido' });
     }
 
     const userId = req.user.id;
-
-    // Calcular edad entera desde fecha de nacimiento
-    let edad = null;
-    if (fechaNacimiento) {
-      const hoy = new Date();
-      const nacimiento = new Date(fechaNacimiento);
-      const calculada = hoy.getFullYear() - nacimiento.getFullYear();
-      const m = hoy.getMonth() - nacimiento.getMonth();
-      const ajustado = (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate()))
-        ? calculada - 1
-        : calculada;
-      if (ajustado >= 14 && ajustado <= 100) edad = ajustado;
-    }
+    const edad = calcularEdadDesdeFecha(fechaNacimiento);
 
     const { error } = await supabase
       .from('perfiles_usuario')
@@ -42,6 +31,8 @@ const registerPerfil = async (req, res) => {
         edad,
         ciudad: ciudad ?? null,
         nivel_educativo: nivelEducativo ?? null,
+        grado: grado ?? null,
+        telefono: telefono ?? null,
         rol: 'estudiante',
       }]);
 

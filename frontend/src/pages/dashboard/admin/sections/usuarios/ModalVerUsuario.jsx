@@ -10,7 +10,9 @@ export default function ModalVerUsuario({ usuario, onClose }) {
       <div className="space-y-1">
         <Detalle label="Nombre completo"  value={`${usuario.nombre} ${usuario.apellido}`} />
         <Detalle label="Ciudad"           value={usuario.ciudad} />
+        <Detalle label="Teléfono"                 value={usuario.telefono} />
         <Detalle label="Nivel educativo"          value={usuario.nivel_educativo} />
+        <Detalle label="Grado"                    value={usuario.grado} />
         <Detalle label="Cond. socioeconómicas"    value={usuario.condiciones_socioeconomicas} />
         <Detalle label="Edad"                     value={usuario.edad} />
         <Detalle label="Rol"
