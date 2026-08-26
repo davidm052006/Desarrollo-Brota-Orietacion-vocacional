@@ -4,6 +4,17 @@
 
 El proyecto Brota utiliza GitHub Projects con metodología Kanban para gestionar el desarrollo.
 
+**Tablero real:** [github.com/users/davidm052006/projects/1](https://github.com/users/davidm052006/projects/1) ("issus BROTA")
+
+## ⚠️ Estado real vs. este documento (auditoría 26 ago 2026)
+
+Este documento describe el proceso **ideal** que se pensó al crear el tablero (marzo 2026). Dos cosas no coinciden con la realidad y hay que saberlo antes de mostrar el tablero en vivo:
+
+1. **Las columnas reales del tablero son `Backlog` / `Ready` / `In progress` / `In review`** — no existe una columna `Done` como describe la sección siguiente. `Ready` es la que cumple ese rol (a donde se mueven las issues cerradas).
+2. **El tablero estuvo 5 meses sin usarse de verdad.** Las 16 issues originales (marzo 2026: `Diseño-001`, `Base_de_datos-001/002/003`, `Cuestionario_Vocacional-001/002/003`, `Autenticacion-001/002`, `UI_UX-001/002`, `Notificaciones-001/002`, `Admin_Panel-001/002/003`) describían trabajo que terminó implementándose igual, pero por commits directos a `main` sin pasar por el tablero — nunca se movieron de `Backlog`. Se cerraron el 26 ago 2026 con una nota explicando esto (no se marcaron como completadas a través del flujo normal, para no simular un uso que no existió). El tablero se reinicia desde esa fecha con 5 issues nuevas que sí reflejan trabajo pendiente real, repartidas por persona — ver `docs/auditoria_sustentacion.md`.
+
+La sección de abajo (columnas, automatizaciones, labels) sigue siendo la referencia de **cómo se pretende usar el tablero de acá en adelante** — solo hay que ajustar mentalmente `Done` → `Ready` al leerla.
+
 ## Estructura del Tablero
 
 ### Columnas
