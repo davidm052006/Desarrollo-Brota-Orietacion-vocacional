@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brota — Guion de sustentación</title>
+<style>
+  :root{
+    --bg:#F4F3EC; --surface:#FFFFFF; --surface-2:#EFEEE5;
+    --ink:#15241B; --ink-soft:#67756B; --line:#E6E4DA;
+    --primary:#21BD68; --primary-deep:#0E7D43; --primary-ink:#FFFFFF; --primary-soft:#E2F6EC;
+    --accent:#E07A42; --accent-soft:#FBE8DC;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0C1310; --surface:#151F19; --surface-2:#1C2A22;
+      --ink:#EAF3EC; --ink-soft:#94A69B; --line:#27362D;
+      --primary:#34D27D; --primary-deep:#1FA862; --primary-ink:#04301C; --primary-soft:#16301F;
+      --accent:#F0996A; --accent-soft:#2C2018;
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+
+  /* ---------- Top bar ---------- */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 20px; border-bottom:1px solid var(--line); background:var(--surface);
+    flex-shrink:0; gap:12px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:8px; font-weight:800; letter-spacing:-.3px;}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--primary);}
+  .meta{display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-soft);}
+  .chip{
+    padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700;
+    background:var(--primary-soft); color:var(--primary-deep); white-space:nowrap;
+  }
+  @media (prefers-color-scheme: dark){ .chip{ color:var(--primary); } }
+  .chip.accent{ background:var(--accent-soft); color:var(--accent); }
+
+  .progress-track{ height:4px; background:var(--surface-2); flex-shrink:0; }
+  .progress-fill{ height:100%; background:var(--primary); width:0%; transition:width .25s ease; }
+
+  /* ---------- Slide area ---------- */
+  main{ flex:1; position:relative; overflow:hidden; }
+  .slide{
+    position:absolute; inset:0; display:none;
+    padding:28px 8vw 90px; overflow-y:auto;
+  }
+  .slide.active{ display:block; }
+
+  .badges{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .badge-block{ padding:4px 12px; border-radius:8px; font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; }
+  .b1{ background:var(--primary-soft); color:var(--primary-deep); }
+  .b2{ background:var(--accent-soft); color:var(--accent); }
+  .b3{ background:var(--surface-2); color:var(--ink-soft); }
+  @media (prefers-color-scheme: dark){ .b1{color:var(--primary);} }
+  .badge-time{ padding:4px 12px; border-radius:8px; font-size:12.5px; font-weight:700; background:var(--surface-2); color:var(--ink-soft); }
+  .badge-speaker{ padding:4px 12px; border-radius:8px; font-size:12.5px; font-weight:800; background:var(--surface); border:1.5px solid var(--line); }
+
+  h1.slide-title{ font-size:clamp(22px,3.4vw,38px); margin:0 0 6px; letter-spacing:-.5px; }
+  .subtitle{ color:var(--ink-soft); font-size:15px; margin:0 0 22px; max-width:70ch; }
+
+  .panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:18px 20px; margin-bottom:16px;
+  }
+  .panel h3{ margin:0 0 10px; font-size:14px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft); display:flex; align-items:center; gap:8px;}
+  .panel p, .panel li{ font-size:16px; line-height:1.55; }
+  .panel ul{ margin:0; padding-left:20px; }
+  .panel.mostrar{ border-left:4px solid var(--primary); }
+  .panel.decir{ border-left:4px solid var(--accent); }
+  .quote{ font-style:italic; color:var(--ink); background:var(--surface-2); border-radius:10px; padding:12px 14px; margin:8px 0 0; }
+  code, .code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:14px;
+    background:var(--surface-2); padding:1px 6px; border-radius:5px;
+  }
+  a{ color:var(--primary-deep); }
+  @media (prefers-color-scheme: dark){ a{ color:var(--primary); } }
+
+  table{ width:100%; border-collapse:collapse; font-size:14.5px; }
+  th,td{ text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ color:var(--ink-soft); font-weight:700; font-size:12.5px; text-transform:uppercase; letter-spacing:.3px; }
+
+  .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:820px){ .grid3{ grid-template-columns:1fr; } }
+  .person-card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .person-card h4{ margin:0 0 6px; font-size:15px; }
+  .person-card .tag{ font-size:11.5px; color:var(--ink-soft); }
+
+  .callout{
+    background:var(--primary-soft); border-radius:12px; padding:14px 16px; font-size:15px;
+    margin-top:6px;
+  }
+  .callout.warn{ background:var(--accent-soft); }
+
+  .cover{ display:flex; flex-direction:column; justify-content:center; align-items:flex-start; height:100%; max-width:900px; margin:0 auto; }
+  .cover .dotgrid{ display:flex; gap:8px; margin-bottom:18px; }
+  .cover .dotgrid span{ width:12px; height:12px; border-radius:50%; background:var(--primary); opacity:.85; }
+  .cover .dotgrid span:nth-child(2){ background:var(--accent); }
+  .cover .dotgrid span:nth-child(3){ background:var(--ink-soft); }
+  .cover h1{ font-size:clamp(34px,6vw,64px); margin:0 0 10px; letter-spacing:-1.5px; }
+  .cover .lead{ font-size:19px; color:var(--ink-soft); margin:0 0 28px; max-width:60ch; }
+  .timebar{ display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  .timebar div{ padding:10px 16px; border-radius:12px; background:var(--surface); border:1px solid var(--line); font-weight:700; font-size:14px; }
+  .timebar div b{ display:block; font-size:20px; color:var(--primary); }
+  @media (prefers-color-scheme: dark){ .timebar div b{ color:var(--primary); } }
+
+  /* ---------- Footer / nav ---------- */
+  footer{
+    position:fixed; bottom:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between;
+    padding:12px 20px; background:var(--surface); border-top:1px solid var(--line); z-index:5;
+  }
+  .nav-btns{ display:flex; gap:8px; }
+  button{
+    font:inherit; cursor:pointer; border:1px solid var(--line); background:var(--surface);
+    color:var(--ink); padding:9px 16px; border-radius:10px; font-weight:700; font-size:14px;
+  }
+  button:hover{ border-color:var(--primary); }
+  button.primary{ background:var(--primary); color:var(--primary-ink); border-color:var(--primary); }
+  button:disabled{ opacity:.35; cursor:default; }
+  #counter{ font-size:13px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+  .accum{ font-size:13px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="dot"></span> Brota — Guion de sustentación</div>
+  <div class="meta">
+    <span class="chip">15 min netos</span>
+    <span class="chip accent">Seguridad 5' · Arquitectura 7' · Ágil 3'</span>
+    <span id="counter"></span>
+  </div>
+</header>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<main id="slides"></main>
+
+<footer>
+  <div class="nav-btns">
+    <button id="prevBtn">← Anterior</button>
+    <button id="nextBtn" class="primary">Siguiente →</button>
+  </div>
+  <div class="accum" id="accum"></div>
+</footer>
+
+<script>
+/* ===================== CONTENIDO ===================== */
+const SLIDES = [
+
+{ cover:true, html:`
+  <div class="cover">
+    <div class="dotgrid"><span></span><span></span><span></span></div>
+    <h1>Brota</h1>
+    <p class="lead">Sustentación del proyecto — orientación vocacional para estudiantes colombianos de colegio (14–25 años). Cuestionario vocacional, recomendación de programas con el dataset oficial del MEN, comunidad y panel administrativo.</p>
+    <div class="timebar">
+      <div>Bloque 1<br><b>5:00</b>Seguridad</div>
+      <div>Bloque 2<br><b>7:00</b>Arquitectura y CRUDs</div>
+      <div>Bloque 3<br><b>3:00</b>Metodología ágil</div>
+      <div>Total<br><b>15:00</b>netos</div>
+    </div>
+  </div>
+`},
+
+{ block:'', time:'', speaker:'Orden', title:'Quién habla cuándo', sub:'Repartido por lo que cada quien construyó de verdad — ver <code>docs/auditoria_sustentacion.md</code>. David lleva el bloque técnico más denso (seguridad), pero no abre la exposición.', body:`
+  <div class="panel">
+    <table>
+      <tr><th>Tiempo</th><th>Bloque</th><th>Quién</th><th>Qué hace</th></tr>
+      <tr><td>0:00–0:30</td><td>Apertura</td><td><b>Julián</b></td><td>Presenta al equipo + la idea del proyecto</td></tr>
+      <tr><td>0:30–5:00</td><td>Seguridad</td><td><b>David</b></td><td>Login, tokens, roles, middlewares — la parte más técnica</td></tr>
+      <tr><td>5:00–8:00</td><td>Arquitectura</td><td><b>Julián</b></td><td>CORS + demo CRUD en vivo</td></tr>
+      <tr><td>8:00–10:00</td><td>Arquitectura</td><td><b>Brayan</b></td><td>Persistencia, modelo de datos, RLS</td></tr>
+      <tr><td>10:00–12:00</td><td>Arquitectura</td><td><b>Eduard</b></td><td>Tests y cobertura real (honesto)</td></tr>
+      <tr><td>12:00–13:00</td><td>Ágil</td><td><b>David</b></td><td>Tablero reseteado, por qué se hizo así</td></tr>
+      <tr><td>13:00–14:30</td><td>Ágil</td><td><b>Julián / Brayan / Eduard</b></td><td>30s cada uno: su issue asignada</td></tr>
+      <tr><td>14:30–15:00</td><td>Ágil</td><td><b>David</b></td><td>Cierre: PR real como modelo de flujo</td></tr>
+    </table>
+  </div>
+  <div class="callout">Practicar los handoffs (quién le pasa la palabra a quién) es lo que más se nota si se ensaya poco — no solo el contenido de cada bloque.</div>
+`},
+
+/* ===== APERTURA ===== */
+{ block:'b3', badge:'Apertura', time:'0:00 – 0:30', speaker:'Julián', title:'Presentación del grupo e idea del proyecto', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar</h3><p>La landing page (<code>/</code>) o simplemente hablar sin pantalla todavía.</p></div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"Somos [Julián, David, Brayan, Eduard]. Brota es una plataforma de orientación vocacional para estudiantes colombianos de colegio — cuestionario, recomendación de programas con el dataset oficial del MEN, comunidad entre estudiantes y panel administrativo."</p>
+  </div>
+`},
+
+/* ===== BLOQUE 1: SEGURIDAD (David) ===== */
+{ block:'b1', badge:'Bloque 1 · Seguridad', time:'0:30 – 2:00', speaker:'David', title:'Login real + token en la cabecera', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar — dónde en el sistema</h3>
+    <ul>
+      <li>Login real en la app (<code>/login</code>)</li>
+      <li>DevTools → <b>Network</b> → una request a <code>/api/perfil/...</code>, abrir Headers</li>
+    </ul>
+  </div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"El token lo emite Supabase Auth al hacer login. Se guarda en la sesión del cliente de Supabase — no en <code>localStorage</code> manual — y se manda en cada request protegida como <code>Authorization: Bearer &lt;token&gt;</code>."</p>
+    <p>Archivo clave: <code>frontend/src/services/apiClient.js</code> (función <code>getAuthHeaders</code>).</p>
+  </div>
+`},
+
+{ block:'b1', badge:'Bloque 1 · Seguridad', time:'2:00 – 3:15', speaker:'David', title:'Middlewares del backend', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar — dónde en el sistema</h3>
+    <ul>
+      <li><code>backend/src/middlewares/verificarAuth.js</code></li>
+      <li><code>backend/src/middlewares/verificarAdmin.js</code></li>
+    </ul>
+  </div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"El backend valida el token con <code>supabase.auth.getUser(token)</code> en cada endpoint protegido. Para rutas de admin, además comprobamos <code>perfiles_usuario.rol === 'admin'</code> — así <code>/api/admin/*</code> completo queda cerrado a usuarios normales."</p>
+  </div>
+`},
+
+{ block:'b1', badge:'Bloque 1 · Seguridad', time:'3:15 – 4:15', speaker:'David', title:'Guard de rol en el frontend + el bug que corregimos', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar — dónde en el sistema</h3>
+    <ul>
+      <li>Entrar con un usuario NO admin → intentar <code>/dashboard/admin</code> → redirige a <code>/dashboard</code></li>
+      <li><code>frontend/src/pages/dashboard/admin/AdminPanel.jsx</code> + hook <code>useAdmin()</code></li>
+    </ul>
+  </div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"Esto no es solo un <code>if</code> en el frontend por estética — el backend vuelve a validar el rol en cada endpoint de <code>/api/admin/*</code>, así que aunque alguien fuerce la URL, no hay datos que ver."</p>
+    <p class="quote">"Esta semana encontramos y corregimos un bug real: el chequeo de rol estaba duplicado y no contemplaba el modo demo. Lo unificamos en un solo hook — <a href="https://github.com/davidm052006/Desarrollo-Brota-Orietacion-vocacional/pull/28" target="_blank">PR #28</a>."</p>
+  </div>
+`},
+
+{ block:'b1', badge:'Bloque 1 · Seguridad', time:'4:15 – 5:00', speaker:'David', title:'Contraseñas y el matiz del "JWT propio"', body:`
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"Cero contraseñas en texto plano — pero no usamos bcrypt nosotros mismos, porque la contraseña nunca toca nuestro backend: la maneja 100% Supabase Auth."</p>
+  </div>
+  <div class="callout warn"><b>Si preguntan "¿dónde está su JWT_SECRET / su bcrypt?"</b><br>
+  "Decidimos no reinventar la rueda: delegamos la autenticación completa (emisión de token, hash de contraseña) a Supabase Auth, que ya lo hace de forma auditada. Nuestro backend solo verifica el token que Supabase emitió — es más seguro que mantener nuestro propio esquema."</div>
+`},
+
+/* ===== BLOQUE 2: ARQUITECTURA ===== */
+{ block:'b2', badge:'Bloque 2 · Arquitectura y CRUDs', time:'5:00 – 8:00', speaker:'Julián', title:'CORS + demo CRUD en vivo', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar — dónde en el sistema</h3>
+    <ul>
+      <li>DevTools → Network → consola limpia (sin errores CORS)</li>
+      <li>Panel admin → <b>Instituciones</b> (o Programas): crear una fila, editarla, borrarla en vivo</li>
+      <li>Recargar o mostrar la tabla actualizada para probar persistencia real</li>
+    </ul>
+  </div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"Frontend y backend se comunican por HTTP asíncrono sin errores de CORS — el backend valida el origen explícitamente contra una whitelist."</p>
+    <p class="quote">"Esto es un CRUD completo — create, read, update, delete — persistiendo en Supabase. Lo mismo aplica para usuarios, programas, cuestionarios y preguntas: 5 entidades con CRUD completo."</p>
+  </div>
+`},
+
+{ block:'b2', badge:'Bloque 2 · Arquitectura y CRUDs', time:'8:00 – 10:00', speaker:'Brayan', title:'Persistencia, modelo de datos y RLS', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar — dónde en el sistema</h3>
+    <ul>
+      <li><code>backend/src/routes/admin.js</code> (los 4 verbos HTTP por entidad)</li>
+      <li><code>backend/setup_database.sql</code> (esquema de una tabla, ej. <code>programas</code>)</li>
+    </ul>
+  </div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"Cada entidad tiene sus 4 verbos HTTP mapeados a un controller que habla con Supabase (PostgreSQL). Row Level Security activado en todas las tablas — el backend usa <code>service_role</code> y lo bypassea a propósito, como doble capa de defensa."</p>
+  </div>
+`},
+
+{ block:'b2', badge:'Bloque 2 · Arquitectura y CRUDs', time:'10:00 – 12:00', speaker:'Eduard', title:'Tests y cobertura — honestos, no inflados', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar — dónde en el sistema</h3>
+    <ul>
+      <li>Correr <code>npm test</code> en <code>backend/</code> y en <code>frontend/</code> en vivo, mostrar que pasan</li>
+    </ul>
+  </div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"Tenemos suites reales corriendo — Jest en backend, Vitest en frontend — cubriendo el flujo del cuestionario vocacional y el CRUD de usuarios."</p>
+    <p class="quote">"La cobertura hoy es un punto de partida, no el 80% completo — arrancamos la infraestructura de testing esta semana. Ya identificamos qué falta y quedó asignado como issue para el siguiente sprint."</p>
+  </div>
+  <div class="callout">Es más fácil defender "esto es lo que tenemos y esto sigue" que un 80% inventado que no resiste una pregunta de seguimiento tipo "muéstrenme el reporte de cobertura".</div>
+`},
+
+/* ===== BLOQUE 3: ÁGIL ===== */
+{ block:'b3', badge:'Bloque 3 · Metodología ágil', time:'12:00 – 13:00', speaker:'David', title:'El tablero, reseteado con honestidad', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar — dónde en el sistema</h3>
+    <ul>
+      <li>Tablero real: <a href="https://github.com/users/davidm052006/projects/1" target="_blank">github.com/users/davidm052006/projects/1</a></li>
+    </ul>
+  </div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"Esta semana hicimos limpieza honesta del tablero: teníamos 16 issues de marzo que nunca se movieron aunque el trabajo ya estaba hecho — las cerramos explicando por qué en vez de fingir que pasaron por el flujo. El tablero arranca de cero hoy con 5 issues reales repartidas por persona."</p>
+  </div>
+`},
+
+{ block:'b3', badge:'Bloque 3 · Metodología ágil', time:'13:00 – 14:30', speaker:'Julián · Brayan · Eduard', title:'Cada quien, su issue (30s c/u)', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar</h3><p>Señalar la propia tarjeta en el tablero mientras se habla.</p></div>
+  <div class="grid3">
+    <div class="person-card"><h4>Julián</h4><p class="quote">"Tengo asignadas #24 — CRUD real de convocatorias en el panel admin, hoy solo se puede leer, no crear — y #25 — hacer el dashboard responsive, hoy es solo desktop."</p></div>
+    <div class="person-card"><h4>Brayan</h4><p class="quote">"Tengo la #26 — hoy la carga masiva de usuarios por CSV hace un request por fila; voy a agregar un endpoint de bulk-insert real."</p></div>
+    <div class="person-card"><h4>Eduard</h4><p class="quote">"Tengo la #23 — ampliar la cobertura de tests que arrancamos esta semana."</p></div>
+  </div>
+`},
+
+{ block:'b3', badge:'Bloque 3 · Metodología ágil', time:'14:30 – 15:00', speaker:'David', title:'Cierre — el PR como modelo de flujo', body:`
+  <div class="panel mostrar"><h3>🖥️ Qué mostrar — dónde en el sistema</h3>
+    <ul><li>PR real: <a href="https://github.com/davidm052006/Desarrollo-Brota-Orietacion-vocacional/pull/28" target="_blank">#28 — feature/admin-route-guard → main</a></li></ul>
+  </div>
+  <div class="panel decir"><h3>🗣️ Qué decir</h3>
+    <p class="quote">"Este PR es el primero de un flujo de ramas por característica que usamos desde ahora: rama <code>feature/algo</code>, commits, PR con descripción y vínculo a la issue que cierra. Es el modelo para lo que sigue con #23 a #26."</p>
+  </div>
+`},
+
+/* ===== Q&A CHEAT SHEET ===== */
+{ block:'', badge:'Preparación', time:'', speaker:'Todos', title:'Preguntas probables del jurado', body:`
+  <div class="panel">
+    <table>
+      <tr><th>Pregunta</th><th>Respuesta corta</th></tr>
+      <tr><td>¿Por qué el tablero recién se movió hoy?</td><td>"Preferimos ser honestos: el trabajo se hizo, pero no pasó por el tablero. Lo reseteamos en vez de simular un historial de uso continuo."</td></tr>
+      <tr><td>¿Dónde está su JWT_SECRET propio?</td><td>"Delegamos la autenticación completa a Supabase Auth — es más seguro que mantener nuestro propio esquema."</td></tr>
+      <tr><td>¿Cuál es su cobertura real de tests?</td><td>Dar el número real (7 tests backend + 19 frontend), no un porcentaje inventado, y mencionar la issue #23 como plan concreto.</td></tr>
+      <tr><td>¿Por qué la mayoría de los commits son de una sola persona?</td><td>"David coordinó gran parte de la integración; el resto del equipo tiene issues propias asignadas ahora mismo (#23–#26) para que la distribución sea pareja de acá en adelante — no lo escondemos."</td></tr>
+    </table>
+  </div>
+`},
+
+/* ===== RESUMEN DE LO CORREGIDO ===== */
+{ block:'', badge:'Contexto interno', time:'', speaker:'Equipo', title:'Qué se corrigió esta semana (para todos, no para el jurado)', body:`
+  <div class="panel">
+    <ul>
+      <li><b>Tablero:</b> 16 issues viejas cerradas con nota honesta, 5 issues nuevas creadas y asignadas (#23–#27).</li>
+      <li><b>Código:</b> bug real en <code>AdminPanel.jsx</code> (el admin demo no podía entrar al panel) — corregido en <a href="https://github.com/davidm052006/Desarrollo-Brota-Orietacion-vocacional/pull/28" target="_blank">PR #28</a>.</li>
+      <li><b>Docs:</b> <code>docs/gestion_proyecto.md</code> corregido para reflejar las columnas reales del tablero (Backlog/Ready/In progress/In review, sin "Done").</li>
+      <li><b>Detalle completo:</b> <code>docs/auditoria_sustentacion.md</code> en el repo.</li>
+    </ul>
+  </div>
+  <div class="callout">Página provisional para practicar antes de la sustentación — no es el material que se muestra al jurado.</div>
+`},
+
+];
+
+/* ===================== RENDER ===================== */
+const root = document.getElementById('slides');
+let idx = 0;
+
+function timeToSec(range){
+  if(!range) return null;
+  const end = range.split('–').pop().trim();
+  const [m,s] = end.split(':').map(Number);
+  return m*60 + s;
+}
+
+SLIDES.forEach((s, i) => {
+  const div = document.createElement('section');
+  div.className = 'slide' + (i===0 ? ' active' : '');
+  if(s.cover){
+    div.innerHTML = s.html;
+  } else {
+    div.innerHTML = `
+      <div class="badges">
+        ${s.badge ? `<span class="badge-block ${s.block||''}">${s.badge}</span>` : ''}
+        ${s.time ? `<span class="badge-time">⏱ ${s.time}</span>` : ''}
+        ${s.speaker ? `<span class="badge-speaker">🎤 ${s.speaker}</span>` : ''}
+      </div>
+      <h1 class="slide-title">${s.title}</h1>
+      ${s.sub ? `<p class="subtitle">${s.sub}</p>` : ''}
+      ${s.body}
+    `;
+  }
+  root.appendChild(div);
+});
+
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const counter = document.getElementById('counter');
+const accum = document.getElementById('accum');
+const fill = document.getElementById('progressFill');
+const slideEls = document.querySelectorAll('.slide');
+
+function render(){
+  slideEls.forEach((el,i) => el.classList.toggle('active', i===idx));
+  prevBtn.disabled = idx===0;
+  nextBtn.disabled = idx===slideEls.length-1;
+  counter.textContent = `${idx+1} / ${slideEls.length}`;
+  fill.style.width = `${((idx+1)/slideEls.length)*100}%`;
+  const t = SLIDES[idx].time;
+  if(t){
+    const sec = timeToSec(t);
+    const mm = String(Math.floor(sec/60)).padStart(2,'0');
+    const ss = String(sec%60).padStart(2,'0');
+    accum.textContent = `Acumulado hasta esta diapositiva: ${mm}:${ss} / 15:00`;
+  } else {
+    accum.textContent = '';
+  }
+  slideEls[idx].scrollTop = 0;
+}
+
+prevBtn.addEventListener('click', () => { if(idx>0){ idx--; render(); } });
+nextBtn.addEventListener('click', () => { if(idx<slideEls.length-1){ idx++; render(); } });
+document.addEventListener('keydown', (e) => {
+  if(e.key==='ArrowRight' || e.key===' '){ e.preventDefault(); if(idx<slideEls.length-1){ idx++; render(); } }
+  if(e.key==='ArrowLeft'){ if(idx>0){ idx--; render(); } }
+});
+
+render();
+</script>
+</body>
+</html>
