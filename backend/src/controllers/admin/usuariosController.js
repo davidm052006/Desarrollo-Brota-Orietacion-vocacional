@@ -107,9 +107,11 @@ async function crearUsuarioUnico({
     }]);
 
   if (perfilError) {
-    // Rollback: eliminar el usuario de auth si el perfil no se pudo crear
+    // Rollback: eliminar el usuario de auth si el perfil no se pudo crear.
+    // Es un fallo de infraestructura después de pasar toda la validación
+    // (no un error del cliente) — status 500, no 400.
     await supabase.auth.admin.deleteUser(userId);
-    return { success: false, error: 'No se pudo crear el perfil: ' + perfilError.message };
+    return { success: false, error: 'No se pudo crear el perfil: ' + perfilError.message, status: 500 };
   }
 
   // 3. Asignar rol en perfiles_usuario
@@ -126,7 +128,7 @@ const createUsuario = asyncHandler('admin/usuariosController.createUsuario', asy
   const resultado = await crearUsuarioUnico(req.body);
 
   if (!resultado.success) {
-    return res.status(400).json({ success: false, message: resultado.error });
+    return res.status(resultado.status || 400).json({ success: false, message: resultado.error });
   }
 
   return res.status(201).json({ success: true, message: 'Usuario creado correctamente', data: { id: resultado.id } });

@@ -282,7 +282,7 @@ export const getPreguntasComunidad = async () => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/preguntas-comunidad`, { headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -292,7 +292,7 @@ export const deletePreguntaComunidad = async (id) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/preguntas-comunidad/${id}`, { method: 'DELETE', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };

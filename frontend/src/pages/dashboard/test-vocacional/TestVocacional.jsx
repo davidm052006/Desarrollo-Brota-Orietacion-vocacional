@@ -205,7 +205,9 @@ export default function TestVocacional({ user, isDemoMode = false }) {
       const draft = JSON.parse(raw);
       setPreguntaIdx(draft.preguntaIdx ?? 0);
       setSeleccionadas(draft.seleccionadas ?? {});
-    } catch {}
+    } catch {
+      // borrador corrupto o ilegible — se ignora y arranca el test desde cero
+    }
     setFase('test');
   };
 
