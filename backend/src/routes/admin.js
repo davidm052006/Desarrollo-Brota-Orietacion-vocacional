@@ -3,7 +3,9 @@ const router         = express.Router();
 const verificarAdmin = require('../middlewares/verificarAdmin');
 const {
   getUsuarios, getUsuario, createUsuario, createUsuariosMasivo, updateUsuario, deleteUsuario, getStats,
+  bloquearUsuario, actualizarPermisos,
 } = require('../controllers/admin/usuariosController');
+const { getCatalogoPermisos } = require('../controllers/admin/permisosController');
 const {
   getInstituciones, createInstitucion, updateInstitucion, deleteInstitucion,
 } = require('../controllers/admin/institucionesController');
@@ -36,6 +38,10 @@ router.get   ('/usuarios/:id',    getUsuario);
 router.post  ('/usuarios',        createUsuario);
 router.patch ('/usuarios/:id',    updateUsuario);
 router.delete('/usuarios/:id',    deleteUsuario);
+router.patch ('/usuarios/:id/bloqueo',  bloquearUsuario);
+router.patch ('/usuarios/:id/permisos', actualizarPermisos);
+
+router.get('/permisos/catalogo', getCatalogoPermisos);
 
 router.get   ('/instituciones',     getInstituciones);
 router.post  ('/instituciones',     createInstitucion);
