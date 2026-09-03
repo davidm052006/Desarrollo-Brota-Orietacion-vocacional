@@ -6,7 +6,7 @@ import { ESTADO_BADGE, ESTADO_LABEL, formatFecha } from './constants';
 // leer el mensaje completo, anotar notas internas y cambiar su estado.
 // Todo ese estado (expandido/notas/guardando) es local a la tarjeta — al
 // padre (ContactosSection) solo le importa refrescar la lista cuando cambia algo.
-export default function ContactoCard({ contacto, onActualizar }) {
+export default function ContactoCard({ contacto, onActualizar, onCrearCredenciales }) {
   const [expandido, setExpandido]   = useState(false);
   const [notas, setNotas]           = useState(contacto.notas_admin || '');
   const [guardando, setGuardando]   = useState(false);
@@ -92,6 +92,15 @@ export default function ContactoCard({ contacto, onActualizar }) {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {contacto.asunto === 'Alianzas institucionales' && (
+              <button
+                onClick={() => onCrearCredenciales(contacto)}
+                disabled={guardando}
+                className="text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-ink font-semibold hover:bg-primary-hover disabled:opacity-50 transition-colors"
+              >
+                🔑 Dar credenciales
+              </button>
+            )}
             {contacto.estado !== 'leido' && contacto.estado !== 'respondido' && contacto.estado !== 'archivado' && (
               <button
                 onClick={() => cambiarEstado('leido')}

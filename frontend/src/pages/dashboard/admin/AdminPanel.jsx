@@ -44,6 +44,11 @@ export default function AdminPanel({ user, profile }) {
   // desde el botón "Ver preguntas" de CuestionariosSection.
   const [filtroCuestionarioId, setFiltroCuestionarioId] = useState('');
 
+  // Datos a preseleccionar en "Nuevo usuario" cuando se navega desde el botón
+  // "Dar credenciales" de una solicitud de contacto institucional — evita
+  // que el admin tenga que retipear nombre/email/teléfono a mano.
+  const [prefillUsuario, setPrefillUsuario] = useState(null);
+
   useEffect(() => {
     const checkAdminRole = async () => {
       if (!user?.id) { setIsAdmin(false); return; }
@@ -66,6 +71,17 @@ export default function AdminPanel({ user, profile }) {
   const verPreguntasDeCuestionario = (cuestionarioId) => {
     setFiltroCuestionarioId(cuestionarioId);
     setActiveSection('preguntas');
+  };
+
+  // Navega a "Usuarios" y le pide que abra "Nuevo usuario" ya con rol
+  // institución y los datos que la institución mandó en su solicitud.
+  const crearCredencialesDesde = (contacto) => {
+    setPrefillUsuario({
+      nombre: contacto.nombre || '',
+      email: contacto.email || '',
+      telefono: contacto.telefono || '',
+    });
+    setActiveSection('usuarios');
   };
 
   if (isAdmin === null) {
@@ -126,6 +142,9 @@ export default function AdminPanel({ user, profile }) {
         <SectionComponent
           onVerPreguntas={verPreguntasDeCuestionario}
           filtroCuestionarioId={filtroCuestionarioId}
+          onCrearCredenciales={crearCredencialesDesde}
+          prefillUsuario={prefillUsuario}
+          onPrefillConsumido={() => setPrefillUsuario(null)}
         />
 
       </div>

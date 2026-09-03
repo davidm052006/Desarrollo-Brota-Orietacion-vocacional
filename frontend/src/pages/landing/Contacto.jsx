@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { enviarContacto } from '../../services/contactoService';
 
 const ASUNTOS = [
@@ -12,7 +13,19 @@ const ASUNTOS = [
 const INPUT = 'w-full px-4 py-3 text-sm rounded-xl border border-gray-200 dark:border-[#2c3140] bg-white dark:bg-[#1a1d24] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 focus:border-emerald-400 transition-colors';
 
 export default function Contacto() {
-  const [form, setForm]         = useState({ nombre: '', email: '', telefono: '', asunto: '', mensaje: '' });
+  const [searchParams] = useSearchParams();
+  // Llegar con ?asunto=institucion (botón "¿Sos una institución?" del login)
+  // solo pre-selecciona el asunto — la cuenta institución NO se crea acá, la
+  // crea un admin desde el panel después de revisar la solicitud (ver
+  // CLAUDE.md sección "Rol institucion": self-signup público está
+  // deliberadamente descartado para evitar suplantación).
+  const esSolicitudInstitucion = searchParams.get('asunto') === 'institucion';
+
+  const [form, setForm] = useState({
+    nombre: '', email: '', telefono: '',
+    asunto: esSolicitudInstitucion ? 'Alianzas institucionales' : '',
+    mensaje: '',
+  });
   const [errors, setErrors]     = useState({});
   const [loading, setLoading]   = useState(false);
   const [enviado, setEnviado]   = useState(false);
@@ -86,13 +99,24 @@ export default function Contacto() {
         ) : (
           <>
             <div className="mb-10">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Contáctanos</h1>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                {esSolicitudInstitucion ? 'Solicitar acceso institucional' : 'Contáctanos'}
+              </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                Escríbenos con tus preguntas o sugerencias. Un miembro del equipo te responderá directamente.
+                {esSolicitudInstitucion
+                  ? 'Contanos sobre tu institución y un administrador va a revisar la solicitud para crear la cuenta.'
+                  : 'Escríbenos con tus preguntas o sugerencias. Un miembro del equipo te responderá directamente.'}
               </p>
             </div>
 
             <div className="bg-white dark:bg-[#1a1d24] rounded-2xl border border-gray-100 dark:border-[#2c3140] p-8">
+
+              {esSolicitudInstitucion && (
+                <div className="mb-5 px-4 py-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-xl text-sm text-emerald-800 dark:text-emerald-300">
+                  🏫 Las cuentas institución no se crean solas por seguridad — mandanos el nombre de tu institución,
+                  tu cargo y un teléfono de contacto en el mensaje, y te avisamos por correo cuando esté lista.
+                </div>
+              )}
 
               {serverError && (
                 <div className="mb-4 px-4 py-3 bg-red-50 dark:bg-[#200a0a] border border-red-200 rounded-xl text-sm text-red-600 dark:text-red-400">
@@ -144,7 +168,11 @@ export default function Contacto() {
                   </label>
                   <textarea
                     rows={6}
-                    placeholder="Cuéntanos en qué podemos ayudarte..."
+                    placeholder={
+                      esSolicitudInstitucion
+                        ? 'Nombre de la institución, tu cargo, ciudad y un teléfono de contacto...'
+                        : 'Cuéntanos en qué podemos ayudarte...'
+                    }
                     value={form.mensaje}
                     onChange={set('mensaje')}
                     className={INPUT + ' resize-none'}

@@ -121,3 +121,9 @@ export function getCategoriaInfo(clave, idx = 0) {
 
 // Clave de localStorage compartida entre TestVocacional y ContinueSection
 export const storageKey = (userId) => `brota-test-${userId}`;
+
+// { value, label } de las categorías conocidas — usado por el editor de
+// preguntas de institución (pages/dashboard/institucion/Cuestionarios.jsx)
+// para armar los pesos por opción sin inventar una 5ta lista de categorías
+// (ver CLAUDE.md, "Taxonomía de 14 áreas académicas... cuadruplicada").
+export const CATEGORIA_OPCIONES = Object.entries(CATEGORIAS).map(([value, { titulo }]) => ({ value, label: titulo }));

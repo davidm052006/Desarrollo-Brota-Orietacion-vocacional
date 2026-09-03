@@ -4,10 +4,11 @@ const { parsePaginacion, metaPaginacion } = require('../../utils/paginacion');
 const { patronIlike } = require('../../utils/postgrestFiltro');
 const { calcularEdadDesdeFecha } = require('../../utils/calcularEdad');
 const { RECURSOS_VALIDOS } = require('../../utils/permisos');
+const { crearUsuarioUnico } = require('../../utils/crearUsuario');
+const sleep = require('../../utils/sleep');
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ROLES_VALIDOS = ['estudiante', 'orientador', 'moderador', 'admin'];
 const MAX_FILAS_MASIVO = 500;
+const DELAY_ENTRE_FILAS_MS = 150;
 
 // GET /api/admin/usuarios — lista paginada con ?pagina, ?limite, ?busqueda, ?rol
 const getUsuarios = asyncHandler('admin/usuariosController.getUsuarios', async (req, res) => {
@@ -47,81 +48,6 @@ const getUsuario = asyncHandler('admin/usuariosController.getUsuario', async (re
 
   return res.json({ success: true, data });
 });
-
-// Crea un usuario en Supabase Auth + su fila en perfiles_usuario (+ rol).
-// Reutilizada por createUsuario (individual) y createUsuariosMasivo (en lote)
-// para no duplicar los mismos 3 pasos ni las reglas de validación.
-// `fecha_nacimiento` (mismo campo que pide el registro público, ver SignupCard.jsx)
-// tiene prioridad sobre `edad` si llegan los dos — así el formulario de creación
-// y la carga masiva pueden usar el mismo formato que el registro real en vez de
-// pedir una edad numérica suelta. `edad` se mantiene por compatibilidad (ediciones
-// de usuarios existentes, que no tienen fecha de nacimiento guardada).
-async function crearUsuarioUnico({
-  email, password, nombre, apellido,
-  ciudad, nivel_educativo, condiciones_socioeconomicas,
-  edad, fecha_nacimiento, grado, telefono,
-  rol = 'estudiante',
-}) {
-  if (!email || !password || !nombre || !apellido) {
-    return { success: false, error: 'Email, contraseña, nombre y apellido son obligatorios' };
-  }
-  if (password.length < 6) {
-    return { success: false, error: 'La contraseña debe tener mínimo 6 caracteres' };
-  }
-  if (!EMAIL_REGEX.test(email)) {
-    return { success: false, error: 'El email no tiene un formato válido' };
-  }
-  if (rol && !ROLES_VALIDOS.includes(rol)) {
-    return { success: false, error: `Rol inválido "${rol}" — debe ser uno de: ${ROLES_VALIDOS.join(', ')}` };
-  }
-
-  let edadFinal = null;
-  if (fecha_nacimiento) {
-    edadFinal = calcularEdadDesdeFecha(fecha_nacimiento);
-    if (edadFinal === null) {
-      return { success: false, error: 'Fecha de nacimiento inválida (la edad debe estar entre 14 y 100 años)' };
-    }
-  } else if (edad !== undefined && edad !== null && edad !== '') {
-    if (isNaN(parseInt(edad))) {
-      return { success: false, error: 'La edad debe ser un número' };
-    }
-    edadFinal = parseInt(edad);
-  }
-
-  // 1. Crear usuario en Supabase Auth (solo posible con SERVICE_ROLE_KEY)
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email, password, email_confirm: true,
-  });
-
-  if (authError) {
-    return { success: false, error: authError.message };
-  }
-
-  const userId = authData.user.id;
-
-  // 2. Crear registro en perfiles_usuario
-  const { error: perfilError } = await supabase
-    .from('perfiles_usuario')
-    .insert([{
-      user_id: userId, nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
-      edad: edadFinal, grado: grado || null, telefono: telefono || null,
-    }]);
-
-  if (perfilError) {
-    // Rollback: eliminar el usuario de auth si el perfil no se pudo crear.
-    // Es un fallo de infraestructura después de pasar toda la validación
-    // (no un error del cliente) — status 500, no 400.
-    await supabase.auth.admin.deleteUser(userId);
-    return { success: false, error: 'No se pudo crear el perfil: ' + perfilError.message, status: 500 };
-  }
-
-  // 3. Asignar rol en perfiles_usuario
-  if (rol) {
-    await supabase.from('perfiles_usuario').update({ rol }).eq('user_id', userId);
-  }
-
-  return { success: true, id: userId };
-}
 
 // POST /api/admin/usuarios — crea auth.users + perfiles_usuario (+ rol)
 // Requiere SERVICE_ROLE_KEY para supabase.auth.admin.createUser()
@@ -171,6 +97,11 @@ const createUsuariosMasivo = asyncHandler('admin/usuariosController.createUsuari
 
     const resultado = await crearUsuarioUnico(fila);
     resultados.push({ usuario: fila, success: resultado.success, error: resultado.success ? null : resultado.error });
+
+    // Margen de seguridad: todas estas llamadas a Supabase Auth salen de la
+    // misma IP (este backend) — un rate limit no documentado del Admin API
+    // podría rechazar filas en medio de una carga grande sin esta pausa.
+    await sleep(DELAY_ENTRE_FILAS_MS);
   }
 
   return res.status(201).json({ success: true, resultados });
@@ -181,7 +112,7 @@ const updateUsuario = asyncHandler('admin/usuariosController.updateUsuario', asy
   const { id } = req.params;
   const {
     nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
-    edad, fecha_nacimiento, grado, telefono, rol,
+    edad, fecha_nacimiento, grado, telefono, rol, institucion_id,
   } = req.body;
 
   const { data: perfil, error: findError } = await supabase
@@ -196,12 +127,18 @@ const updateUsuario = asyncHandler('admin/usuariosController.updateUsuario', asy
   // si no, se respeta lo que venga en `edad` tal cual (comportamiento previo).
   const edadFinal = fecha_nacimiento ? calcularEdadDesdeFecha(fecha_nacimiento) : (edad ? parseInt(edad) : null);
 
+  // institucion_id solo se toca si llega explícitamente en el body (re-vincular
+  // una cuenta institución tras una sync MEN, ver migration_rol_institucion.sql)
+  // — así una edición normal de un usuario no-institución no lo pisa con null.
+  const campos = {
+    nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
+    edad: edadFinal, grado: grado || null, telefono: telefono || null,
+  };
+  if (institucion_id !== undefined) campos.institucion_id = institucion_id || null;
+
   const { error: updateError } = await supabase
     .from('perfiles_usuario')
-    .update({
-      nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
-      edad: edadFinal, grado: grado || null, telefono: telefono || null,
-    })
+    .update(campos)
     .eq('id', id);
 
   if (updateError) {

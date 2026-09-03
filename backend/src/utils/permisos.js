@@ -1,26 +1,117 @@
-// Default de recursos permitidos por rol. Un usuario puede tener excepciones
-// puntuales en `perfiles_usuario.permisos_override` (JSONB, ej.
-// { "comunidad.publicar": false }) que pisan este default para ese usuario
-// específico — ver tienePermiso().
-//
-// Esto NO reemplaza a verificarAdmin.js/verificarModeracion.js (acceso al
-// panel admin / herramientas de moderación siguen siendo esos dos checks de
-// rol fijo). Es para recursos más finos que necesiten poder apagarse para un
-// usuario puntual sin tocar código.
-const PERMISOS_POR_ROL = {
-  estudiante: ['comunidad.publicar', 'comunidad.comentar'],
-  orientador: ['comunidad.publicar', 'comunidad.comentar'],
-  moderador:  ['comunidad.publicar', 'comunidad.comentar'],
-  admin:      ['comunidad.publicar', 'comunidad.comentar', 'programas.editar'],
+PERMISOS_POR_ROL = {
+  estudiante: {
+    crear_comunidad: true,
+    crear_evento: false,
+    crear_recurso: false,
+    crear_publicacion: true,
+    crear_encuesta: false,
+    crear_encuesta_comunidad: false,
+    crear_encuesta_evento: false,
+    crear_encuesta_recurso: false,
+    crear_encuesta_publicacion: false,
+    crear_encuesta_comunidad_publicacion: false,
+    crear_encuesta_evento_publicacion: false,
+    crear_encuesta_recurso_publicacion: false,
+    crear_encuesta_comunidad_evento: false,
+    crear_encuesta_comunidad_recurso: false,
+    crear_encuesta_evento_recurso: false,
+    crear_encuesta_comunidad_evento_recurso: false,
+    crear_encuesta_publicacion_comunidad: false,
+    crear_encuesta_publicacion_evento: false,
+    crear_encuesta_publicacion_recurso: false,
+    crear_encuesta_comunidad_publicacion_evento: false,
+    crear_encuesta_comunidad_publicacion_recurso: false,
+    crear_encuesta_comunidad_evento_recurso: false,
+    crear_encuesta_publicacion_comunidad_evento: false,
+    crear_encuesta_publicacion_comunidad_recurso: false,
+    crear_encuesta_publicacion_evento_recurso: false,
+    crear_encuesta_comunidad_publicacion_evento_recurso: false,
+  },
+
+    moderador: {
+        crear_comunidad: true,
+        crear_evento: true,
+        crear_recurso: true,
+        crear_publicacion: true,
+        crear_encuesta: true,
+        crear_encuesta_comunidad: true,
+        crear_encuesta_evento: true,
+        crear_encuesta_recurso: true,
+        crear_encuesta_publicacion: true,
+        crear_encuesta_comunidad_publicacion: true,
+        crear_encuesta_evento_publicacion: true,
+        crear_encuesta_recurso_publicacion: true,
+        crear_encuesta_comunidad_evento: true,
+        crear_encuesta_comunidad_recurso: true,
+        crear_encuesta_evento_recurso: true,
+        crear_encuesta_comunidad_evento_recurso: true,
+        crear_encuesta_publicacion_comunidad: true,
+        crear_encuesta_publicacion_evento: true,
+        crear_encuesta_publicacion_recurso: true,
+        crear_encuesta_comunidad_publicacion_evento: true,
+        crear_encuesta_comunidad_publicacion_recurso: true,
+        crear_encuesta_comunidad_evento_recurso: true,
+        crear_encuesta_publicacion_comunidad_evento: true,
+        crear_encuesta_publicacion_comunidad_recurso: true,
+        crear_encuesta_publicacion_evento_recurso: true,
+        crear_encuesta_comunidad_publicacion_evento_recurso: true,
+    },
+
+    admin: {
+        crear_comunidad: true,
+        crear_evento: true,
+        crear_recurso: true,
+        crear_publicacion: true,
+        crear_encuesta: true,
+        crear_encuesta_comunidad: true,
+        crear_encuesta_evento: true,
+        crear_encuesta_recurso: true,
+        crear_encuesta_publicacion: true,
+        crear_encuesta_comunidad_publicacion: true,
+        crear_encuesta_evento_publicacion: true,
+        crear_encuesta_recurso_publicacion: true,
+        crear_encuesta_comunidad_evento: true,
+        crear_encuesta_comunidad_recurso: true,
+        crear_encuesta_evento_recurso: true,
+        crear_encuesta_comunidad_evento_recurso: true,
+        crear_encuesta_publicacion_comunidad: true,
+        crear_encuesta_publicacion_evento: true,
+        crear_encuesta_publicacion_recurso: true,
+        crear_encuesta_comunidad_publicacion_evento: true,
+        crear_encuesta_comunidad_publicacion_recurso: true,
+        crear_encuesta_comunidad_evento_recurso: true,
+        crear_encuesta_publicacion_comunidad_evento: true,
+        crear_encuesta_publicacion_comunidad_recurso: true,
+        crear_encuesta_publicacion_evento_recurso: true,
+        crear_encuesta_comunidad_publicacion_evento_recurso: true,
+    },
+    
+    Intituciones: {
+        crear_comunidad: true,
+        crear_evento: true,
+        crear_recurso: true,
+        crear_publicacion: true,
+        crear_encuesta: true,
+        crear_encuesta_comunidad: true,
+        crear_encuesta_evento: true,
+        crear_encuesta_recurso: true,
+        crear_encuesta_publicacion: true,
+        crear_encuesta_comunidad_publicacion: true,
+        crear_encuesta_evento_publicacion: true,
+        crear_encuesta_recurso_publicacion: true,
+        crear_encuesta_comunidad_evento: true,
+        crear_encuesta_comunidad_recurso: true,
+        crear_encuesta_evento_recurso: true,
+        crear_encuesta_comunidad_evento_recurso: true,
+        crear_encuesta_publicacion_comunidad: true,
+        crear_encuesta_publicacion_evento: true,    
+        crear_encuesta_publicacion_recurso: true,
+        crear_encuesta_comunidad_publicacion_evento: true,
+        crear_encuesta_comunidad_publicacion_recurso: true,
+        crear_encuesta_comunidad_evento_recurso: true,
+        crear_encuesta_publicacion_comunidad_evento: true,
+        crear_encuesta_publicacion_comunidad_recurso: true,
+        crear_encuesta_publicacion_evento_recurso: true,
+        crear_encuesta_comunidad_publicacion_evento_recurso: true,
+  },
 };
-
-const RECURSOS_VALIDOS = [...new Set(Object.values(PERMISOS_POR_ROL).flat())];
-
-// perfil: fila de perfiles_usuario (necesita al menos `rol` y `permisos_override`)
-function tienePermiso(perfil, recurso) {
-  const override = perfil?.permisos_override?.[recurso];
-  if (override !== undefined) return Boolean(override);
-  return (PERMISOS_POR_ROL[perfil?.rol] || []).includes(recurso);
-}
-
-module.exports = { PERMISOS_POR_ROL, RECURSOS_VALIDOS, tienePermiso };

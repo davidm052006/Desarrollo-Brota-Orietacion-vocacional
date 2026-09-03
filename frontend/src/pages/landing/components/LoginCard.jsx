@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import AuthCardShell from './AuthCardShell';
 
 const inputStyle = (error) => ({
@@ -106,6 +107,24 @@ function LoginCard({
         }}>
           ¿Olvidaste tu contraseña?
         </button>
+      </div>
+
+      {/* Las cuentas institución no son de auto-registro (evita que alguien
+          se registre suplantando una institución real) — este botón manda a
+          un formulario de solicitud que revisa un admin, no crea la cuenta. */}
+      <div style={{
+        marginTop: 4, paddingTop: 14, borderTop: '1px solid var(--line)',
+        textAlign: 'center',
+      }}>
+        <Link
+          to="/contacto?asunto=institucion"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontSize: 12.5, fontWeight: 700, color: 'var(--ink-soft)', textDecoration: 'none',
+          }}
+        >
+          🏫 ¿Sos una institución? Solicitá acceso →
+        </Link>
       </div>
     </AuthCardShell>
   );
