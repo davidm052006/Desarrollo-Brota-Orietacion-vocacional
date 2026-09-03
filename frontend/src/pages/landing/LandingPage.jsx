@@ -59,7 +59,6 @@ const BENEFITS = [
 
 function Navbar({ dark, toggleDark }) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
 
   return (
     <header style={{

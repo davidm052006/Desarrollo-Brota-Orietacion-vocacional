@@ -185,19 +185,6 @@ const deleteUsuario = asyncHandler('admin/usuariosController.deleteUsuario', asy
   return res.json({ success: true, message: 'Usuario eliminado correctamente' });
 });
 
-// GET /api/admin/stats — conteo de registros de las tablas principales
-const getStats = asyncHandler('admin/usuariosController.getStats', async (req, res) => {
-  const tablas = ['perfiles_usuario', 'programas', 'instituciones', 'cuestionarios', 'preguntas'];
-
-  const resultados = await Promise.all(
-    tablas.map(tabla =>
-      supabase.from(tabla).select('*', { count: 'exact', head: true }).then(({ count }) => [tabla, count ?? 0])
-    )
-  );
-
-  return res.json({ success: true, data: Object.fromEntries(resultados) });
-});
-
 // PATCH /api/admin/usuarios/:id/bloqueo — body: { horas } para bloquear N horas
 // desde ahora, o { hasta: null } para desbloquear. No usa una fecha exacta a
 // propósito (más simple para el panel: botones rápidos 1h/24h/7d/permanente).
@@ -276,6 +263,19 @@ const actualizarPermisos = asyncHandler('admin/usuariosController.actualizarPerm
   }
 
   return res.json({ success: true, message: 'Permisos actualizados correctamente' });
+});
+
+// GET /api/admin/stats — conteo de registros de las tablas principales
+const getStats = asyncHandler('admin/usuariosController.getStats', async (req, res) => {
+  const tablas = ['perfiles_usuario', 'programas', 'instituciones', 'cuestionarios', 'preguntas'];
+
+  const resultados = await Promise.all(
+    tablas.map(tabla =>
+      supabase.from(tabla).select('*', { count: 'exact', head: true }).then(({ count }) => [tabla, count ?? 0])
+    )
+  );
+
+  return res.json({ success: true, data: Object.fromEntries(resultados) });
 });
 
 module.exports = {

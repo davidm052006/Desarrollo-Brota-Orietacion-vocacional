@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import TestVocacional from './TestVocacional';
@@ -243,7 +243,7 @@ it('muestra el resultado previo guardado', async () => {
     />
   );
 
-  const botones = await screen.findAllByRole('button', { name: /Ver resultado/i });
+  const botones = await screen.findAllByRole('button', { name: /Ver mi resultado anterior/i });
   const botonResultado = botones.find(b => !b.disabled) || botones[0];
 
   await user.click(botonResultado);

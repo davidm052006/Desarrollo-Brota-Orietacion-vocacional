@@ -1,7 +1,5 @@
 // Helper row shown below the question card during the test.
 // Props:
-//   preguntaActual: number (0-based)
-//   totalPreguntas: number
 //   progreso: number (0-100)
 
 const SKILLS = [
@@ -10,7 +8,7 @@ const SKILLS = [
   { label: 'Comunicación',  icon: '💬', tint: 'var(--primary-soft)' },
 ];
 
-export default function TestProgress({ preguntaActual = 0, totalPreguntas = 30, progreso = 0 }) {
+export default function TestProgress({ progreso = 0 }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 16, width: '100%' }}>
 

@@ -85,6 +85,22 @@ export const deleteUsuario = async (id) => {
   }
 };
 
+// datos: { horas } (número > 0) para bloquear N horas desde ahora, o { hasta: null } para desbloquear
+export const bloquearUsuario = async (id, datos) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/usuarios/${id}/bloqueo`, {
+      method:  'PATCH',
+      headers,
+      body:    JSON.stringify(datos),
+    });
+    return parseResponse(res);
+  } catch (err) {
+    console.error('adminService.bloquearUsuario:', err);
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
 // Crea usuarios en lote en una sola request (POST /api/admin/usuarios/masivo).
 // usuarios: array de objetos con la misma forma que espera createUsuario,
 // parseado en el frontend desde CSV o Excel (ver UsuariosSection.jsx).
@@ -282,7 +298,7 @@ export const getPreguntasComunidad = async () => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/preguntas-comunidad`, { headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
@@ -292,7 +308,7 @@ export const deletePreguntaComunidad = async (id) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/admin/preguntas-comunidad/${id}`, { method: 'DELETE', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };

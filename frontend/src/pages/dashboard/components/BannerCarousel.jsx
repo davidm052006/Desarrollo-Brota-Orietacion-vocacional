@@ -132,7 +132,9 @@ export default function BannerCarousel({ perfilUsuarioId, userId }) {
             return;
           }
         }
-      } catch {}
+      } catch {
+        // borrador corrupto o ilegible — se ignora
+      }
     }
     if (perfilUsuarioId) {
       try {
@@ -145,7 +147,9 @@ export default function BannerCarousel({ perfilUsuarioId, userId }) {
           setEstado('completado');
           return;
         }
-      } catch {}
+      } catch {
+        // sin resultado guardado todavía — se ignora, cae al estado 'nuevo'
+      }
     }
     setProgreso(0);
     setEstado('nuevo');

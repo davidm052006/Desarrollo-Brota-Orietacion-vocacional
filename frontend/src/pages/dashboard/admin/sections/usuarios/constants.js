@@ -35,3 +35,13 @@ export const FORM_NUEVO_VACIO = {
   // Solo se usa cuando rol === 'institucion' (ver ModalNuevoUsuario.jsx)
   institucion_id: '', institucion_nombre: '',
 };
+
+// Duraciones predefinidas para ModalPermisosUsuario — 'custom' habilita un
+// input de fecha para elegir un momento puntual en vez de un rango relativo.
+export const DURACIONES_BLOQUEO = [
+  { value: '1',      label: '1 día' },
+  { value: '3',      label: '3 días' },
+  { value: '7',      label: '7 días' },
+  { value: '30',     label: '30 días' },
+  { value: 'custom', label: 'Fecha personalizada' },
+];

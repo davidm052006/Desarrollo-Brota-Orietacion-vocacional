@@ -49,7 +49,7 @@ if (supabaseUrl && supabaseAnonKey) {
       signInWithPassword: async () => ({ error: { message: 'Modo demo: usar el modo real' } }),
       signUp: async () => ({ data: null, error: { message: 'Modo demo: usar el modo real' } }),
       signOut: async () => ({ error: null }),
-      onAuthStateChange: (callback) => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     },
     from: () => ({
       select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }),
