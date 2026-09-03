@@ -51,6 +51,27 @@ Tres cosas que hay que tener en cuenta o el registro/login falla en silencio o c
 
 Si no está claro cuál es la URL del túnel activa en un momento dado, `ps -ef | grep -E "ngrok|cloudflared"` + revisar `backend/.env` (`FRONTEND_URL`) da el estado real.
 
+## Despliegue — Railway (backend) + Vercel (frontend), agosto 2026
+
+Reemplaza al túnel de la sección anterior para la fase de beta con el equipo (el túnel ngrok/cloudflared queda como alternativa rápida para pruebas puntuales sin depender de un despliegue).
+
+**El código no necesitó cambios** — `server.js` ya leía `PORT`/`trust proxy`/`FRONTEND_URL` desde variables de entorno por el trabajo previo con el túnel (ver sección de arriba), así que Railway reutiliza exactamente el mismo mecanismo (su proxy de borde agrega un solo salto de `X-Forwarded-For`, igual que ngrok/cloudflared — `trust proxy: 1` sigue siendo el valor correcto).
+
+**Archivos de config nuevos:**
+- `backend/railway.json` — build con Nixpacks, `startCommand: npm start`, healthcheck en `/api/health` (ya existía, no es nuevo).
+- `frontend/vercel.json` — `buildCommand`/`outputDirectory` explícitos + rewrite catch-all a `/index.html` (necesario para que las rutas de React Router no den 404 al refrescar, ej. `/dashboard/perfil`).
+
+**Es un monorepo** — en ambas plataformas hay que fijar el "Root Directory" del servicio/proyecto (`backend` en Railway, `frontend` en Vercel) al crear el servicio; no alcanza con los `railway.json`/`vercel.json` solos.
+
+**Variables de entorno:**
+- Railway (backend): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SMTP_*`, `FRONTEND_URL` (la URL real de Vercel, sin barra final). `PORT` la inyecta Railway solo, no seteársela a mano.
+- Vercel (frontend): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL` (la URL real de Railway, sin `/api` al final — los services ya arman `${API_URL}/api/...`).
+- **No reutilizar los valores de `backend/.env.example`** — son credenciales de desarrollo aceptadas como expuestas a propósito (ver sección de credenciales más abajo), no deben terminar siendo las de producción/beta.
+
+**Orden de despliegue** (hay dependencia circular de URLs): desplegar primero el backend en Railway sin `FRONTEND_URL` todavía → tomar la URL que asigna Railway → desplegar el frontend en Vercel con `VITE_API_URL` apuntando a esa URL → tomar la URL de Vercel → volver a Railway y setear `FRONTEND_URL` con la URL real de Vercel (un cambio de variable de entorno dispara redeploy solo).
+
+**Pendiente tras el primer despliegue real:** avisar a la sesión de la app móvil en `CHANGELOG_PARA_MOVIL.md` si la URL del backend cambia de ser algo local/túnel a una URL fija de Railway — es la URL base que la app Flutter debería apuntar para consumir el mismo backend.
+
 ## TailwindCSS v4 — IMPORTANTE
 El oxide scanner NO recursiona subdirectorios profundos sin `@source` explícito.
 Ver `frontend/src/index.css` — tiene `@source` explícitos por cada subdirectorio (`pages/**`, `components/**`, etc.).

@@ -92,13 +92,13 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
     setLoading(false);
   }, [filtroC, busqueda]);
 
-  useEffect(() => { fetchPreguntas(); }, [fetchPreguntas]); // eslint-disable-line react-hooks/set-state-in-effect
+  useEffect(() => { fetchPreguntas(); }, [fetchPreguntas]);
 
   useEffect(() => {
     adminService.getCuestionarios().then(({ success, data }) => {
       if (success) setCuestionarios(data);
     });
-  }, []); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []);
 
   const abrirEditar = (p) => {
     setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: p.tipo || 'opcion_multiple', orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0' });

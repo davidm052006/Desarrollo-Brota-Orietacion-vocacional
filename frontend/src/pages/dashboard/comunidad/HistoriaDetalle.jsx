@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../components/Layout/DashboardLayout';
 import { getHistoria, toggleLikeHistoria } from '../../../services/comunidadService';
 import { ModeracionBar } from './components/primitivos';
@@ -14,7 +14,6 @@ function avatarColor(str = '') {
 
 export default function HistoriaDetalle() {
   const { id } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
 
   const [datos, setDatos] = useState(null);

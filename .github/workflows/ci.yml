@@ -1,0 +1,79 @@
+name: CI
+
+# Corre en todos los PR (contra cualquier rama base) y en push a develop/main,
+# para que el estado de esas dos ramas siempre sea visible en GitHub aunque
+# alguien pushee directo (ver branch protection: solo David puede pushear
+# directo a main).
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (lint + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: backend
+        run: npm ci
+
+      - name: Lint
+        working-directory: backend
+        run: npx eslint .
+
+      # backend/.env.example trae credenciales reales de desarrollo a propósito
+      # (ver CLAUDE.md, "Credenciales reales expuestas en el repo" — decisión
+      # consciente para la fase de desarrollo) así que sirven tal cual para CI,
+      # sin necesitar GitHub Secrets todavía.
+      - name: Preparar variables de entorno
+        working-directory: backend
+        run: cp .env.example .env
+
+      - name: Tests
+        working-directory: backend
+        run: npm test
+
+  frontend:
+    name: Frontend (lint + tests + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Preparar variables de entorno
+        working-directory: frontend
+        run: cp .env.local.example .env.local
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build

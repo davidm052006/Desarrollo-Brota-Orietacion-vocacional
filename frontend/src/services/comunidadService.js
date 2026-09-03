@@ -5,7 +5,7 @@ const get = async (path) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/comunidad${path}`, { headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión' };
   }
 };
@@ -17,7 +17,7 @@ const post = async (path, body) => {
       method: 'POST', headers, body: JSON.stringify(body),
     });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión' };
   }
 };
@@ -27,7 +27,7 @@ const patch = async (path) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/comunidad${path}`, { method: 'PATCH', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión' };
   }
 };
@@ -37,7 +37,7 @@ const del = async (path) => {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/api/comunidad${path}`, { method: 'DELETE', headers });
     return parseResponse(res);
-  } catch (err) {
+  } catch {
     return { success: false, error: 'Error de conexión' };
   }
 };

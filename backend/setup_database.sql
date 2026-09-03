@@ -51,6 +51,11 @@ CREATE TABLE IF NOT EXISTS perfiles_usuario (
   racha_dias INT DEFAULT 0,
   -- Ban temporal de 7 días al llegar a 3 reportes en una pregunta de comunidad
   baneado_preguntas_hasta TIMESTAMPTZ,
+  -- Bloqueo manual desde el panel admin (distinto del ban automático de arriba,
+  -- este aplica a toda la cuenta) + excepciones puntuales de permisos sobre el
+  -- default de PERMISOS_POR_ROL (backend/src/utils/permisos.js) — agosto 2026
+  bloqueado_hasta TIMESTAMPTZ,
+  permisos_override JSONB DEFAULT '{}',
   -- Personalización de la mascota "Broti" — { lentes: 'redondos', fondo: 'bosque', ... }
   -- ver frontend/src/utils/brotiCatalog.js (agosto 2026)
   broti_config JSONB DEFAULT '{}',
