@@ -7,7 +7,7 @@ Este directorio contiene todo el código del lado del cliente (frontend) para la
 ## 🚀 Requisitos Previos
 
 Antes de comenzar a programar, asegúrate de tener instalado:
-- **Node.js**: (Versión 18 o superior recomendada).
+- **Node.js**: versión 20.19 o superior (requerida por Vite 7).
 - Un editor de código como **Visual Studio Code**.
 
 ---
@@ -39,13 +39,18 @@ Para mantener el código ordenado y escalable, utilizamos la siguiente estructur
 /frontend
 │
 ├── public/              # Archivos públicos que no cambian (ej. favicon, imágenes estáticas).
-├── src/                 # 📂 AQUÍ ES DONDE SUCEDE LA MAGIA (Tu código principal)
-│   ├── assets/          # Imágenes, íconos y otros recursos visuales.
-│   ├── components/      # Componentes reutilizables (Botones, Tarjetas, Navbar).
-│   ├── pages/           # Vistas o pantallas completas (Login, Cuestionario, Dashboard).
-│   ├── lib/ o utils/    # Configuraciones externas (ej. la conexión a la base de datos Supabase).
-│   ├── main.jsx         # Punto de entrada de React que inyecta la app en el HTML.
-│   └── (Otros archivos principales)
+├── src/                 # Código principal de la aplicación
+│   ├── assets/          # Recursos importados por los componentes.
+│   ├── components/      # Componentes reutilizables y layout del dashboard.
+│   ├── pages/           # Landing, autenticación, dashboard, comunidad y admin.
+│   ├── config/          # Configuración del cliente de Supabase.
+│   ├── hooks/           # Hooks de autenticación, tema, fuentes y sesión.
+│   ├── services/        # Servicios HTTP por dominio contra la API del backend.
+│   ├── utils/           # Validaciones y utilidades compartidas.
+│   ├── test/            # Configuración y pruebas del frontend.
+│   ├── index.css        # Tailwind v4, tokens de marca y estilos globales.
+│   ├── App.jsx          # Enrutamiento principal y sesión.
+│   └── main.jsx         # Punto de entrada que monta React.
 │
 ├── index.html           # El archivo web principal donde "montamos" la aplicación.
 ├── package.json         # Lista de dependencias, librerías instaladas y scripts.
@@ -74,30 +79,17 @@ Esto generará una carpeta oculta `dist/` con todo tu código minificado, compri
 
 ---
 
-## 🎨 Paleta de Colores
+## 🎨 Sistema visual
 
-### Modo Oscuro (Dark Mode)
+La interfaz usa los tokens definidos en `src/index.css`, no una paleta fija por pantalla. Esto permite que el modo oscuro se active con la clase `dark` en `html`.
 
-| Elemento | Color HEX | Descripción |
-| :--- | :--- | :--- |
-| Primary (fondo principal / navbar / texto fuerte) | `#065F46` | Deep emerald green |
-| Gradient de la planta | `#4AC748` → `#48C786` → `#48C7C5` | Organic gradient suave (verde lima → turquesa suave) |
-| Botón principal "Crear cuenta gratis" | `#A3E635` | Vibrant lime green |
-| Botón secundario "Iniciar sesión" | Bordes en `#FF6B6B` | Coral orange |
-| Botón "Enviar" del formulario | `#FF6B6B` | Coral orange |
-| Fondo general | `#F8F5EB` | Soft warm cream/off-white |
-| Texto principal (headlines) | Blanco (`#FFFFFF`) | Sobre fondo verde oscuro |
-| Texto secundario | `#065F46` o negro suave | Según contraste |
+| Token | Claro | Oscuro | Uso |
+| :--- | :--- | :--- | :--- |
+| `--bg` | `#F4F3EC` | `#0C1310` | Fondo general |
+| `--surface` | `#FFFFFF` | `#151F19` | Cards, modales y navbar |
+| `--ink` | `#15241B` | `#EAF3EC` | Texto principal |
+| `--primary` | `#21BD68` | `#34D27D` | Acciones e indicadores activos |
+| `--primary-deep` | `#0E7D43` | `#1FA862` | Hover y acentos oscuros |
+| `--accent` | `#E07A42` | `#F0996A` | Acento secundario |
 
-### Modo Claro (Light Mode)
-
-| Elemento | Color HEX | Descripción |
-| :--- | :--- | :--- |
-| Primary (fondo principal / navbar / texto fuerte) | `#065F46` | Deep emerald green |
-| Hojas / planta (sólido) | `#065F46` y `#4AC748` | Verde oscuro + verde más vivo (sin gradient) |
-| Botón principal "Crear cuenta gratis" | `#A3E635` | Vibrant lime green |
-| Botón secundario "Iniciar sesión" | Texto y borde en `#FF6B6B` | Coral orange |
-| Botón "Enviar" del formulario | `#FF6B6B` | Coral orange |
-| Fondo general | `#F8F5EB` | Soft warm cream/off-white |
-| Texto principal (headlines) | `#065F46` | Verde oscuro sobre crema |
-| Texto secundario | `#065F46` | Verde oscuro |
+Tipografía: **Bricolage Grotesque** para títulos destacados y **Plus Jakarta Sans** para texto de interfaz. Para ampliar las reglas de marca, consulta [`BRAND.md`](../BRAND.md).

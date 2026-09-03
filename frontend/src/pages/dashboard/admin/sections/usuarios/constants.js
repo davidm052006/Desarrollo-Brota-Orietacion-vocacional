@@ -32,3 +32,13 @@ export const FORM_NUEVO_VACIO = {
   condiciones_socioeconomicas: '', fecha_nacimiento: '', grado: '', telefono: '',
   rol: 'estudiante', email: '', password: '',
 };
+
+// Duraciones predefinidas para ModalPermisosUsuario — 'custom' habilita un
+// input de fecha para elegir un momento puntual en vez de un rango relativo.
+export const DURACIONES_BLOQUEO = [
+  { value: '1',      label: '1 día' },
+  { value: '3',      label: '3 días' },
+  { value: '7',      label: '7 días' },
+  { value: '30',     label: '30 días' },
+  { value: 'custom', label: 'Fecha personalizada' },
+];

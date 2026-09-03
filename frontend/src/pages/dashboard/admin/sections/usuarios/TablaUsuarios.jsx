@@ -1,9 +1,15 @@
 import { formatFecha } from '../../components/formatFecha';
 import { ROL_COLORS } from './constants';
 
+// true si bloqueado_hasta existe y todavía no pasó (mismo criterio que
+// ModalPermisosUsuario.jsx — si cambia acá, cambiar allá también).
+function estaBloqueado(usuario) {
+  return !!usuario.bloqueado_hasta && new Date(usuario.bloqueado_hasta) > new Date();
+}
+
 // Tabla de usuarios + paginación. Recibe todo por props: no sabe de dónde
-// vienen los datos ni qué pasa cuando se hace click en editar/ver/eliminar.
-export default function TablaUsuarios({ usuarios, meta, loading, pagina, setPagina, onEditar, onVer, onEliminar }) {
+// vienen los datos ni qué pasa cuando se hace click en editar/ver/eliminar/permisos.
+export default function TablaUsuarios({ usuarios, meta, loading, pagina, setPagina, onEditar, onVer, onEliminar, onPermisos }) {
   return (
     <>
       <div className="overflow-x-auto">
@@ -25,6 +31,7 @@ export default function TablaUsuarios({ usuarios, meta, loading, pagina, setPagi
                 <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nivel educativo</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Rol</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Registro</th>
+                <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
                 <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Acciones</th>
               </tr>
             </thead>
@@ -41,11 +48,20 @@ export default function TablaUsuarios({ usuarios, meta, loading, pagina, setPagi
                   </td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">{formatFecha(u.created_at)}</td>
                   <td className="px-5 py-3.5">
+                    {estaBloqueado(u) && (
+                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700 whitespace-nowrap">
+                        Bloqueado hasta {formatFecha(u.bloqueado_hasta)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
                       <button onClick={() => onEditar(u)}
                         className="p-1.5 text-primary hover:bg-primary-soft rounded-lg transition-colors" title="Editar">✏️</button>
                       <button onClick={() => onVer(u)}
                         className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Ver detalle">👁️</button>
+                      <button onClick={() => onPermisos(u)}
+                        className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" title="Permisos / bloqueo">🔒</button>
                       <button onClick={() => onEliminar(u)}
                         className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">🗑️</button>
                     </div>

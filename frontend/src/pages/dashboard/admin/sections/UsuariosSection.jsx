@@ -7,6 +7,7 @@ import ModalVerUsuario from './usuarios/ModalVerUsuario';
 import ModalEditarUsuario from './usuarios/ModalEditarUsuario';
 import ModalEliminarUsuario from './usuarios/ModalEliminarUsuario';
 import ModalNuevoUsuario from './usuarios/ModalNuevoUsuario';
+import ModalPermisosUsuario from './usuarios/ModalPermisosUsuario';
 import {
   ROLES_FILTRO, ROLES_OPCIONES, NIVEL_EDUCATIVO_OPCIONES, GRADO_OPCIONES,
   FORM_VACIO, FORM_NUEVO_VACIO,
@@ -50,6 +51,7 @@ export default function UsuariosSection() {
   const [modalEliminar, setModalEliminar] = useState(null);
   const [modalNuevo,    setModalNuevo]    = useState(false);
   const [modalMasivo,   setModalMasivo]   = useState(false);
+  const [modalPermisos, setModalPermisos] = useState(null);
 
   // ─── Estado de formularios ────────────────────────────────────────────────
   const [formEditar, setFormEditar] = useState(FORM_VACIO);
@@ -135,6 +137,26 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
     }
 
     setModalEliminar(null);
+    setGuardando(false);
+    fetchUsuarios();
+  };
+
+  // ─── PERMISOS (bloqueo/desbloqueo) ─────────────────────────────────────────
+  const guardarPermisos = async (bloqueadoHasta) => {
+    setGuardando(true);
+    setFormError(null);
+
+    const { success, error } = await adminService.updatePermisosUsuario(modalPermisos.id, {
+      bloqueado_hasta: bloqueadoHasta,
+    });
+
+    if (!success) {
+      setFormError(error);
+      setGuardando(false);
+      return;
+    }
+
+    setModalPermisos(null);
     setGuardando(false);
     fetchUsuarios();
   };
@@ -327,6 +349,7 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
         onEditar={abrirEditar}
         onVer={setModalVer}
         onEliminar={(u) => { setFormError(null); setModalEliminar(u); }}
+        onPermisos={(u) => { setFormError(null); setModalPermisos(u); }}
       />
 
       {modalVer && (
@@ -354,6 +377,14 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
           form={formNuevo} setForm={setFormNuevo}
           formError={formError} guardando={guardando}
           onCrear={crearUsuario} onClose={() => setModalNuevo(false)}
+        />
+      )}
+
+      {modalPermisos && (
+        <ModalPermisosUsuario
+          usuario={modalPermisos}
+          formError={formError} guardando={guardando}
+          onGuardar={guardarPermisos} onClose={() => setModalPermisos(null)}
         />
       )}
 
