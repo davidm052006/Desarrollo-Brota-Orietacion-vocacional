@@ -144,7 +144,10 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
       {/* Nav tabs */}
       <nav style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, overflowX: 'auto' }} className="scrollbar-none">
         {[
-          ...NAV_ITEMS,
+          // Una cuenta institución no toma el test — arma los cuestionarios
+          // que otros toman (ver CLAUDE.md, Rol institucion) — se le saca
+          // ese tab puntual, el resto de NAV_ITEMS queda igual para todos.
+          ...NAV_ITEMS.filter(item => !(esInstitucion && item.to === '/dashboard/test')),
           ...(esInstitucion ? [{ to: '/dashboard/institucion', label: 'Mi institución' }] : []),
         ].map(({ to, label, end }) => (
           <NavLink
