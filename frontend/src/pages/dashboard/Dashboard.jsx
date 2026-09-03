@@ -144,7 +144,7 @@ export default function Dashboard({ user, isDemoMode = false }) {
 
         {/* Columna principal */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0 }}>
-          <BannerCarousel perfilUsuarioId={profile?.id} userId={user?.id} />
+          <BannerCarousel perfilUsuarioId={profile?.id} userId={user?.id} esInstitucion={profile?.rol === 'institucion'} />
           <FeedReciente limite={4} />
         </div>
 

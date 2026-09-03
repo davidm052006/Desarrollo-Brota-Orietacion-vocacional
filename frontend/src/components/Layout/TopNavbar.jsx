@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
+import { useInstitucion } from '../../hooks/useInstitucion';
 import { useDarkMode } from '../../hooks/useDarkMode';
 import { useFontFamily } from '../../hooks/useFontFamily';
 import { useInactivityLogout } from '../../hooks/useInactivityLogout';
@@ -35,6 +36,7 @@ function Avatar({ config }) {
 
 export default function TopNavbar({ profile, isDemoMode = false }) {
   const { isAdmin, loading: adminLoading } = useAdmin();
+  const { esInstitucion } = useInstitucion();
   const [dark, toggleDark] = useDarkMode();
   useFontFamily(); // aplica la fuente guardada en cada carga del dashboard — el selector vive en Ajustes.jsx
   const { mostrarAviso, segundosRestantes, seguirConectado, cerrarSesionAhora } = useInactivityLogout(isDemoMode);
@@ -69,7 +71,7 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
   }, [isDemoMode]);
 
   const nombre = profile?.nombre || profile?.primer_nombre || '';
-  const rol = isAdmin ? 'Administrador' : 'Estudiante';
+  const rol = isAdmin ? 'Administrador' : esInstitucion ? 'Institución' : 'Estudiante';
 
   const iconBtn = {
     width: 38, height: 38, borderRadius: 11,
@@ -141,7 +143,13 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
 
       {/* Nav tabs */}
       <nav style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, overflowX: 'auto' }} className="scrollbar-none">
-        {NAV_ITEMS.map(({ to, label, end }) => (
+        {[
+          // Una cuenta institución no toma el test — arma los cuestionarios
+          // que otros toman (ver CLAUDE.md, Rol institucion) — se le saca
+          // ese tab puntual, el resto de NAV_ITEMS queda igual para todos.
+          ...NAV_ITEMS.filter(item => !(esInstitucion && item.to === '/dashboard/test')),
+          ...(esInstitucion ? [{ to: '/dashboard/institucion', label: 'Mi institución' }] : []),
+        ].map(({ to, label, end }) => (
           <NavLink
             key={to}
             to={to}
@@ -289,7 +297,7 @@ export default function TopNavbar({ profile, isDemoMode = false }) {
             </div>
 
             <button
-              onClick={() => { setPerfilAbierto(false); navigate('/dashboard/perfil'); }}
+              onClick={() => { setPerfilAbierto(false); navigate(esInstitucion ? '/dashboard/institucion' : '/dashboard/perfil'); }}
               style={{
                 width: '100%', background: 'var(--primary)', color: 'var(--primary-ink)',
                 fontWeight: 700, fontSize: 12.5, padding: 10, borderRadius: 10,

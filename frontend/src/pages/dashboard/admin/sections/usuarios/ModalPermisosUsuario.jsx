@@ -1,8 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '../../components/Modal';
 import { Detalle } from '../../components/formPrimitives';
 import { formatFecha } from '../../components/formatFecha';
 import { DURACIONES_BLOQUEO } from './constants';
+import * as adminService from '../../../../../services/adminService';
+
+// Etiquetas legibles para los recursos que devuelve GET /permisos/catalogo
+// (backend/src/utils/permisos.js) — si se agrega un recurso nuevo ahí y no
+// tiene entrada acá, se muestra la clave cruda tal cual (fallback razonable).
+const ETIQUETAS_RECURSOS = {
+  'comunidad.publicar':  'Publicar en Comunidad (posts, historias, preguntas)',
+  'comunidad.comentar':  'Comentar en Comunidad',
+  'programas.editar':    'Editar programas (solo aplica a institución/admin)',
+};
 
 // true si bloqueado_hasta existe y todavía no pasó
 function estaBloqueadoActualmente(usuario) {
@@ -16,9 +26,40 @@ function estaBloqueadoActualmente(usuario) {
 // /usuarios/:id/bloqueo (ver adminService.bloquearUsuario). Ese endpoint recibe
 // { horas } relativas desde ahora (o { hasta: null } para desbloquear), así que
 // la fecha puntual elegida acá se convierte a horas antes de mandarla.
-export default function ModalPermisosUsuario({ usuario, formError, guardando, onGuardar, onClose }) {
+export default function ModalPermisosUsuario({ usuario, formError, guardando, onGuardar, onGuardarPermisos, onClose }) {
   const [duracion, setDuracion]           = useState('7');
   const [fechaPersonalizada, setFechaPersonalizada] = useState('');
+
+  // Checkboxes de permisos individuales — arrancan en el default del rol,
+  // con las excepciones que ya tenga el usuario (permisos_override) pisando
+  // ese default. El catálogo se pide una vez al abrir el modal.
+  const [catalogo, setCatalogo]             = useState(null); // { recursos, porRol }
+  const [overrides, setOverrides]           = useState(usuario.permisos_override || {});
+  const [guardandoPermisos, setGuardandoPermisos] = useState(false);
+  const [errorPermisos, setErrorPermisos]   = useState(null);
+
+  useEffect(() => {
+    adminService.getCatalogoPermisos().then(({ success, data }) => {
+      if (success) setCatalogo(data);
+    });
+  }, []);
+
+  const efectivo = (recurso) => {
+    if (overrides[recurso] !== undefined) return Boolean(overrides[recurso]);
+    return (catalogo?.porRol?.[usuario.rol] || []).includes(recurso);
+  };
+
+  const toggleRecurso = (recurso) => {
+    setOverrides(o => ({ ...o, [recurso]: !efectivo(recurso) }));
+  };
+
+  const handleGuardarPermisos = async () => {
+    setGuardandoPermisos(true);
+    setErrorPermisos(null);
+    const { success, error } = await onGuardarPermisos(overrides);
+    setGuardandoPermisos(false);
+    if (!success) setErrorPermisos(error);
+  };
 
   const bloqueado = estaBloqueadoActualmente(usuario);
 
@@ -107,6 +148,53 @@ export default function ModalPermisosUsuario({ usuario, formError, guardando, on
         >
           {guardando ? 'Guardando...' : 'Bloquear'}
         </button>
+      </div>
+
+      {/* Permisos individuales — excepciones puntuales sobre el default del
+          rol (backend/src/utils/permisos.js). Un check "activado" que no
+          coincide con el default del rol es una excepción explícita. */}
+      <div className="border-t border-gray-100 mt-5 pt-4">
+        <label className="block text-xs font-semibold text-gray-600 mb-2">
+          Permisos individuales
+        </label>
+        {!catalogo ? (
+          <p className="text-xs text-gray-400">Cargando catálogo de permisos...</p>
+        ) : (
+          <div className="space-y-2">
+            {catalogo.recursos.map(recurso => {
+              const default_ = (catalogo.porRol?.[usuario.rol] || []).includes(recurso);
+              const esExcepcion = overrides[recurso] !== undefined && Boolean(overrides[recurso]) !== default_;
+              return (
+                <label key={recurso} className="flex items-start gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={efectivo(recurso)}
+                    onChange={() => toggleRecurso(recurso)}
+                    className="mt-0.5"
+                  />
+                  <span className="text-gray-700">
+                    {ETIQUETAS_RECURSOS[recurso] || recurso}
+                    {esExcepcion && (
+                      <span className="ml-1.5 text-xs font-semibold text-amber-600">(excepción)</span>
+                    )}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+
+        {errorPermisos && <p className="text-sm text-red-500 mt-2">{errorPermisos}</p>}
+
+        <div className="flex justify-end mt-3">
+          <button
+            onClick={handleGuardarPermisos}
+            disabled={guardandoPermisos || !catalogo}
+            className="px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors disabled:opacity-50"
+          >
+            {guardandoPermisos ? 'Guardando...' : 'Guardar permisos'}
+          </button>
+        </div>
       </div>
     </Modal>
   );

@@ -6,12 +6,15 @@
 // Esto NO reemplaza a verificarAdmin.js/verificarModeracion.js (acceso al
 // panel admin / herramientas de moderación siguen siendo esos dos checks de
 // rol fijo). Es para recursos más finos que necesiten poder apagarse para un
-// usuario puntual sin tocar código.
+// usuario puntual sin tocar código — arrancar con pocos recursos reales
+// (los únicos que hoy están efectivamente gateados en la app) y sumar acá
+// si se necesita más granularidad.
 const PERMISOS_POR_ROL = {
-  estudiante: ['comunidad.publicar', 'comunidad.comentar'],
-  orientador: ['comunidad.publicar', 'comunidad.comentar'],
-  moderador:  ['comunidad.publicar', 'comunidad.comentar'],
-  admin:      ['comunidad.publicar', 'comunidad.comentar', 'programas.editar'],
+  estudiante:  ['comunidad.publicar', 'comunidad.comentar'],
+  orientador:  ['comunidad.publicar', 'comunidad.comentar'],
+  moderador:   ['comunidad.publicar', 'comunidad.comentar'],
+  admin:       ['comunidad.publicar', 'comunidad.comentar', 'programas.editar'],
+  institucion: ['comunidad.publicar', 'comunidad.comentar'],
 };
 
 const RECURSOS_VALIDOS = [...new Set(Object.values(PERMISOS_POR_ROL).flat())];

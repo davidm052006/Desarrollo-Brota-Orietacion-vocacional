@@ -5,7 +5,7 @@ import { ESTADOS, ESTADO_LABEL } from './contactos/constants';
 
 // Sección "Solicitudes de contacto": trae la lista paginada/filtrada y
 // delega el render de cada solicitud a ContactoCard.
-export default function ContactosSection() {
+export default function ContactosSection({ onCrearCredenciales }) {
   const [contactos, setContactos] = useState([]);
   const [meta, setMeta]           = useState(null);
   const [loading, setLoading]     = useState(true);
@@ -93,7 +93,7 @@ export default function ContactosSection() {
       {!loading && !error && contactos.length > 0 && (
         <div className="space-y-3">
           {contactos.map(c => (
-            <ContactoCard key={c.id} contacto={c} onActualizar={cargar} />
+            <ContactoCard key={c.id} contacto={c} onActualizar={cargar} onCrearCredenciales={onCrearCredenciales} />
           ))}
         </div>
       )}

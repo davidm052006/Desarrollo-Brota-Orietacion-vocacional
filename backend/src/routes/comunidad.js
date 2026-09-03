@@ -2,6 +2,7 @@ const express             = require('express');
 const router              = express.Router();
 const verificarAuth       = require('../middlewares/verificarAuth');
 const verificarModeracion = require('../middlewares/verificarModeracion');
+const requierePermiso     = require('../middlewares/requierePermiso');
 
 const {
   getForos, getPostsByForo, createPost, getPost, votarPost, responderPost,
@@ -28,24 +29,24 @@ const {
 // ── Foros ─────────────────────────────────────────────────────────────────────
 router.get('/foros',                verificarAuth, getForos);
 router.get('/foros/:id/posts',      verificarAuth, getPostsByForo);
-router.post('/foros/:id/posts',     verificarAuth, createPost);
+router.post('/foros/:id/posts',     verificarAuth, requierePermiso('comunidad.publicar'), createPost);
 
 // ── Posts ─────────────────────────────────────────────────────────────────────
 router.get('/posts/:id',            verificarAuth, getPost);
 router.post('/posts/:id/votar',     verificarAuth, votarPost);
-router.post('/posts/:id/respuestas', verificarAuth, responderPost);
+router.post('/posts/:id/respuestas', verificarAuth, requierePermiso('comunidad.comentar'), responderPost);
 
 // ── Historias ─────────────────────────────────────────────────────────────────
 router.get('/historias',            verificarAuth, getHistorias);
 router.get('/historias/:id',        verificarAuth, getHistoria);
-router.post('/historias',           verificarAuth, crearHistoria);
+router.post('/historias',           verificarAuth, requierePermiso('comunidad.publicar'), crearHistoria);
 router.post('/historias/:id/like',  verificarAuth, toggleLikeHistoria);
 
 // ── Preguntas ─────────────────────────────────────────────────────────────────
 router.get('/preguntas',            verificarAuth, getPreguntas);
 router.get('/preguntas/:id',        verificarAuth, getPregunta);
-router.post('/preguntas',           verificarAuth, crearPregunta);
-router.post('/preguntas/:id/respuestas', verificarAuth, responderPregunta);
+router.post('/preguntas',           verificarAuth, requierePermiso('comunidad.publicar'), crearPregunta);
+router.post('/preguntas/:id/respuestas', verificarAuth, requierePermiso('comunidad.comentar'), responderPregunta);
 router.patch('/preguntas/:id/respuestas/:rid/mejor', verificarAuth, marcarMejorRespuesta);
 router.post('/preguntas/:id/reportar', verificarAuth, reportarPregunta);
 

@@ -125,7 +125,7 @@ export default function TestVocacional({ user, isDemoMode = false }) {
         if (!isDemoMode && user?.id) {
           let { data: perfil, error: errorPerfil } = await supabase
             .from('perfiles_usuario')
-            .select('id')
+            .select('id, rol')
             .eq('user_id', user.id)
             .single();
 
@@ -133,9 +133,16 @@ export default function TestVocacional({ user, isDemoMode = false }) {
             const { data: perfilNuevo } = await supabase
               .from('perfiles_usuario')
               .insert({ user_id: user.id })
-              .select('id')
+              .select('id, rol')
               .single();
             perfil = perfilNuevo;
+          }
+
+          // Una cuenta institución arma cuestionarios, no los toma — este
+          // panel no le aplica (ver CLAUDE.md, Rol institucion).
+          if (perfil?.rol === 'institucion') {
+            navigate('/dashboard/institucion', { replace: true });
+            return;
           }
 
           if (perfil) { setPerfilUsuarioId(perfil.id); pUid = perfil.id; }

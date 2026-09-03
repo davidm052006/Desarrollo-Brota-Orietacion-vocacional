@@ -33,7 +33,7 @@ const FILA_EJEMPLO_PLANTILLA = {
 //   1. traer la lista de usuarios (paginada/filtrada) del backend,
 //   2. orquestar las operaciones CRUD y qué modal está abierto,
 // y delega toda la presentación a ./usuarios/*.
-export default function UsuariosSection() {
+export default function UsuariosSection({ prefillUsuario, onPrefillConsumido }) {
   // ─── Estado de datos ──────────────────────────────────────────────────────
   const [usuarios, setUsuarios]   = useState([]);
   const [meta, setMeta]           = useState({ total: 0, pagina: 1, totalPaginas: 1 });
@@ -88,6 +88,19 @@ export default function UsuariosSection() {
   }, [pagina, busquedaDebounce, rolFiltro]);
 
 useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line react-hooks/set-state-in-effect
+
+  // Llega desde "Dar credenciales" en Solicitudes de contacto (AdminPanel.jsx)
+  // — abre "Nuevo usuario" ya con rol institución y los datos de la solicitud,
+  // para no retipearlos. onPrefillConsumido limpia el estado en el padre así
+  // no se vuelve a disparar si el admin navega de nuevo a esta sección.
+  useEffect(() => {
+    if (!prefillUsuario) return;
+    setFormNuevo({ ...FORM_NUEVO_VACIO, rol: 'institucion', nombre: prefillUsuario.nombre, telefono: prefillUsuario.telefono, email: prefillUsuario.email });
+    setFormError(null);
+    setModalNuevo(true);
+    onPrefillConsumido?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillUsuario]);
 
   // ─── UPDATE ───────────────────────────────────────────────────────────────
   const abrirEditar = (usuario) => {
@@ -161,6 +174,15 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
     fetchUsuarios();
   };
 
+  // datos: objeto completo de permisos_override (checkboxes del modal) —
+  // devuelve { success, error } directo para que el modal muestre su propio
+  // error sin cerrarse (a diferencia de guardarPermisos/bloqueo, que sí cierra).
+  const guardarPermisosOverride = async (permisosOverride) => {
+    const resultado = await adminService.actualizarPermisosUsuario(modalPermisos.id, permisosOverride);
+    if (resultado.success) fetchUsuarios();
+    return resultado;
+  };
+
   // ─── CREATE ───────────────────────────────────────────────────────────────
   const abrirNuevo = () => {
     setFormNuevo(FORM_NUEVO_VACIO);
@@ -171,6 +193,10 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
   const crearUsuario = async () => {
     if (!formNuevo.email || !formNuevo.password || !formNuevo.nombre || !formNuevo.apellido) {
       setFormError('Email, contraseña, nombre y apellido son obligatorios');
+      return;
+    }
+    if (formNuevo.rol === 'institucion' && !formNuevo.institucion_id) {
+      setFormError('Elegí a qué institución del catálogo pertenece esta cuenta');
       return;
     }
 
@@ -384,7 +410,9 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
         <ModalPermisosUsuario
           usuario={modalPermisos}
           formError={formError} guardando={guardando}
-          onGuardar={guardarPermisos} onClose={() => setModalPermisos(null)}
+          onGuardar={guardarPermisos}
+          onGuardarPermisos={guardarPermisosOverride}
+          onClose={() => setModalPermisos(null)}
         />
       )}
 

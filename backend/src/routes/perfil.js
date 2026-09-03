@@ -11,6 +11,7 @@ const {
   obtenerPerfil,
   actualizarPerfil,
   actualizarBroti,
+  obtenerMisPermisos,
 } = require('../controllers/perfilController');
 
 // Todas las rutas de perfil requieren sesión válida
@@ -18,6 +19,10 @@ router.use(verificarAuth);
 
 // Cuestionario
 router.get('/cuestionario', obtenerCuestionario);
+
+// Permisos efectivos del usuario logueado — antes de /:userId para que no
+// lo capture ese parámetro.
+router.get('/permisos', obtenerMisPermisos);
 
 // Resultados
 router.post  ('/resultado',                    guardarResultado);

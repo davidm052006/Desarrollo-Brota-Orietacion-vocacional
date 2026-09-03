@@ -25,9 +25,12 @@ async function verificarAuth(req, res, next) {
     // `baneado_preguntas_hasta`) — chequeado acá porque verificarAuth corre
     // en toda ruta autenticada, así no hay que repetir el check en cada una.
     // Si el usuario no tiene perfil todavía (recién registrado), no bloquea.
+    // De paso trae rol/permisos_override y los cuelga en req.perfil, para
+    // que requierePermiso.js (middlewares/requierePermiso.js) no tenga que
+    // volver a pegarle a la base por lo mismo.
     const { data: perfil } = await supabase
       .from('perfiles_usuario')
-      .select('bloqueado_hasta')
+      .select('rol, permisos_override, bloqueado_hasta')
       .eq('user_id', user.id)
       .single();
 
@@ -36,6 +39,7 @@ async function verificarAuth(req, res, next) {
     }
 
     req.user = user;
+    req.perfil = perfil ?? null;
     next();
   } catch (err) {
     console.error('verificarAuth:', err);
