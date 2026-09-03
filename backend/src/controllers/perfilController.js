@@ -1,6 +1,19 @@
 const supabase                                              = require('../config/supabase');
 const { calcularDesdeRespuestas, calcularPorcentajes }      = require('../utils/perfilvocacional');
 const { generarRecomendaciones }                            = require('../utils/algoritmoRecomendacion');
+const { RECURSOS_VALIDOS, tienePermiso }                    = require('../utils/permisos');
+
+// ─────────────────────────────────────────────────────────────
+// GET /api/perfil/permisos — permiso efectivo del usuario logueado, para que
+// el frontend pueda ocultar/deshabilitar botones (crear post, comentar, etc.)
+// sin esperar a que el backend responda 403. El enforcement real sigue
+// viviendo en requierePermiso.js — esto es solo para la experiencia, nunca
+// la autorización.
+// ─────────────────────────────────────────────────────────────
+const obtenerMisPermisos = (req, res) => {
+  const efectivos = Object.fromEntries(RECURSOS_VALIDOS.map(r => [r, tienePermiso(req.perfil, r)]));
+  return res.json({ success: true, data: efectivos });
+};
 
 // ─────────────────────────────────────────────────────────────
 // GET /api/perfil/cuestionario
@@ -555,4 +568,5 @@ module.exports = {
   obtenerPerfil,
   actualizarPerfil,
   actualizarBroti,
+  obtenerMisPermisos,
 };

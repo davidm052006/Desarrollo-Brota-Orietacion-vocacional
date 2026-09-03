@@ -1,5 +1,12 @@
-export const ROLES_FILTRO   = ['Todos los roles', 'admin', 'moderador', 'estudiante', 'orientador', 'institucion'];
-export const ROLES_OPCIONES = ['estudiante', 'orientador', 'moderador', 'admin', 'institucion'];
+// "orientador" sacado de las opciones seleccionables (agosto 2026) — el rol
+// nunca tuvo lógica propia en ningún endpoint ni componente (ver CLAUDE.md),
+// se saca de la UI hasta que se decida qué función real va a tener. Se deja
+// afuera de estos dos arrays nada más — si ya existe alguna cuenta con ese
+// rol, sigue funcionando igual (no se valida contra esta lista al editar,
+// ver admin/usuariosController.updateUsuario), y su badge de color abajo
+// se deja intacto para que esas cuentas se sigan viendo bien.
+export const ROLES_FILTRO   = ['Todos los roles', 'admin', 'moderador', 'estudiante', 'institucion'];
+export const ROLES_OPCIONES = ['estudiante', 'moderador', 'admin', 'institucion'];
 
 export const ROL_COLORS = {
   admin:       'bg-purple-100 text-purple-700',
