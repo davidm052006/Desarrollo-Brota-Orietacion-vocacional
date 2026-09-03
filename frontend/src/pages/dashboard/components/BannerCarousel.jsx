@@ -107,8 +107,10 @@ function SlideBanner({ banner, onIr }) {
 }
 
 // Props: perfilUsuarioId, userId — mismos que usaba ContinueSection, la
-// primera slide reemplaza esa tarjeta de estado del test.
-export default function BannerCarousel({ perfilUsuarioId, userId }) {
+// primera slide reemplaza esa tarjeta de estado del test. `esInstitucion`
+// oculta esa slide — una cuenta institución no toma el test, ella arma los
+// cuestionarios que otros toman (ver Cuestionarios.jsx de institución).
+export default function BannerCarousel({ perfilUsuarioId, userId, esInstitucion = false }) {
   const navigate = useNavigate();
   const [indice, setIndice] = useState(0);
   const [pausado, setPausado] = useState(false);
@@ -120,6 +122,7 @@ export default function BannerCarousel({ perfilUsuarioId, userId }) {
   const timerRef = useRef(null);
 
   const cargarEstadoTest = async () => {
+    if (esInstitucion) return; // no aplica — no toma el test, no hay nada que cargar
     setEstado('cargando');
     if (userId) {
       try {
@@ -155,9 +158,11 @@ export default function BannerCarousel({ perfilUsuarioId, userId }) {
     setEstado('nuevo');
   };
 
-  useEffect(() => { cargarEstadoTest(); }, [perfilUsuarioId, userId]);
+  useEffect(() => { cargarEstadoTest(); }, [perfilUsuarioId, userId, esInstitucion]);
 
-  const slides = [{ tipo: 'test' }, ...BANNERS_FIJOS.map(b => ({ tipo: 'banner', banner: b }))];
+  const slides = esInstitucion
+    ? BANNERS_FIJOS.map(b => ({ tipo: 'banner', banner: b }))
+    : [{ tipo: 'test' }, ...BANNERS_FIJOS.map(b => ({ tipo: 'banner', banner: b }))];
   const total = slides.length;
 
   // Autoplay — se pausa en hover y se reinicia cada vez que se navega manual

@@ -58,6 +58,7 @@ export default function Rutas({ user, isDemoMode = false }) {
   const [cargandoAreas, setCargandoAreas] = useState(true);
   const [cargandoContenido, setCargandoContenido] = useState(false);
   const [categoriasResultado, setCategoriasResultado] = useState(null); // null = todavía cargando/sin test; [] no debería pasar si hizo el test
+  const [esInstitucion, setEsInstitucion] = useState(false); // no toma el test — no tiene sentido pedírselo (ver CLAUDE.md, Rol institucion)
 
   useEffect(() => {
     getAreasDisponibles().then(({ success, data }) => {
@@ -70,6 +71,7 @@ export default function Rutas({ user, isDemoMode = false }) {
     if (!user?.id) { setCategoriasResultado([]); return; }
     obtenerPerfil(user.id).then(({ success, data: perfil }) => {
       if (!success || !perfil?.id) { setCategoriasResultado([]); return; }
+      if (perfil.rol === 'institucion') { setEsInstitucion(true); setCategoriasResultado([]); return; }
       obtenerResultado(perfil.id).then(({ success: ok, data: resultado }) => {
         if (!ok || !resultado?.perfil_vocacional) { setCategoriasResultado([]); return; }
         const { categoriaPrincipal, categoriaSecundaria } = resultado.perfil_vocacional;
@@ -104,7 +106,7 @@ export default function Rutas({ user, isDemoMode = false }) {
           <p style={{ color: 'var(--ink-soft)', fontSize: 14 }} className="animate-pulse">Cargando…</p>
         ) : (
           <>
-            {categoriasResultado === null ? null : categoriasResultado.length === 0 ? (
+            {categoriasResultado === null || esInstitucion ? null : categoriasResultado.length === 0 ? (
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14,
                 background: 'var(--accent-soft)', border: '1px solid var(--accent)', borderRadius: 16,
