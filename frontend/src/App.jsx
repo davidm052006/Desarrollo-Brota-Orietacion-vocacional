@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { supabase } from './config/supabase';
 import LandingPage    from './pages/landing/LandingPage';
 import Login          from './pages/landing/Login';
@@ -206,6 +207,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Analytics />
     </BrowserRouter>
   );
 }
