@@ -142,13 +142,13 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
   };
 
   // ─── PERMISOS (bloqueo/desbloqueo) ─────────────────────────────────────────
-  const guardarPermisos = async (bloqueadoHasta) => {
+  // datos: { horas } para bloquear, o { hasta: null } para desbloquear — ver
+  // ModalPermisosUsuario, que ya arma la forma exacta que espera el backend.
+  const guardarPermisos = async (datos) => {
     setGuardando(true);
     setFormError(null);
 
-    const { success, error } = await adminService.updatePermisosUsuario(modalPermisos.id, {
-      bloqueado_hasta: bloqueadoHasta,
-    });
+    const { success, error } = await adminService.bloquearUsuario(modalPermisos.id, datos);
 
     if (!success) {
       setFormError(error);

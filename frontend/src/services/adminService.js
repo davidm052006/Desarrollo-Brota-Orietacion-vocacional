@@ -85,18 +85,18 @@ export const deleteUsuario = async (id) => {
   }
 };
 
-// datos: { bloqueado_hasta } — ISO string para bloquear, o null para desbloquear
-export const updatePermisosUsuario = async (id, datos) => {
+// datos: { horas } (número > 0) para bloquear N horas desde ahora, o { hasta: null } para desbloquear
+export const bloquearUsuario = async (id, datos) => {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/api/admin/usuarios/${id}/permisos`, {
+    const res = await fetch(`${API_URL}/api/admin/usuarios/${id}/bloqueo`, {
       method:  'PATCH',
       headers,
       body:    JSON.stringify(datos),
     });
     return parseResponse(res);
   } catch (err) {
-    console.error('adminService.updatePermisosUsuario:', err);
+    console.error('adminService.bloquearUsuario:', err);
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };

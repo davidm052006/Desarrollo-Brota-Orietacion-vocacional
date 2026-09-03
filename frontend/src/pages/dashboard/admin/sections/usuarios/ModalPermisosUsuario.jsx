@@ -12,29 +12,33 @@ function estaBloqueadoActualmente(usuario) {
 // Modal de permisos: muestra el estado de bloqueo actual del usuario y permite
 // bloquearlo por una duración predefinida (o una fecha puntual) / desbloquearlo.
 // Copiado de la estructura de ModalVerUsuario.jsx (mismos Detalle de solo lectura
-// arriba), pero agrega los controles para cambiar bloqueado_hasta vía PATCH
-// /usuarios/:id/permisos (ver adminService.updatePermisosUsuario).
+// arriba), pero agrega los controles para bloquear/desbloquear vía PATCH
+// /usuarios/:id/bloqueo (ver adminService.bloquearUsuario). Ese endpoint recibe
+// { horas } relativas desde ahora (o { hasta: null } para desbloquear), así que
+// la fecha puntual elegida acá se convierte a horas antes de mandarla.
 export default function ModalPermisosUsuario({ usuario, formError, guardando, onGuardar, onClose }) {
   const [duracion, setDuracion]           = useState('7');
   const [fechaPersonalizada, setFechaPersonalizada] = useState('');
 
   const bloqueado = estaBloqueadoActualmente(usuario);
 
-  const calcularBloqueadoHasta = () => {
+  const calcularHoras = () => {
     if (duracion === 'custom') {
-      return fechaPersonalizada ? new Date(fechaPersonalizada).toISOString() : null;
+      if (!fechaPersonalizada) return null;
+      const horas = (new Date(fechaPersonalizada).getTime() - Date.now()) / (1000 * 60 * 60);
+      return horas > 0 ? horas : null;
     }
     const dias = parseInt(duracion, 10);
-    return new Date(Date.now() + dias * 24 * 60 * 60 * 1000).toISOString();
+    return dias * 24;
   };
 
   const handleBloquear = () => {
-    const hasta = calcularBloqueadoHasta();
-    if (!hasta) return; // fecha personalizada vacía: no hace nada
-    onGuardar(hasta);
+    const horas = calcularHoras();
+    if (!horas) return; // fecha personalizada vacía o en el pasado: no hace nada
+    onGuardar({ horas });
   };
 
-  const handleDesbloquear = () => onGuardar(null);
+  const handleDesbloquear = () => onGuardar({ hasta: null });
 
   return (
     <Modal title="Permisos del usuario" onClose={onClose}>
