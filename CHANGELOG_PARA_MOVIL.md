@@ -9,6 +9,18 @@ cambió y por qué le importa al móvil. Más nuevo arriba.
 
 ---
 
+## 2026-09-02 — `8d51823` — backend desplegado en Railway, URL fija
+
+El backend dejó de vivir solo en `localhost`/túneles — ahora corre en
+Railway con una URL estable: `https://desarrollo-brota-orietacion-vocacional-production.up.railway.app`.
+La app móvil debería apuntar `VITE_API_URL`/su equivalente a esa URL en
+vez de una IP local o un túnel ngrok/cloudflared que cambia. Frontend
+web desplegado en Vercel (`https://desarrollo-brota-orietacion-vocacio.vercel.app`),
+sin relevancia directa para móvil salvo como referencia de la URL de
+producción real de la app web.
+
+---
+
 ## 2026-08-23 — `314576c` — más campos en las recomendaciones del test
 
 `GET /api/perfil/recomendaciones/:resultadoId` (mismo endpoint, no es
