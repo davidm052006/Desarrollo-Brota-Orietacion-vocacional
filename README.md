@@ -14,7 +14,7 @@ Plataforma de orientación vocacional para estudiantes colombianos de colegio (1
 
 ## Arrancar el proyecto
 
-Requiere Node.js 18+ y una cuenta de Supabase (o correr en **modo demo**, sin Supabase, ver más abajo).
+Requiere Node.js 20.19+ y una cuenta de Supabase (o correr en **modo demo**, sin Supabase, ver más abajo). Vite 7 requiere esta versión mínima de Node.js.
 
 ```bash
 git clone <este repo>
@@ -38,8 +38,8 @@ Detalle completo de variables de entorno y setup de base de datos (`backend/setu
 ## Tests
 
 ```bash
-cd backend && npm test     # node --test, contra Supabase real
-cd frontend && npm test    # vitest
+cd backend && npm test     # Jest, contra Supabase real
+cd frontend && npm test    # Vitest
 ```
 
 Cobertura todavía mínima (arrancada en agosto 2026) — ver `docs/estrategia_pruebas.md` para el alcance planeado.

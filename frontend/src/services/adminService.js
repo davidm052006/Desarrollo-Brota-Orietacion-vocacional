@@ -85,6 +85,22 @@ export const deleteUsuario = async (id) => {
   }
 };
 
+// datos: { bloqueado_hasta } — ISO string para bloquear, o null para desbloquear
+export const updatePermisosUsuario = async (id, datos) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/usuarios/${id}/permisos`, {
+      method:  'PATCH',
+      headers,
+      body:    JSON.stringify(datos),
+    });
+    return parseResponse(res);
+  } catch (err) {
+    console.error('adminService.updatePermisosUsuario:', err);
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
 // Crea usuarios en lote en una sola request (POST /api/admin/usuarios/masivo).
 // usuarios: array de objetos con la misma forma que espera createUsuario,
 // parseado en el frontend desde CSV o Excel (ver UsuariosSection.jsx).

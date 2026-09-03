@@ -218,6 +218,44 @@ const updateUsuario = asyncHandler('admin/usuariosController.updateUsuario', asy
   return res.json({ success: true, message: 'Usuario actualizado correctamente' });
 });
 
+// PATCH /api/admin/usuarios/:id/permisos — bloquea/desbloquea el acceso del usuario.
+// body: { bloqueado_hasta } — ISO string (fecha futura) para bloquear, o null/vacío
+// para desbloquear. Separado de updateUsuario a propósito: esto no toca datos de
+// perfil ni rol, solo el acceso — así ModalPermisosUsuario.jsx no necesita mandar
+// (ni pisar por accidente) el resto del formulario de edición.
+const updatePermisosUsuario = asyncHandler('admin/usuariosController.updatePermisosUsuario', async (req, res) => {
+  const { id } = req.params;
+  const { bloqueado_hasta } = req.body;
+
+  if (bloqueado_hasta) {
+    const fecha = new Date(bloqueado_hasta);
+    if (isNaN(fecha.getTime())) {
+      return res.status(400).json({ success: false, message: 'bloqueado_hasta no es una fecha válida' });
+    }
+  }
+
+  const { data: perfil, error: findError } = await supabase
+    .from('perfiles_usuario').select('id').eq('id', id).single();
+
+  if (findError || !perfil) {
+    return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+  }
+
+  const { error: updateError } = await supabase
+    .from('perfiles_usuario')
+    .update({ bloqueado_hasta: bloqueado_hasta || null })
+    .eq('id', id);
+
+  if (updateError) {
+    return res.status(500).json({ success: false, message: updateError.message });
+  }
+
+  return res.json({
+    success: true,
+    message: bloqueado_hasta ? 'Usuario bloqueado correctamente' : 'Usuario desbloqueado correctamente',
+  });
+});
+
 // DELETE /api/admin/usuarios/:id
 const deleteUsuario = asyncHandler('admin/usuariosController.deleteUsuario', async (req, res) => {
   const { id } = req.params;
@@ -258,4 +296,7 @@ const getStats = asyncHandler('admin/usuariosController.getStats', async (req, r
   return res.json({ success: true, data: Object.fromEntries(resultados) });
 });
 
-module.exports = { getUsuarios, getUsuario, createUsuario, createUsuariosMasivo, updateUsuario, deleteUsuario, getStats };
+module.exports = {
+  getUsuarios, getUsuario, createUsuario, createUsuariosMasivo,
+  updateUsuario, updatePermisosUsuario, deleteUsuario, getStats,
+};
