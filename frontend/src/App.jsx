@@ -27,6 +27,10 @@ import Racha                from './pages/dashboard/Racha';
 import Broti                 from './pages/dashboard/Broti';
 import Notificaciones       from './pages/dashboard/Notificaciones';
 import Rutas                from './pages/dashboard/Rutas';
+import PerfilInstitucion    from './pages/dashboard/institucion/PerfilInstitucion';
+import MisProgramas         from './pages/dashboard/institucion/MisProgramas';
+import UsuariosInstitucion  from './pages/dashboard/institucion/Usuarios';
+import CuestionariosInstitucion from './pages/dashboard/institucion/Cuestionarios';
 
 function PaginaEnConstruccion({ titulo }) {
   return (
@@ -202,6 +206,22 @@ function App() {
         <Route
           path="/dashboard/admin"
           element={loading ? spinner : puedeAcceder ? <AdminPanel user={user} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/institucion"
+          element={loading ? spinner : puedeAcceder ? <PerfilInstitucion user={user} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/institucion/programas"
+          element={loading ? spinner : puedeAcceder ? <MisProgramas user={user} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/institucion/usuarios"
+          element={loading ? spinner : puedeAcceder ? <UsuariosInstitucion user={user} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/institucion/cuestionarios"
+          element={loading ? spinner : puedeAcceder ? <CuestionariosInstitucion user={user} /> : <Navigate to="/login" replace />}
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />

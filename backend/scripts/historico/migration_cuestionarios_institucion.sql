@@ -1,0 +1,13 @@
+-- Cuestionarios propios por institución (agosto 2026).
+-- institucion_id NULL = cuestionario global (el de siempre, visible para
+-- cualquier estudiante sin institución con cuestionario propio activo).
+-- institucion_id con valor = solo lo toman los estudiantes de ESA institución
+-- (perfiles_usuario.institucion_id) — nunca reemplaza el cuestionario global
+-- para el resto de la plataforma. Ver perfilController.obtenerCuestionario
+-- para la resolución (institución propia → global como fallback) y
+-- controllers/institucion/cuestionariosController.js para el CRUD scoped.
+-- ON DELETE CASCADE: si se borra la institución, sus cuestionarios (y
+-- preguntas/opciones/pesos, que ya cascadean desde antes) se van con ella.
+-- Ya incluida en backend/setup_database.sql para instalaciones nuevas —
+-- este archivo es solo para aplicar el cambio a una base ya existente.
+ALTER TABLE cuestionarios ADD COLUMN IF NOT EXISTS institucion_id UUID REFERENCES instituciones(id) ON DELETE CASCADE;

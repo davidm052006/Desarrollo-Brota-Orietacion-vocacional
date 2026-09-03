@@ -1,11 +1,12 @@
-export const ROLES_FILTRO   = ['Todos los roles', 'admin', 'moderador', 'estudiante', 'orientador'];
-export const ROLES_OPCIONES = ['estudiante', 'orientador', 'moderador', 'admin'];
+export const ROLES_FILTRO   = ['Todos los roles', 'admin', 'moderador', 'estudiante', 'orientador', 'institucion'];
+export const ROLES_OPCIONES = ['estudiante', 'orientador', 'moderador', 'admin', 'institucion'];
 
 export const ROL_COLORS = {
-  admin:      'bg-purple-100 text-purple-700',
-  moderador:  'bg-primary-soft text-primary',
-  orientador: 'bg-orange-100 text-orange-700',
-  estudiante: 'bg-blue-100 text-blue-700',
+  admin:       'bg-purple-100 text-purple-700',
+  moderador:   'bg-primary-soft text-primary',
+  orientador:  'bg-orange-100 text-orange-700',
+  estudiante:  'bg-blue-100 text-blue-700',
+  institucion: 'bg-amber-100 text-amber-700',
 };
 
 // Mismos values que usa el registro público (pages/landing/components/SignupCard.jsx)
@@ -31,4 +32,6 @@ export const FORM_NUEVO_VACIO = {
   nombre: '', apellido: '', ciudad: '', nivel_educativo: '',
   condiciones_socioeconomicas: '', fecha_nacimiento: '', grado: '', telefono: '',
   rol: 'estudiante', email: '', password: '',
+  // Solo se usa cuando rol === 'institucion' (ver ModalNuevoUsuario.jsx)
+  institucion_id: '', institucion_nombre: '',
 };

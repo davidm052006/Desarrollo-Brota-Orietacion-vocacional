@@ -8,16 +8,58 @@ const { generarRecomendaciones }                            = require('../utils/
 // ─────────────────────────────────────────────────────────────
 const obtenerCuestionario = async (req, res) => {
   try {
-    const { data: cuestionario, error: errC } = await supabase
-      .from('cuestionarios')
-      .select('id, nombre, version, activo')
-      .eq('activo', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+    // Resolución: primero el cuestionario propio de la institución del
+    // estudiante (si tiene una vinculada y esa institución tiene uno activo),
+    // si no, el global. Nunca al revés — un cuestionario de institución
+    // jamás reemplaza el global para nadie más.
+    //
+    // Código de error '42703' (columna inexistente): mientras
+    // migration_cuestionarios_institucion.sql no se haya corrido contra
+    // Supabase, `cuestionarios.institucion_id` no existe todavía — sin este
+    // fallback, ESTA consulta rompería el test vocacional para TODOS los
+    // usuarios (no solo institución) hasta correr la migración. Una vez
+    // corrida, el camino institución-aware empieza a funcionar solo.
+    const { data: perfilPropio } = await supabase
+      .from('perfiles_usuario').select('institucion_id').eq('user_id', req.user.id).single();
 
-    if (errC) {
-      return res.status(404).json({ success: false, message: 'No hay cuestionario activo' });
+    let cuestionario = null;
+    if (perfilPropio?.institucion_id) {
+      const { data, error } = await supabase
+        .from('cuestionarios')
+        .select('id, nombre, version, activo')
+        .eq('institucion_id', perfilPropio.institucion_id)
+        .eq('activo', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error && error.code !== '42703') throw error;
+      cuestionario = data;
+    }
+
+    if (!cuestionario) {
+      let { data, error: errC } = await supabase
+        .from('cuestionarios')
+        .select('id, nombre, version, activo')
+        .is('institucion_id', null)
+        .eq('activo', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (errC?.code === '42703') {
+        ({ data, error: errC } = await supabase
+          .from('cuestionarios')
+          .select('id, nombre, version, activo')
+          .eq('activo', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single());
+      }
+
+      if (errC) {
+        return res.status(404).json({ success: false, message: 'No hay cuestionario activo' });
+      }
+      cuestionario = data;
     }
 
     const { data: preguntas, error: errP } = await supabase
@@ -371,8 +413,11 @@ async function actualizarRacha(perfil, userId) {
     .select()
     .single();
 
-  // si falla el update, seguir con el dato viejo en vez de romper la carga del perfil
-  return error ? { ...perfil, racha_rota: false } : { ...actualizado, racha_rota: rachaRota };
+  // si falla el update, seguir con el dato viejo en vez de romper la carga del perfil.
+  // `perfil` primero: el `.select()` de este update no pide el embed de
+  // `institucion` (obtenerPerfil sí lo pide) — sin el spread de `perfil`
+  // primero, ese campo desaparecería justo en la primera carga del día.
+  return error ? { ...perfil, racha_rota: false } : { ...perfil, ...actualizado, racha_rota: rachaRota };
 }
 
 const obtenerPerfil = async (req, res) => {
@@ -383,11 +428,29 @@ const obtenerPerfil = async (req, res) => {
       return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
     }
 
-    const { data, error } = await supabase
+    // El embed `institucion:instituciones(...)` solo trae algo si hay
+    // institucion_id (rol 'institucion') — PostgREST lo resuelve solo por la
+    // FK fk_perfiles_institucion (backend/setup_database.sql). Si viene null
+    // es porque el usuario no es institución o quedó desvinculado tras una
+    // sync MEN (ver migration_rol_institucion.sql).
+    let { data, error } = await supabase
       .from('perfiles_usuario')
-      .select('*')
+      .select('*, institucion:instituciones(nombre, tipo, ciudad, departamento, direccion, telefono, email, sitio_web)')
       .eq('user_id', userId)
       .single();
+
+    // Fallback mientras migration_rol_institucion.sql no se haya corrido
+    // contra Supabase todavía: sin la FK, PostgREST no reconoce el embed
+    // (error PGRST200) y de otro modo esto rompía el login de TODOS los
+    // usuarios, no solo instituciones. Una vez corrida la migración, el
+    // primer intento (con embed) empieza a funcionar solo.
+    if (error?.code === 'PGRST200') {
+      ({ data, error } = await supabase
+        .from('perfiles_usuario')
+        .select('*')
+        .eq('user_id', userId)
+        .single());
+    }
 
     if (error) {
       return res.status(404).json({ success: false, message: 'Perfil no encontrado' });
@@ -413,13 +476,24 @@ const actualizarPerfil = async (req, res) => {
       return res.status(403).json({ success: false, message: 'No autorizado para este perfil' });
     }
 
-    const { nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas, edad } = req.body;
+    const {
+      nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas, edad,
+      // Cuestionario propio de la cuenta institución (rol 'institucion'),
+      // completado en /dashboard/institucion tras el alta desde el panel
+      // admin. `institucion_id` NO se acepta acá a propósito — solo un
+      // admin puede cambiar a qué institución del catálogo está vinculada
+      // una cuenta (ver admin/usuariosController.updateUsuario). `telefono`
+      // se acepta acá (a diferencia de antes) porque es el único dato de
+      // ese cuestionario que ya existía como columna genérica.
+      institucion_contacto, institucion_descripcion, telefono,
+    } = req.body;
 
     const { data, error } = await supabase
       .from('perfiles_usuario')
       .update({
         nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
         edad: edad ? parseInt(edad) : null,
+        institucion_contacto, institucion_descripcion, telefono,
       })
       .eq('user_id', userId)
       .select()

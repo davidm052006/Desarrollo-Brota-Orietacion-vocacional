@@ -11,6 +11,7 @@ const programasRoutes = require('./routes/programas');
 const contactoRoutes  = require('./routes/contacto');
 const comunidadRoutes = require('./routes/comunidad');
 const rutasRoutes     = require('./routes/rutas');
+const institucionRoutes = require('./routes/institucion');
 
 const app = express();
 
@@ -39,7 +40,11 @@ app.use(cors({
     callback(null, !origin || ORIGENES_PERMITIDOS.includes(origin));
   },
 }));
-app.use(express.json());
+// Límite default de express.json() es 100kb — un archivo real de carga
+// masiva de usuarios (hasta MAX_FILAS_MASIVO=500 filas, ver
+// admin/usuariosController.js e institucion/usuariosController.js) pesa
+// ~150-200kb en JSON y superaba ese límite con un 413 Payload Too Large.
+app.use(express.json({ limit: '5mb' }));
 
 // Límite general para toda la API (protección básica contra abuso/DoS).
 app.use('/api', rateLimit({
@@ -66,6 +71,7 @@ app.use('/api/programas', programasRoutes);
 app.use('/api/contacto', contactoLimiter, contactoRoutes);
 app.use('/api/comunidad', comunidadRoutes);
 app.use('/api/rutas',    rutasRoutes);
+app.use('/api/institucion', institucionRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({

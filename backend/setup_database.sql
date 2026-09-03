@@ -56,6 +56,14 @@ CREATE TABLE IF NOT EXISTS perfiles_usuario (
   -- default de PERMISOS_POR_ROL (backend/src/utils/permisos.js) — agosto 2026
   bloqueado_hasta TIMESTAMPTZ,
   permisos_override JSONB DEFAULT '{}',
+  -- Rol "institucion" (agosto 2026): institucion_id sin FK inline porque la
+  -- tabla `instituciones` se define más abajo en este script — la FK real se
+  -- agrega con ALTER TABLE justo después de esa CREATE TABLE. contacto/
+  -- descripcion son el "cuestionario" propio que la cuenta institución llena
+  -- en su primer ingreso (reutiliza la columna `telefono` de arriba).
+  institucion_id UUID,
+  institucion_contacto TEXT,
+  institucion_descripcion TEXT,
   -- Personalización de la mascota "Broti" — { lentes: 'redondos', fondo: 'bosque', ... }
   -- ver frontend/src/utils/brotiCatalog.js (agosto 2026)
   broti_config JSONB DEFAULT '{}',
@@ -70,6 +78,10 @@ CREATE TABLE IF NOT EXISTS cuestionarios (
   version VARCHAR(50) NOT NULL,
   descripcion TEXT,
   activo BOOLEAN DEFAULT true,
+  -- Cuestionario propio de una institución (agosto 2026) — sin FK inline
+  -- porque `instituciones` se define más abajo en este script, se agrega
+  -- después con ALTER TABLE. NULL = cuestionario global de siempre.
+  institucion_id UUID,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -129,6 +141,22 @@ CREATE TABLE IF NOT EXISTS instituciones (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- FK diferida de perfiles_usuario.institucion_id (columna declarada arriba,
+-- antes de que esta tabla existiera). ON DELETE SET NULL a propósito: la
+-- sync MEN borra y recrea instituciones completa en cada corrida, así que
+-- las cuentas institución quedan desvinculadas tras una sync y se
+-- re-vinculan a mano desde el panel admin (ver migration_rol_institucion.sql).
+ALTER TABLE perfiles_usuario
+  ADD CONSTRAINT fk_perfiles_institucion FOREIGN KEY (institucion_id)
+  REFERENCES instituciones(id) ON DELETE SET NULL;
+
+-- FK diferida de cuestionarios.institucion_id (misma razón que arriba) —
+-- ON DELETE CASCADE: si se borra la institución, sus cuestionarios propios
+-- (y en cadena preguntas/opciones/pesos) se van con ella.
+ALTER TABLE cuestionarios
+  ADD CONSTRAINT fk_cuestionarios_institucion FOREIGN KEY (institucion_id)
+  REFERENCES instituciones(id) ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS programas (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
