@@ -101,6 +101,37 @@ export const bloquearUsuario = async (id, datos) => {
   }
 };
 
+// Recursos disponibles + default por rol, para armar los checkboxes de
+// ModalPermisosUsuario sin hardcodear la lista de nuevo en el frontend.
+export const getCatalogoPermisos = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/permisos/catalogo`, { headers });
+    return parseResponse(res);
+  } catch (err) {
+    console.error('adminService.getCatalogoPermisos:', err);
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
+// permisosOverride: objeto completo { "recurso": true|false, ... } — el
+// backend reemplaza el objeto entero, no hace merge (ver actualizarPermisos
+// en usuariosController.js).
+export const actualizarPermisosUsuario = async (id, permisosOverride) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/usuarios/${id}/permisos`, {
+      method:  'PATCH',
+      headers,
+      body:    JSON.stringify({ permisos_override: permisosOverride }),
+    });
+    return parseResponse(res);
+  } catch (err) {
+    console.error('adminService.actualizarPermisosUsuario:', err);
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
 // Crea usuarios en lote en una sola request (POST /api/admin/usuarios/masivo).
 // usuarios: array de objetos con la misma forma que espera createUsuario,
 // parseado en el frontend desde CSV o Excel (ver UsuariosSection.jsx).

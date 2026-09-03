@@ -174,6 +174,15 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
     fetchUsuarios();
   };
 
+  // datos: objeto completo de permisos_override (checkboxes del modal) —
+  // devuelve { success, error } directo para que el modal muestre su propio
+  // error sin cerrarse (a diferencia de guardarPermisos/bloqueo, que sí cierra).
+  const guardarPermisosOverride = async (permisosOverride) => {
+    const resultado = await adminService.actualizarPermisosUsuario(modalPermisos.id, permisosOverride);
+    if (resultado.success) fetchUsuarios();
+    return resultado;
+  };
+
   // ─── CREATE ───────────────────────────────────────────────────────────────
   const abrirNuevo = () => {
     setFormNuevo(FORM_NUEVO_VACIO);
@@ -401,7 +410,9 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
         <ModalPermisosUsuario
           usuario={modalPermisos}
           formError={formError} guardando={guardando}
-          onGuardar={guardarPermisos} onClose={() => setModalPermisos(null)}
+          onGuardar={guardarPermisos}
+          onGuardarPermisos={guardarPermisosOverride}
+          onClose={() => setModalPermisos(null)}
         />
       )}
 
