@@ -3,6 +3,7 @@ const asyncHandler = require('../../utils/asyncHandler');
 const { parsePaginacion, metaPaginacion } = require('../../utils/paginacion');
 const { patronIlike } = require('../../utils/postgrestFiltro');
 const { calcularEdadDesdeFecha } = require('../../utils/calcularEdad');
+const { RECURSOS_VALIDOS } = require('../../utils/permisos');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ROLES_VALIDOS = ['estudiante', 'orientador', 'moderador', 'admin'];
@@ -245,6 +246,86 @@ const deleteUsuario = asyncHandler('admin/usuariosController.deleteUsuario', asy
   return res.json({ success: true, message: 'Usuario eliminado correctamente' });
 });
 
+// PATCH /api/admin/usuarios/:id/bloqueo — body: { horas } para bloquear N horas
+// desde ahora, o { hasta: null } para desbloquear. No usa una fecha exacta a
+// propósito (más simple para el panel: botones rápidos 1h/24h/7d/permanente).
+const bloquearUsuario = asyncHandler('admin/usuariosController.bloquearUsuario', async (req, res) => {
+  const { id } = req.params;
+  const { horas, hasta } = req.body;
+
+  const { data: perfil, error: findError } = await supabase
+    .from('perfiles_usuario').select('user_id').eq('id', id).single();
+
+  if (findError || !perfil) {
+    return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+  }
+
+  if (perfil.user_id === req.user.id) {
+    return res.status(400).json({ success: false, message: 'No podés bloquearte a vos mismo' });
+  }
+
+  let bloqueadoHasta;
+  if (hasta === null) {
+    bloqueadoHasta = null; // desbloquear
+  } else {
+    const horasNum = parseFloat(horas);
+    if (isNaN(horasNum) || horasNum <= 0) {
+      return res.status(400).json({ success: false, message: 'Debe indicar "horas" (número mayor a 0) para bloquear, o "hasta: null" para desbloquear' });
+    }
+    bloqueadoHasta = new Date(Date.now() + horasNum * 60 * 60 * 1000).toISOString();
+  }
+
+  const { error: updateError } = await supabase
+    .from('perfiles_usuario')
+    .update({ bloqueado_hasta: bloqueadoHasta })
+    .eq('id', id);
+
+  if (updateError) {
+    return res.status(500).json({ success: false, message: updateError.message });
+  }
+
+  return res.json({
+    success: true,
+    message: bloqueadoHasta ? `Usuario bloqueado hasta ${bloqueadoHasta}` : 'Usuario desbloqueado',
+    data: { bloqueado_hasta: bloqueadoHasta },
+  });
+});
+
+// PATCH /api/admin/usuarios/:id/permisos — body: { permisos_override: { "recurso": true|false, ... } }
+// Reemplaza el objeto completo (no hace merge) — el frontend manda siempre el
+// estado completo de los checkboxes, ya con el catálogo de GET /permisos/catalogo.
+const actualizarPermisos = asyncHandler('admin/usuariosController.actualizarPermisos', async (req, res) => {
+  const { id } = req.params;
+  const { permisos_override } = req.body;
+
+  if (typeof permisos_override !== 'object' || permisos_override === null || Array.isArray(permisos_override)) {
+    return res.status(400).json({ success: false, message: 'permisos_override debe ser un objeto' });
+  }
+
+  const clavesInvalidas = Object.keys(permisos_override).filter(k => !RECURSOS_VALIDOS.includes(k));
+  if (clavesInvalidas.length > 0) {
+    return res.status(400).json({ success: false, message: `Recurso(s) inválido(s): ${clavesInvalidas.join(', ')}` });
+  }
+
+  const { data: perfil, error: findError } = await supabase
+    .from('perfiles_usuario').select('id').eq('id', id).single();
+
+  if (findError || !perfil) {
+    return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+  }
+
+  const { error: updateError } = await supabase
+    .from('perfiles_usuario')
+    .update({ permisos_override })
+    .eq('id', id);
+
+  if (updateError) {
+    return res.status(500).json({ success: false, message: updateError.message });
+  }
+
+  return res.json({ success: true, message: 'Permisos actualizados correctamente' });
+});
+
 // GET /api/admin/stats — conteo de registros de las tablas principales
 const getStats = asyncHandler('admin/usuariosController.getStats', async (req, res) => {
   const tablas = ['perfiles_usuario', 'programas', 'instituciones', 'cuestionarios', 'preguntas'];
@@ -258,4 +339,7 @@ const getStats = asyncHandler('admin/usuariosController.getStats', async (req, r
   return res.json({ success: true, data: Object.fromEntries(resultados) });
 });
 
-module.exports = { getUsuarios, getUsuario, createUsuario, createUsuariosMasivo, updateUsuario, deleteUsuario, getStats };
+module.exports = {
+  getUsuarios, getUsuario, createUsuario, createUsuariosMasivo, updateUsuario, deleteUsuario, getStats,
+  bloquearUsuario, actualizarPermisos,
+};

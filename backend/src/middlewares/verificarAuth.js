@@ -21,6 +21,20 @@ async function verificarAuth(req, res, next) {
       return res.status(401).json({ success: false, message: 'Token inválido o expirado' });
     }
 
+    // Bloqueo manual desde el panel admin (distinto del ban automático de
+    // `baneado_preguntas_hasta`) — chequeado acá porque verificarAuth corre
+    // en toda ruta autenticada, así no hay que repetir el check en cada una.
+    // Si el usuario no tiene perfil todavía (recién registrado), no bloquea.
+    const { data: perfil } = await supabase
+      .from('perfiles_usuario')
+      .select('bloqueado_hasta')
+      .eq('user_id', user.id)
+      .single();
+
+    if (perfil?.bloqueado_hasta && new Date(perfil.bloqueado_hasta) > new Date()) {
+      return res.status(403).json({ success: false, error: 'BLOQUEADO', hasta: perfil.bloqueado_hasta });
+    }
+
     req.user = user;
     next();
   } catch (err) {
