@@ -11,8 +11,11 @@ const {
 const {
   getPreguntas, createPregunta, updatePregunta, deletePregunta,
 } = require('../controllers/institucion/preguntasController');
+const { getAnalytics } = require('../controllers/institucion/analyticsController');
 
 router.use(verificarInstitucion);
+
+router.get('/analytics', getAnalytics);
 
 router.get  ('/programas',     getMisProgramas);
 router.patch('/programas/:id', actualizarMiPrograma);

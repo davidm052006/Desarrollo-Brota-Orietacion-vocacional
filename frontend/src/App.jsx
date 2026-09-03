@@ -34,6 +34,7 @@ import PerfilInstitucion    from './pages/dashboard/institucion/PerfilInstitucio
 import MisProgramas         from './pages/dashboard/institucion/MisProgramas';
 import UsuariosInstitucion  from './pages/dashboard/institucion/Usuarios';
 import CuestionariosInstitucion from './pages/dashboard/institucion/Cuestionarios';
+import AnaliticasInstitucion from './pages/dashboard/institucion/Analiticas';
 
 function PaginaEnConstruccion({ titulo }) {
   return (
@@ -267,6 +268,10 @@ function App() {
         <Route
           path="/dashboard/institucion/cuestionarios"
           element={loading ? spinner : puedeAcceder ? <CuestionariosInstitucion user={user} /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/institucion/analiticas"
+          element={loading ? spinner : puedeAcceder ? <AnaliticasInstitucion user={user} /> : <Navigate to="/login" replace />}
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />

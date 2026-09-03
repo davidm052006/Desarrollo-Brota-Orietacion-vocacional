@@ -5,9 +5,10 @@ const TABS = [
   { to: '/dashboard/institucion/programas',  label: 'Programas' },
   { to: '/dashboard/institucion/usuarios',   label: 'Estudiantes' },
   { to: '/dashboard/institucion/cuestionarios', label: 'Cuestionarios' },
+  { to: '/dashboard/institucion/analiticas', label: 'Analíticas' },
 ];
 
-// Nav compartida entre las 4 páginas de /dashboard/institucion — mismo
+// Nav compartida entre las páginas de /dashboard/institucion — mismo
 // criterio visual que ModulesNav del panel admin, pero solo con lo que le
 // aplica a una cuenta institución.
 export default function InstitucionNav() {

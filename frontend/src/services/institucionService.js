@@ -162,3 +162,14 @@ export const eliminarPregunta = async (id) => {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
+
+// ─── Analíticas (solo de estudiantes propios) ──────────────────────────────
+export const getAnalytics = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/institucion/analytics`, { headers });
+    return parseResponse(res);
+  } catch {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
