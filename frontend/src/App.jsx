@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { supabase } from './config/supabase';
 import LandingPage    from './pages/landing/LandingPage';
 import Login          from './pages/landing/Login';
@@ -27,6 +28,8 @@ import Racha                from './pages/dashboard/Racha';
 import Broti                 from './pages/dashboard/Broti';
 import Notificaciones       from './pages/dashboard/Notificaciones';
 import Rutas                from './pages/dashboard/Rutas';
+import CuentaBloqueada      from './components/Auth/CuentaBloqueada';
+import { handleLogout }     from './utils/auth';
 
 function PaginaEnConstruccion({ titulo }) {
   return (
@@ -46,6 +49,12 @@ function App() {
   const [user, setUser]             = useState(null);
   const [loading, setLoading]       = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [cuentaBloqueada, setCuentaBloqueada] = useState(null);
+
+  // Ref para que el listener de 'cuenta-bloqueada' siempre lea el valor
+  // actual de isDemoMode sin que el useEffect deba re-ejecutarse.
+  const isDemoModeRef = useRef(isDemoMode);
+  useEffect(() => { isDemoModeRef.current = isDemoMode; }, [isDemoMode]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -57,6 +66,7 @@ function App() {
           console.warn('⚠️ MODO DEMO: No hay keys de Supabase. Usando datos ficticios.');
           setIsDemoMode(true);
           const demoLoggedIn = localStorage.getItem('demoModeLoggedIn') === 'true';
+
           if (demoLoggedIn) {
             setUser({
               id: 'demo-user-123',
@@ -66,6 +76,7 @@ function App() {
           } else {
             setUser(null);
           }
+
           setLoading(false);
           return;
         }
@@ -81,15 +92,54 @@ function App() {
 
     checkUser();
 
+    let subscription;
+
     try {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      const { data } = supabase.auth.onAuthStateChange(
         (_event, session) => { setUser(session?.user || null); }
       );
-      return () => subscription?.unsubscribe();
+      subscription = data?.subscription;
     } catch {
       setIsDemoMode(true);
     }
-  }, []);
+
+    const manejarBloqueo = async (event) => {
+      setCuentaBloqueada({ hasta: event.detail?.hasta ?? null });
+
+      try {
+        if (isDemoModeRef.current) {
+          localStorage.removeItem('demoModeLoggedIn');
+          localStorage.removeItem('demoUserEmail');
+          localStorage.removeItem('demoUserName');
+          setUser(null);
+        } else {
+          await supabase.auth.signOut();
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error al cerrar sesión después del bloqueo:', error);
+      }
+    };
+
+    window.addEventListener('cuenta-bloqueada', manejarBloqueo);
+
+    return () => {
+      subscription?.unsubscribe();
+      window.removeEventListener('cuenta-bloqueada', manejarBloqueo);
+    };
+  }, []); // se registra una sola vez; manejarBloqueo usa isDemoModeRef, no la dependencia
+
+  if (cuentaBloqueada) {
+    return (
+      <CuentaBloqueada
+        hasta={cuentaBloqueada.hasta}
+        onSalir={async () => {
+          setCuentaBloqueada(null);
+          await handleLogout(isDemoMode);
+        }}
+      />
+    );
+  }
 
   const puedeAcceder = user || isDemoMode;
 
@@ -105,19 +155,15 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing page pública — se renderiza de inmediato; solo redirige si se confirma sesión */}
         <Route
           path="/"
           element={!loading && puedeAcceder ? <Navigate to="/dashboard" replace /> : <LandingPage />}
         />
-
-        {/* Login / Auth — igual, no bloquea el render mientras se verifica la sesión */}
         <Route
           path="/login"
           element={!loading && puedeAcceder ? <Navigate to="/dashboard" replace /> : <Login isDemoMode={isDemoMode} />}
         />
 
-        {/* Rutas públicas informativas */}
         <Route path="/servicios"      element={<Servicios />} />
         <Route path="/saber-mas"      element={<SaberMas />} />
         <Route path="/privacidad"     element={<Privacidad />} />
@@ -125,7 +171,6 @@ function App() {
         <Route path="/contacto"       element={<Contacto />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Rutas protegidas */}
         <Route
           path="/dashboard"
           element={loading ? spinner : puedeAcceder ? <Dashboard user={user} isDemoMode={isDemoMode} /> : <Navigate to="/login" replace />}
@@ -206,6 +251,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Analytics />
     </BrowserRouter>
   );
 }

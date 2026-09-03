@@ -6,7 +6,7 @@ API REST en Node.js + Express 5 (CommonJS) para la plataforma de orientación vo
 
 ## 🚀 Requisitos Previos
 
-- **Node.js**: versión 18 o superior.
+- **Node.js**: versión 20.19 o superior recomendada para mantener compatibilidad con el workspace (el frontend usa Vite 7).
 - Un proyecto de Supabase (URL + `service_role_key`) — o usar las credenciales de desarrollo ya incluidas en `.env.example` para arrancar rápido en cualquier máquina (ver nota de seguridad más abajo).
 
 ---
@@ -37,7 +37,7 @@ API REST en Node.js + Express 5 (CommonJS) para la plataforma de orientación vo
 npm test
 ```
 
-Usa el test runner nativo de Node (`node --test`, sin dependencias de framework) + `supertest` para las peticiones HTTP. Los tests corren contra el Supabase real configurado en `.env` (no hay mocks todavía) — ver `test/api.test.js`.
+Usa Jest y `supertest` para las peticiones HTTP. Los tests corren contra el Supabase real configurado en `.env` (no hay mocks todavía) — ver `test/api.test.js`.
 
 ---
 
@@ -57,7 +57,7 @@ Usa el test runner nativo de Node (`node --test`, sin dependencias de framework)
 ├── scripts/
 │   └── historico/          # Migraciones SQL ya aplicadas — solo como registro, no correr de nuevo
 │
-├── test/                   # Tests (node --test)
+├── test/                   # Tests de integración (Jest + supertest)
 ├── setup_database.sql      # Fuente única para levantar la base de datos desde cero
 └── package.json
 ```
