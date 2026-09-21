@@ -100,3 +100,41 @@ describe('createUsuariosMasivo', () => {
     expect(res.resultados).toEqual([]);
   });
 });
+
+describe('adminService convocatorias', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(apiClient, 'getAuthHeaders').mockResolvedValue({ 'Content-Type': 'application/json' });
+  });
+
+  it('consulta convocatorias con paginación y búsqueda', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, data: [], meta: { total: 0 } }),
+    }));
+
+    const respuesta = await adminService.getConvocatorias({ pagina: 2, busqueda: 'beca' });
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/admin/convocatorias?pagina=2&limite=10&busqueda=beca'),
+      expect.objectContaining({ headers: { 'Content-Type': 'application/json' } }),
+    );
+    expect(respuesta.success).toBe(true);
+  });
+
+  it('envía la creación de una convocatoria', async () => {
+    const convocatoria = { tipo: 'Beca', titulo: 'Beca SENA', institucion: 'SENA' };
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, data: { id: 'c-1', ...convocatoria } }),
+    }));
+
+    const respuesta = await adminService.createConvocatoria(convocatoria);
+
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/admin/convocatorias'),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(convocatoria) }),
+    );
+    expect(respuesta.data.id).toBe('c-1');
+  });
+});

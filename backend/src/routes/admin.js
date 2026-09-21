@@ -19,6 +19,9 @@ const {
   getPreguntas, createPregunta, updatePregunta, deletePregunta,
 } = require('../controllers/admin/preguntasController');
 const {
+  getConvocatorias, createConvocatoria, updateConvocatoria, deleteConvocatoria,
+} = require('../controllers/admin/convocatoriasController');
+const {
   getContactos, updateContacto,
 } = require('../controllers/admin/contactosController');
 const {
@@ -52,6 +55,11 @@ router.get   ('/programas',     getProgramas);
 router.post  ('/programas',     createPrograma);
 router.patch ('/programas/:id', updatePrograma);
 router.delete('/programas/:id', deletePrograma);
+
+router.get   ('/convocatorias',     getConvocatorias);
+router.post  ('/convocatorias',     createConvocatoria);
+router.patch ('/convocatorias/:id', updateConvocatoria);
+router.delete('/convocatorias/:id', deleteConvocatoria);
 
 router.get   ('/cuestionarios',     getCuestionarios);
 router.post  ('/cuestionarios',     createCuestionario);

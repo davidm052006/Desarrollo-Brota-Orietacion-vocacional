@@ -70,8 +70,9 @@ Columnas reales del tablero (no coinciden con lo que decía `gestion_proyecto.md
 
 ---
 
-## Pendientes que NO se resolvieron en esta sesión (a propósito)
+## Pendientes que NO se resolvieron por completo
 
 - **Cobertura del 80%** — no es alcanzable en el tiempo disponible sin fabricar tests vacíos; mejor ser honestos en la demo.
 - **Commits históricos desbalanceados** — no se puede corregir sin reescribir historia (riesgoso e innecesario); se mitiga hacia adelante, no hacia atrás.
-- **CRUD de convocatorias, responsive, bulk-insert** — quedaron como issues reales (#24, #25, #26) en vez de resolverse apurados y sin probar antes de la sustentación.
+- **Cobertura global del 80%** — se agregaron pruebas focalizadas, pero todavía falta medir y ampliar la cobertura de toda la aplicación.
+- **PR y evidencia de equipo para #24 y #25** — la implementación está en el working tree local; falta crear la rama, commit, PR y revisión del equipo.
