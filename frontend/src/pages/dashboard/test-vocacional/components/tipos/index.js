@@ -10,11 +10,14 @@
 import PreguntaOpcionUnica from './PreguntaOpcionUnica.jsx';
 import PreguntaOpcionMultiple from './PreguntaOpcionMultiple.jsx';
 import PreguntaLikert from './PreguntaLikert.jsx';
+import PreguntaAbierta from './PreguntaAbierta.jsx';
 
 export const VISTAS_POR_TIPO = {
   opcion_unica:    PreguntaOpcionUnica,
   opcion_multiple: PreguntaOpcionMultiple,
   likert:          PreguntaLikert,
+  respuesta_corta: PreguntaAbierta,
+  respuesta_larga: PreguntaAbierta,
 };
 
 export default VISTAS_POR_TIPO;

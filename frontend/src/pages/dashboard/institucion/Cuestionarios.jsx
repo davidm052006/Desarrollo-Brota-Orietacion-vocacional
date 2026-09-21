@@ -5,6 +5,7 @@ import { obtenerPerfil } from '../../../services/perfilService';
 import * as institucionService from '../../../services/institucionService';
 import { CATEGORIA_OPCIONES } from '../../../utils/vocacionalCategorias';
 import { OPCIONES_TIPO, TIPOS_PREGUNTA, normalizarTipo } from '../../../utils/tiposPregunta';
+import { esPreguntaAbierta } from '../../../utils/tiposPregunta';
 
 const cardStyle = {
   background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16,
@@ -95,11 +96,13 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
 
   const guardar = async () => {
     if (!form.texto.trim()) { setError('El texto de la pregunta es obligatorio'); return; }
-    if (form.tipo === 'single' && form.opciones.length !== 5) {
-      setError('Las preguntas de selección única deben tener exactamente 5 opciones'); return;
-    }
-    if (form.opciones.length < 2 || form.opciones.some(o => !o.label.trim())) {
-      setError('Necesitás al menos 2 opciones, todas con texto'); return;
+    if (!esPreguntaAbierta(form.tipo)) {
+      if (form.tipo === 'single' && form.opciones.length !== 5) {
+        setError('Las preguntas de selección única deben tener exactamente 5 opciones'); return;
+      }
+      if (form.opciones.length < 2 || form.opciones.some(o => !o.label.trim())) {
+        setError('Necesitás al menos 2 opciones, todas con texto'); return;
+      }
     }
     if (form.tipo === 'single' && form.opciones.some(o =>
       !Object.entries(o.pesos || {}).some(([categoria, puntos]) => categoria && Number(puntos) > 0)
@@ -108,7 +111,8 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
     }
     setGuardando(true);
     setError('');
-    const { success, error: err } = await onGuardar({ ...form, tipo: normalizarTipo(form.tipo) });
+    const datos = { ...form, tipo: normalizarTipo(form.tipo), opciones: esPreguntaAbierta(form.tipo) ? [] : form.opciones };
+    const { success, error: err } = await onGuardar(datos);
     setGuardando(false);
     if (!success) setError(err);
   };
@@ -126,8 +130,9 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
           value={normalizarTipo(form.tipo)}
           onChange={e => setForm(f => {
             const tipo = e.target.value;
-            const opciones = tipo === 'single' && f.opciones.length < 5
-              ? [...f.opciones, ...Array.from({ length: 5 - f.opciones.length }, () => ({ ...OPCION_VACIA }))]
+            const totalOpciones = tipo === 'single' ? 5 : Math.max(f.opciones.length, 2);
+            const opciones = f.opciones.length < totalOpciones
+              ? [...f.opciones, ...Array.from({ length: totalOpciones - f.opciones.length }, () => ({ ...OPCION_VACIA }))]
               : f.opciones;
             return { ...f, tipo, opciones };
           })}
@@ -150,17 +155,25 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
           </div>
         </div>
 
-        <p style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', marginBottom: 6 }}>
-          Opciones (cada una puede sumar puntos a una o más categorías)
-        </p>
-        {form.opciones.map((o, i) => (
-          <OpcionEditor key={i} letra={String.fromCharCode(65 + i)} opcion={o} tipoPregunta={normalizarTipo(form.tipo)} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} quitarDeshabilitado={normalizarTipo(form.tipo) === 'single' && form.opciones.length <= 5} />
-        ))}
-        <button
-          onClick={agregarOpcion}
-          disabled={normalizarTipo(form.tipo) === 'single' && form.opciones.length >= 5}
-          style={{ ...btnGhost, fontSize: 12, marginBottom: 12, opacity: normalizarTipo(form.tipo) === 'single' && form.opciones.length >= 5 ? .5 : 1 }}
-        >+ Agregar opción</button>
+        {esPreguntaAbierta(form.tipo) ? (
+          <p style={{ fontSize: 12, color: 'var(--ink-soft)', background: 'var(--surface-2)', borderRadius: 9, padding: 10, marginBottom: 12 }}>
+            La institución recibirá una respuesta escrita. Este tipo no usa opciones ni modifica el perfil vocacional.
+          </p>
+        ) : (
+          <>
+            <p style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', marginBottom: 6 }}>
+              Opciones (cada una puede sumar puntos a una o más categorías)
+            </p>
+            {form.opciones.map((o, i) => (
+              <OpcionEditor key={i} letra={String.fromCharCode(65 + i)} opcion={o} tipoPregunta={normalizarTipo(form.tipo)} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} quitarDeshabilitado={normalizarTipo(form.tipo) === 'single' && form.opciones.length <= 5} />
+            ))}
+            <button
+              onClick={agregarOpcion}
+              disabled={normalizarTipo(form.tipo) === 'single' && form.opciones.length >= 5}
+              style={{ ...btnGhost, fontSize: 12, marginBottom: 12, opacity: normalizarTipo(form.tipo) === 'single' && form.opciones.length >= 5 ? .5 : 1 }}
+            >+ Agregar opción</button>
+          </>
+        )}
 
         {error && <p style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>{error}</p>}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>

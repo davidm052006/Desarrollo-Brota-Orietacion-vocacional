@@ -113,6 +113,22 @@ describe('preguntasController con esquema antiguo', () => {
     expect(res.body.success).toBe(true);
   });
 
+  it('elimina las opciones existentes al convertir una pregunta a respuesta abierta', async () => {
+    const { supabaseMock, questionQuery, optionsTable } = supabaseWithoutEsCorrecta();
+    const { updatePregunta } = cargarController(supabaseMock);
+    const res = responseMock();
+
+    await updatePregunta({
+      params: { id: 'q-1' },
+      body: { tipo: 'respuesta_larga' },
+    }, res);
+
+    expect(questionQuery.update).toHaveBeenCalledWith(expect.objectContaining({ tipo: 'respuesta_larga' }));
+    expect(optionsTable.delete).toHaveBeenCalled();
+    expect(optionsTable.insert).not.toHaveBeenCalled();
+    expect(res.body.success).toBe(true);
+  });
+
   it('rechaza selección única si una opción no tiene área ponderada', async () => {
     const { supabaseMock, questionQuery, optionsTable } = supabaseWithoutEsCorrecta();
     const { updatePregunta } = cargarController(supabaseMock);

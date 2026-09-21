@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as adminService from '../../../../services/adminService';
 import Modal from '../components/Modal';
-import { OPCIONES_TIPO, TIPOS_PREGUNTA, normalizarTipo } from '../../../../utils/tiposPregunta';
+import { OPCIONES_TIPO, TIPOS_PREGUNTA, normalizarTipo, esPreguntaAbierta } from '../../../../utils/tiposPregunta';
 import { CATEGORIA_OPCIONES } from '../../../../utils/vocacionalCategorias';
 
 // Un color por tipo canónico — antes solo cubría 2 de los 3, así que una
@@ -11,6 +11,8 @@ const TIPO_COLORS = {
   'single':          'bg-emerald-100 text-emerald-700',
   'opcion_multiple': 'bg-blue-100 text-blue-700',
   'likert':          'bg-purple-100 text-purple-700',
+  'respuesta_corta': 'bg-amber-100 text-amber-700',
+  'respuesta_larga': 'bg-orange-100 text-orange-700',
 };
 
 const CATEGORIA_COLORS = {
@@ -72,7 +74,11 @@ function FormCampos({ f, setF, cuestionarios, respuestasCorrectasDisponibles }) 
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
         </div>
       </div>
-      <div>
+      {esPreguntaAbierta(f.tipo) ? (
+        <p className="rounded-lg bg-gray-50 p-3 text-xs text-gray-600">
+          La respuesta escrita se guarda con el resultado del cuestionario y no modifica el perfil vocacional.
+        </p>
+      ) : <div>
         <div className="flex items-center justify-between mb-1">
           <label className="block text-xs font-semibold text-gray-600">Opciones de respuesta *</label>
           <button type="button" disabled={f.tipo === 'single' && f.opciones.length >= 5} onClick={() => setF(p => ({ ...p, opciones: [...p.opciones, { label: '', es_correcta: false, pesos: {} }] }))}
@@ -120,7 +126,7 @@ function FormCampos({ f, setF, cuestionarios, respuestasCorrectasDisponibles }) 
         {f.tipo !== 'single' && !respuestasCorrectasDisponibles && (
           <p className="text-xs text-amber-700 mt-2">Para marcar respuestas correctas, primero aplica la migración de opciones correctas en Supabase.</p>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
@@ -204,7 +210,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
     tipo: normalizarTipo(form.tipo),
     orden: parseInt(form.orden) || 1,
     peso: parseFloat(form.peso) || 1.0,
-    opciones: form.opciones.filter(opcion => opcion.label?.trim()).map((opcion, index) => ({
+    opciones: esPreguntaAbierta(form.tipo) ? [] : form.opciones.filter(opcion => opcion.label?.trim()).map((opcion, index) => ({
       ...opcion,
       label: opcion.label.trim(),
       orden: index,
@@ -214,6 +220,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   });
 
   const validarOpciones = () => {
+    if (esPreguntaAbierta(form.tipo)) return true;
     if (form.tipo === 'single' && form.opciones.length !== 5) {
       setFormError('Las preguntas de selección única deben tener exactamente 5 opciones.');
       return false;

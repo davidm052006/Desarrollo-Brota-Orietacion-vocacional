@@ -1,4 +1,4 @@
-import { normalizarTipo, esSeleccionMultiple, TIPO_POR_DEFECTO } from '../../../../utils/tiposPregunta';
+import { normalizarTipo, esSeleccionMultiple, esPreguntaAbierta, TIPO_POR_DEFECTO } from '../../../../utils/tiposPregunta';
 import { VISTAS_POR_TIPO } from './tipos';
 
 // Dispatcher de preguntas del test vocacional.
@@ -62,6 +62,7 @@ export default function TestQuestion({
   const tipo       = normalizarTipo(pregunta.tipo);
   const cantidadCorrectas = pregunta.opciones?.filter(opcion => opcion.es_correcta).length ?? 0;
   const esMultiple = esSeleccionMultiple(tipo) && cantidadCorrectas !== 1;
+  const esAbierta = esPreguntaAbierta(tipo);
   const tipoVista = esSeleccionMultiple(tipo) && cantidadCorrectas === 1 ? 'opcion_unica' : tipo;
   // Un tipo del catálogo sin vista registrada no debe dejar la pregunta en
   // blanco: cae a la del tipo por defecto, igual que normalizarTipo.
@@ -92,7 +93,9 @@ export default function TestQuestion({
           {verde && <span style={{ color: 'var(--primary)' }}>{verde}</span>}
         </div>
         <div style={{ color: 'var(--ink-soft)', fontSize: 13.5, marginTop: 8 }}>
-          {pregunta.opciones?.some(o => o.es_correcta)
+          {esAbierta
+            ? 'Escribe tu respuesta para continuar.'
+            : pregunta.opciones?.some(o => o.es_correcta)
             ? (esMultiple ? 'Selecciona todas las respuestas correctas para continuar.' : 'Selecciona la respuesta correcta para continuar.')
             : esMultiple
             ? 'Selecciona todas las opciones que apliquen para ti.'

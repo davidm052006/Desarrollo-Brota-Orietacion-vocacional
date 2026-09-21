@@ -6,6 +6,7 @@ import {
   normalizarTipo,
   esTipoValido,
   esSeleccionMultiple,
+  esPreguntaAbierta,
   getTipoInfo,
 } from './tiposPregunta';
 
@@ -19,6 +20,8 @@ describe('normalizarTipo', () => {
     expect(normalizarTipo('opcion_unica')).toBe('opcion_unica');
     expect(normalizarTipo('opcion_multiple')).toBe('opcion_multiple');
     expect(normalizarTipo('likert')).toBe('likert');
+    expect(normalizarTipo('respuesta_corta')).toBe('respuesta_corta');
+    expect(normalizarTipo('respuesta_larga')).toBe('respuesta_larga');
   });
 
   it('traduce los alias legados que ya están en la base', () => {
@@ -48,7 +51,7 @@ describe('normalizarTipo', () => {
 
 describe('esTipoValido', () => {
   it('acepta canónicos y alias', () => {
-    ['opcion_unica', 'opcion_multiple', 'likert', 'single', 'seleccion', 'multiple']
+    ['opcion_unica', 'opcion_multiple', 'likert', 'single', 'seleccion', 'multiple', 'respuesta_corta', 'respuesta_larga']
       .forEach(t => expect(esTipoValido(t)).toBe(true));
   });
 
@@ -72,6 +75,16 @@ describe('esSeleccionMultiple', () => {
   it('un tipo desconocido no habilita selección múltiple', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(esSeleccionMultiple('cualquier_cosa')).toBe(false);
+  });
+});
+
+describe('esPreguntaAbierta', () => {
+  it('solo marca los tipos que reciben texto libre', () => {
+    expect(esPreguntaAbierta('respuesta_corta')).toBe(true);
+    expect(esPreguntaAbierta('respuesta_larga')).toBe(true);
+    expect(esPreguntaAbierta('single')).toBe(false);
+    expect(esPreguntaAbierta('opcion_multiple')).toBe(false);
+    expect(esPreguntaAbierta('likert')).toBe(false);
   });
 });
 

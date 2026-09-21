@@ -9,7 +9,7 @@ import TestProgress from './components/TestProgress';
 import TestResult   from './components/TestResult';
 import { getCategoriaInfo, storageKey } from '../../../utils/vocacionalCategorias';
 import { normalizarCategoria } from '../../../utils/areaColors';
-import { esSeleccionMultiple } from '../../../utils/tiposPregunta';
+import { esSeleccionMultiple, esPreguntaAbierta } from '../../../utils/tiposPregunta';
 
 // Calcula el perfil localmente usando los pesos ya cargados en las preguntas.
 // Se usa como respaldo cuando el backend no está disponible o el usuario es anónimo.
@@ -17,7 +17,7 @@ function calcularPerfilLocal(preguntas, seleccionadas) {
   const acumulado = {};
   preguntas.forEach(pregunta => {
     const elegidas = seleccionadas[pregunta.id] ?? [];
-    elegidas.forEach(opcionId => {
+    (Array.isArray(elegidas) ? elegidas : []).forEach(opcionId => {
       const opcion = pregunta.opciones?.find(o => o.id === opcionId);
       if (!opcion?.pesos) return;
       Object.entries(opcion.pesos).forEach(([cat, pts]) => {
@@ -117,7 +117,7 @@ export default function TestVocacional({ user, isDemoMode = false }) {
   const preguntaActual = preguntas[preguntaIdx];
   const progreso       = totalPreguntas > 0 ? Math.round((preguntaIdx / totalPreguntas) * 100) : 0;
   const idsActuales    = seleccionadas[preguntaActual?.id] ?? [];
-  const puedeAvanzar   = idsActuales.length > 0;
+  const puedeAvanzar   = idsActuales.length > 0 && (!esPreguntaAbierta(preguntaActual?.tipo) || Boolean(idsActuales[0]?.trim()));
 
   // ── Inicialización ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -247,6 +247,7 @@ export default function TestVocacional({ user, isDemoMode = false }) {
     const cantidadCorrectas = preguntaActual.opciones?.filter(opcion => opcion.es_correcta).length ?? 0;
     setSeleccionadas((prev) => {
       const actuales = prev[pregId] ?? [];
+      if (esPreguntaAbierta(tipo)) return { ...prev, [pregId]: [opcionId] };
       if (!esSeleccionMultiple(tipo) || cantidadCorrectas === 1) return { ...prev, [pregId]: [opcionId] };
       return {
         ...prev,

@@ -1,6 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
-const { esTipoValido, normalizarTipo, mensajeTipoInvalido } = require('../../utils/tiposPregunta');
+const { esTipoValido, normalizarTipo, esPreguntaAbierta, mensajeTipoInvalido } = require('../../utils/tiposPregunta');
 
 // A diferencia de admin/preguntasController.js (que solo escribe la columna
 // legada `preguntas.opciones` JSONB, nunca leída por el motor real del test),
@@ -20,6 +20,11 @@ async function verificarCuestionarioPropio(cuestionarioId, institucionId) {
 }
 
 function validarOpciones(tipo, opciones) {
+  if (esPreguntaAbierta(tipo)) {
+    return Array.isArray(opciones) && opciones.length > 0
+      ? 'Las preguntas abiertas no admiten opciones'
+      : null;
+  }
   if (!Array.isArray(opciones) || opciones.length < 2 || opciones.some(opcion =>
     !opcion || typeof opcion.label !== 'string' || !opcion.label.trim()
   )) {
@@ -125,7 +130,7 @@ const createPregunta = asyncHandler('institucion/preguntasController.createPregu
 
   if (error) throw error;
 
-  await insertarOpciones(pregunta.id, opciones);
+  await insertarOpciones(pregunta.id, esPreguntaAbierta(tipo) ? [] : opciones);
 
   return res.status(201).json({ success: true, data: pregunta });
 });
@@ -158,6 +163,7 @@ const updatePregunta = asyncHandler('institucion/preguntasController.updatePregu
     const errorOpciones = validarOpciones(tipoFinal, opciones);
     if (errorOpciones) return res.status(400).json({ success: false, message: errorOpciones });
   }
+  const limpiarOpciones = tipo !== undefined && esPreguntaAbierta(tipoFinal);
 
   const { error: updateError } = await supabase
     .from('preguntas')
@@ -166,11 +172,11 @@ const updatePregunta = asyncHandler('institucion/preguntasController.updatePregu
 
   if (updateError) throw updateError;
 
-  if (Array.isArray(opciones)) {
+  if (Array.isArray(opciones) || limpiarOpciones) {
     // Borra las opciones viejas (cascada a pesos_opciones) y arma las nuevas.
     const { error: deleteError } = await supabase.from('opciones').delete().eq('pregunta_id', id);
     if (deleteError) throw deleteError;
-    await insertarOpciones(id, opciones);
+    await insertarOpciones(id, limpiarOpciones ? [] : opciones);
   }
 
   return res.json({ success: true, message: 'Pregunta actualizada' });

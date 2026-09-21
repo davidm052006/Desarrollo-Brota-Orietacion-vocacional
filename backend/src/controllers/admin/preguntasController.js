@@ -1,6 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
-const { esTipoValido, normalizarTipo, mensajeTipoInvalido } = require('../../utils/tiposPregunta');
+const { esTipoValido, normalizarTipo, esPreguntaAbierta, mensajeTipoInvalido } = require('../../utils/tiposPregunta');
 
 const ERROR_MIGRACION_CORRECTAS = 'Para marcar respuestas correctas, aplica la migración de opciones correctas en Supabase.';
 
@@ -79,13 +79,13 @@ const createPregunta = asyncHandler('admin/preguntasController.createPregunta', 
   if (!esTipoValido(tipo)) {
     return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
   }
-  if (tipo === 'single' && (!Array.isArray(opciones) || opciones.length !== 5 || opciones.some(opcion =>
+  if (normalizarTipo(tipo) === 'single' && (!Array.isArray(opciones) || opciones.length !== 5 || opciones.some(opcion =>
     !Object.entries(opcion.pesos || {}).some(([categoria, puntos]) => categoria && Number(puntos) > 0)
   ))) {
     return res.status(400).json({ success: false, message: 'La selección única requiere exactamente 5 opciones, cada una con un área ponderada' });
   }
   const incluirEsCorrecta = await tieneColumnaEsCorrecta();
-  if (!incluirEsCorrecta && (opciones || []).some(opcion => opcion.es_correcta)) {
+  if (!incluirEsCorrecta && Array.isArray(opciones) && opciones.some(opcion => opcion.es_correcta)) {
     return res.status(409).json({ success: false, message: ERROR_MIGRACION_CORRECTAS });
   }
 
@@ -96,35 +96,34 @@ const createPregunta = asyncHandler('admin/preguntasController.createPregunta', 
     .single();
 
   if (error) throw error;
-  await insertarOpciones(data.id, opciones, incluirEsCorrecta);
+  await insertarOpciones(data.id, esPreguntaAbierta(tipo) ? [] : opciones, incluirEsCorrecta);
   return res.status(201).json({ success: true, data });
 });
 
 const updatePregunta = asyncHandler('admin/preguntasController.updatePregunta', async (req, res) => {
   const { id } = req.params;
   const { texto, tipo, orden, categoria, peso, opciones } = req.body;
-  if (tipo === 'single' && (!Array.isArray(opciones) || opciones.length !== 5 || opciones.some(opcion =>
+  if (tipo !== undefined && !esTipoValido(tipo)) {
+    return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
+  }
+  const tipoNormalizado = tipo === undefined ? undefined : normalizarTipo(tipo);
+  if (tipoNormalizado === 'single' && Array.isArray(opciones) && (opciones.length !== 5 || opciones.some(opcion =>
     !Object.entries(opcion.pesos || {}).some(([categoria, puntos]) => categoria && Number(puntos) > 0)
   ))) {
     return res.status(400).json({ success: false, message: 'La selección única requiere exactamente 5 opciones, cada una con un área ponderada' });
   }
   const incluirEsCorrecta = Array.isArray(opciones) ? await tieneColumnaEsCorrecta() : false;
-  if (!incluirEsCorrecta && (opciones || []).some(opcion => opcion.es_correcta)) {
+  if (!incluirEsCorrecta && Array.isArray(opciones) && opciones.some(opcion => opcion.es_correcta)) {
     return res.status(409).json({ success: false, message: ERROR_MIGRACION_CORRECTAS });
   }
 
-  // El PATCH es parcial: solo se valida el tipo si vino en el body.
-  if (tipo !== undefined && !esTipoValido(tipo)) {
-    return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
-  }
-  const tipoNormalizado = tipo === undefined ? undefined : normalizarTipo(tipo);
-
   const { error } = await supabase.from('preguntas').update({ texto, tipo: tipoNormalizado, orden, categoria, peso }).eq('id', id);
   if (error) throw error;
-  if (Array.isArray(opciones)) {
+  const limpiarOpciones = tipoNormalizado !== undefined && esPreguntaAbierta(tipoNormalizado);
+  if (Array.isArray(opciones) || limpiarOpciones) {
     const { error: deleteError } = await supabase.from('opciones').delete().eq('pregunta_id', id);
     if (deleteError) throw deleteError;
-    await insertarOpciones(id, opciones, incluirEsCorrecta);
+    await insertarOpciones(id, limpiarOpciones ? [] : opciones, incluirEsCorrecta);
   }
   return res.json({ success: true, message: 'Pregunta actualizada' });
 });

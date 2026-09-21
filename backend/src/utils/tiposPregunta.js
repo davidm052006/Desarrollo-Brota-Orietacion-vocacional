@@ -10,22 +10,38 @@ const TIPOS_PREGUNTA = {
   single: {
     label: 'Selección única (perfil vocacional)',
     multiple: false,
+    abierta: false,
     descripcion: 'Elige una opción que aporta a tu perfil vocacional.',
   },
   opcion_unica: {
     label: 'Opción única',
     multiple: false,
+    abierta: false,
     descripcion: 'El estudiante elige una sola opción entre varias tarjetas.',
   },
   opcion_multiple: {
     label: 'Opción múltiple',
     multiple: true,
+    abierta: false,
     descripcion: 'El estudiante puede marcar todas las opciones que apliquen.',
   },
   likert: {
     label: 'Escala Likert',
     multiple: false,
+    abierta: false,
     descripcion: 'Escala gráfica de 5 puntos, de menor a mayor afinidad.',
+  },
+  respuesta_corta: {
+    label: 'Respuesta corta',
+    multiple: false,
+    abierta: true,
+    descripcion: 'El estudiante responde con una frase breve.',
+  },
+  respuesta_larga: {
+    label: 'Respuesta larga',
+    multiple: false,
+    abierta: true,
+    descripcion: 'El estudiante desarrolla una respuesta escrita.',
   },
 };
 
@@ -59,6 +75,11 @@ function esSeleccionMultiple(tipo) {
   return TIPOS_PREGUNTA[normalizarTipo(tipo)].multiple;
 }
 
+/** true si el tipo espera una respuesta escrita, no una opción existente. */
+function esPreguntaAbierta(tipo) {
+  return Boolean(TIPOS_PREGUNTA[normalizarTipo(tipo)].abierta);
+}
+
 /** Mensaje de error 400 uniforme entre los dos controllers. */
 const TIPOS_VALIDOS = Object.keys(TIPOS_PREGUNTA);
 function mensajeTipoInvalido(tipo) {
@@ -72,5 +93,6 @@ module.exports = {
   normalizarTipo,
   esTipoValido,
   esSeleccionMultiple,
+  esPreguntaAbierta,
   mensajeTipoInvalido,
 };

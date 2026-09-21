@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import TestQuestion from './TestQuestion';
 
@@ -59,6 +59,29 @@ describe('TestQuestion (dispatcher por tipo)', () => {
     expect(screen.getByRole('radio', { name: /Programar/i })).toBeTruthy();
     expect(screen.getByRole('radiogroup', { name: /escala/i })).toBeTruthy();
     expect(screen.queryByText(AYUDA_MULTIPLE)).toBeNull();
+  });
+
+  it('captura texto libre en respuesta corta', () => {
+    const onSeleccionar = vi.fn();
+    render(
+      <TestQuestion
+        pregunta={{ ...preguntaCon('respuesta_corta'), opciones: [] }}
+        onSeleccionar={onSeleccionar}
+      />
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Tu respuesta' }), {
+      target: { value: 'Me gusta aprender' },
+    });
+
+    expect(onSeleccionar).toHaveBeenCalledWith('Me gusta aprender');
+    expect(screen.getByText('Escribe tu respuesta para continuar.')).toBeTruthy();
+  });
+
+  it('renderiza respuesta larga como campo multilínea', () => {
+    render(<TestQuestion pregunta={{ ...preguntaCon('respuesta_larga'), opciones: [] }} />);
+
+    expect(screen.getByRole('textbox', { name: 'Tu respuesta' }).tagName).toBe('TEXTAREA');
   });
 
   it('un tipo desconocido cae a opción única en vez de dejar la pregunta vacía', () => {
