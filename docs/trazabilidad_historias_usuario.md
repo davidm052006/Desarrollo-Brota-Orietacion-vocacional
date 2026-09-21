@@ -16,7 +16,7 @@ Este documento conecta cada historia de usuario con su issue, responsable, rama,
 
 | ID | Issue | Historia / trabajo | Responsable | Rama | PR | Estado documentado | Evidencia de aceptación |
 |---|---:|---|---|---|---:|---|---|
-| HU-023 | #23 | Ampliar cobertura de pruebas | Eduard | `feature/tests-cobertura` | En curso | Pruebas focalizadas agregadas; falta ampliar cobertura global | Ejecutar suite y registrar porcentaje medido |
+| HU-023 | #23 | Ampliar cobertura de pruebas | Eduard | `feature/tests-cobertura` | En curso | 43 pruebas automatizadas backend/frontend; falta medir cobertura porcentual global | Ejecutar suite y registrar porcentaje medido |
 | HU-024 | #24 | CRUD real de convocatorias en administración | Julián | `feature/crud-convocatorias` | Implementada localmente | Backend y sección admin funcionales; pendiente PR | Crear, consultar, actualizar y eliminar una convocatoria persistida |
 | HU-025 | #25 | Responsive y vista móvil del dashboard | Julián | `feature/responsive-dashboard` | Implementada localmente | Dashboard principal con layout de una columna hasta 900 px; pendiente PR | Verificar dashboard en viewport móvil y escritorio sin solapamientos |
 | HU-026 | #26 | Endpoint de inserción masiva para CSV | Brayan | `feature/bulk-insert-csv` | Implementada | Endpoint existente validado; frontend rechaza encabezados incompletos | Procesar archivo válido, rechazar filas inválidas y devolver resumen |

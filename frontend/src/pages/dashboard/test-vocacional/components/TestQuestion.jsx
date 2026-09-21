@@ -1,3 +1,5 @@
+import { esPreguntaAbierta } from '../../../../utils/tiposPregunta';
+
 // Props:
 //   pregunta: { id, texto, tipo, categoria?, opciones: [{id, label, icon}] }
 //   preguntaNumero: number (1-based)
@@ -55,7 +57,8 @@ export default function TestQuestion({
   esUltima       = false,
 }) {
   const esLikert   = pregunta.tipo === 'likert';
-  const esMultiple = pregunta.tipo === 'multiple';
+  const esAbierta  = esPreguntaAbierta(pregunta.tipo);
+  const esMultiple = pregunta.tipo === 'multiple' || pregunta.tipo === 'opcion_multiple';
   const { normal, verde } = splitTexto(pregunta.texto);
   // Para likert usamos las opciones reales del DB (con sus UUIDs) y les añadimos el emoji de escala
   const opciones = esLikert
@@ -129,6 +132,25 @@ export default function TestQuestion({
               </div>
             );
           })}
+        </div>
+      ) : esAbierta ? (
+        <div style={{ marginTop: 24 }}>
+          {pregunta.tipo === 'respuesta_larga' ? (
+            <textarea
+              value={seleccionadas[0] ?? ''}
+              onChange={event => onSeleccionar(event.target.value)}
+              rows={5}
+              placeholder="Escribe tu respuesta..."
+              style={{ width: '100%', resize: 'vertical', padding: '14px 16px', borderRadius: 16, border: '2px solid var(--line)', background: 'var(--surface-2)', color: 'var(--ink)', fontFamily: 'inherit', fontSize: 14, outline: 'none' }}
+            />
+          ) : (
+            <input
+              value={seleccionadas[0] ?? ''}
+              onChange={event => onSeleccionar(event.target.value)}
+              placeholder="Escribe tu respuesta..."
+              style={{ width: '100%', padding: '14px 16px', borderRadius: 16, border: '2px solid var(--line)', background: 'var(--surface-2)', color: 'var(--ink)', fontFamily: 'inherit', fontSize: 14, outline: 'none' }}
+            />
+          )}
         </div>
       ) : (
         /* Multiple / single grid */

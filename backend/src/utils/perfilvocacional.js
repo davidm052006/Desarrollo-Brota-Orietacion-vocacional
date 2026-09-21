@@ -26,7 +26,7 @@ async function calcularDesdeRespuestas(cuestionarioId, respuestas, supabase) {
   const acumulado = {};
 
   preguntas.forEach((pregunta) => {
-    const opcionesElegidas = respuestas[pregunta.id] ?? [];
+    const opcionesElegidas = Array.isArray(respuestas[pregunta.id]) ? respuestas[pregunta.id] : [];
     opcionesElegidas.forEach((opcionId) => {
       const opcion = pregunta.opciones?.find((o) => o.id === opcionId);
       if (!opcion?.pesos_opciones) return;

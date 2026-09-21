@@ -4,6 +4,7 @@ import InstitucionNav from './components/InstitucionNav';
 import { obtenerPerfil } from '../../../services/perfilService';
 import * as institucionService from '../../../services/institucionService';
 import { CATEGORIA_OPCIONES } from '../../../utils/vocacionalCategorias';
+import { TIPOS_PREGUNTA, esPreguntaAbierta } from '../../../utils/tiposPregunta';
 
 const cardStyle = {
   background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16,
@@ -67,7 +68,7 @@ function OpcionEditor({ opcion, onChange, onQuitar }) {
   );
 }
 
-const PREGUNTA_VACIA = { texto: '', tipo: 'seleccion', categoria: '', peso: 1, opciones: [{ label: '', pesos: {} }, { label: '', pesos: {} }] };
+const PREGUNTA_VACIA = { texto: '', tipo: 'opcion_multiple', categoria: '', peso: 1, opciones: [{ label: '', pesos: {} }, { label: '', pesos: {} }] };
 
 function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
   const [form, setForm] = useState(pregunta || PREGUNTA_VACIA);
@@ -84,12 +85,13 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
 
   const guardar = async () => {
     if (!form.texto.trim()) { setError('El texto de la pregunta es obligatorio'); return; }
-    if (form.opciones.length < 2 || form.opciones.some(o => !o.label.trim())) {
+    if (!esPreguntaAbierta(form.tipo) && (form.opciones.length < 2 || form.opciones.some(o => !o.label.trim()))) {
       setError('Necesitás al menos 2 opciones, todas con texto'); return;
     }
     setGuardando(true);
     setError('');
-    const { success, error: err } = await onGuardar(form);
+    const datos = { ...form, opciones: esPreguntaAbierta(form.tipo) ? [] : form.opciones };
+    const { success, error: err } = await onGuardar(datos);
     setGuardando(false);
     if (!success) setError(err);
   };
@@ -104,6 +106,12 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
 
         <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
           <div style={{ flex: 1 }}>
+            <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Tipo de pregunta</label>
+            <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))} style={inputStyle}>
+              {TIPOS_PREGUNTA.map(tipo => <option key={tipo.value} value={tipo.value}>{tipo.label}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: 1 }}>
             <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Orden</label>
             <input type="number" value={form.orden || ''} onChange={e => setForm(f => ({ ...f, orden: e.target.value }))} style={inputStyle} />
           </div>
@@ -113,13 +121,21 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
           </div>
         </div>
 
-        <p style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', marginBottom: 6 }}>
-          Opciones (cada una puede sumar puntos a una o más categorías)
-        </p>
-        {form.opciones.map((o, i) => (
-          <OpcionEditor key={i} opcion={o} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} />
-        ))}
-        <button onClick={agregarOpcion} style={{ ...btnGhost, fontSize: 12, marginBottom: 12 }}>+ Agregar opción</button>
+        {esPreguntaAbierta(form.tipo) ? (
+          <p style={{ fontSize: 12, color: 'var(--ink-soft)', background: 'var(--surface-2)', borderRadius: 9, padding: 10, marginBottom: 12 }}>
+            La institución recibirá una respuesta escrita. Este tipo no usa opciones ni modifica el perfil vocacional.
+          </p>
+        ) : (
+          <>
+            <p style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', marginBottom: 6 }}>
+              Opciones (cada una puede sumar puntos a una o más categorías)
+            </p>
+            {form.opciones.map((o, i) => (
+              <OpcionEditor key={i} opcion={o} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} />
+            ))}
+            <button onClick={agregarOpcion} style={{ ...btnGhost, fontSize: 12, marginBottom: 12 }}>+ Agregar opción</button>
+          </>
+        )}
 
         {error && <p style={{ fontSize: 12, color: '#dc2626', marginBottom: 8 }}>{error}</p>}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>

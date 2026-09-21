@@ -1,5 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
+const { esTipoPreguntaValido } = require('../../utils/tiposPregunta');
 
 const getPreguntas = asyncHandler('admin/preguntasController.getPreguntas', async (req, res) => {
   const cuestionarioId = req.query.cuestionario_id || '';
@@ -19,6 +20,9 @@ const createPregunta = asyncHandler('admin/preguntasController.createPregunta', 
   const { cuestionario_id, texto, tipo, orden, categoria, peso, opciones } = req.body;
   if (!cuestionario_id || !texto || !tipo) {
     return res.status(400).json({ success: false, message: 'cuestionario_id, texto y tipo son obligatorios' });
+  }
+  if (!esTipoPreguntaValido(tipo)) {
+    return res.status(400).json({ success: false, message: 'Tipo de pregunta no válido' });
   }
 
   const { data, error } = await supabase

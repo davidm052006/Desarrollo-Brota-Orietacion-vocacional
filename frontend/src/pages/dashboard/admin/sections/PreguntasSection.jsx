@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as adminService from '../../../../services/adminService';
 import Modal from '../components/Modal';
+import { TIPOS_PREGUNTA } from '../../../../utils/tiposPregunta';
 
 const TIPO_COLORS = {
   'opcion_multiple': 'bg-blue-100 text-blue-700',
@@ -37,8 +38,7 @@ function FormCampos({ f, setF, cuestionarios }) {
           <label className="block text-xs font-semibold text-gray-600 mb-1">Tipo</label>
           <select value={f.tipo} onChange={e => setF(p => ({ ...p, tipo: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
-            <option value="opcion_multiple">Opción múltiple</option>
-            <option value="likert">Likert</option>
+            {TIPOS_PREGUNTA.map(tipo => <option key={tipo.value} value={tipo.value}>{tipo.label}</option>)}
           </select>
         </div>
         <div>
