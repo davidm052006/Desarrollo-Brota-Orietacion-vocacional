@@ -1,6 +1,7 @@
 const MODULES = [
   { key: 'usuarios',      icon: '👥', icono: '/icons/icon-comunidad.svg',      label: 'Usuarios'       },
   { key: 'oportunidades', icon: '💼', label: 'Oportunidades'  },
+  { key: 'convocatorias', icon: '📣', label: 'Convocatorias' },
   { key: 'instituciones', icon: '🏛️', icono: '/icons/icon-instituciones.svg',  label: 'Instituciones'  },
   { key: 'cuestionarios', icon: '📋', label: 'Cuestionarios'  },
   { key: 'preguntas',     icon: '❓', label: 'Preguntas'      },

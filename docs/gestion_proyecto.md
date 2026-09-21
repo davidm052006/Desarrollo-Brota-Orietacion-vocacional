@@ -13,7 +13,9 @@ Este documento describe el proceso **ideal** que se pensó al crear el tablero (
 1. **Las columnas reales del tablero son `Backlog` / `Ready` / `In progress` / `In review`** — no existe una columna `Done` como describe la sección siguiente. `Ready` es la que cumple ese rol (a donde se mueven las issues cerradas).
 2. **El tablero estuvo 5 meses sin usarse de verdad.** Las 16 issues originales (marzo 2026: `Diseño-001`, `Base_de_datos-001/002/003`, `Cuestionario_Vocacional-001/002/003`, `Autenticacion-001/002`, `UI_UX-001/002`, `Notificaciones-001/002`, `Admin_Panel-001/002/003`) describían trabajo que terminó implementándose igual, pero por commits directos a `main` sin pasar por el tablero — nunca se movieron de `Backlog`. Se cerraron el 26 ago 2026 con una nota explicando esto (no se marcaron como completadas a través del flujo normal, para no simular un uso que no existió). El tablero se reinicia desde esa fecha con 5 issues nuevas que sí reflejan trabajo pendiente real, repartidas por persona — ver `docs/auditoria_sustentacion.md`.
 
-La sección de abajo (columnas, automatizaciones, labels) sigue siendo la referencia de **cómo se pretende usar el tablero de acá en adelante** — solo hay que ajustar mentalmente `Done` → `Ready` al leerla.
+La sección de abajo (columnas, automatizaciones y labels) es la referencia de **cómo se usará el tablero de acá en adelante**.
+
+La trazabilidad operativa de cada historia vive en [`trazabilidad_historias_usuario.md`](trazabilidad_historias_usuario.md). Una historia no se considera cerrada solo porque el código exista: debe tener issue, rama, PR, commits y evidencia de aceptación.
 
 ## Estructura del Tablero
 
@@ -81,9 +83,9 @@ La sección de abajo (columnas, automatizaciones, labels) sigue siendo la refere
 
 ---
 
-#### 4. Done
+#### 4. Ready
 
-**Propósito:** Tareas completadas y mergeadas.
+**Propósito:** Tareas completadas, revisadas y mergeadas.
 
 **Contenido:**
 
@@ -119,7 +121,7 @@ La sección de abajo (columnas, automatizaciones, labels) sigue siendo la refere
 ### Auto-move on PR Merge
 
 - **Trigger:** Pull request mergeado
-- **Acción:** Mover a columna Done y cerrar issue
+- **Acción:** Mover a columna Ready y cerrar issue
 
 ---
 
@@ -152,7 +154,7 @@ Crear PR → Auto-move a In Review → Code review → Ajustes
 ### 5. Completado
 
 ```
-Aprobar PR → Merge → Auto-move a Done → Cerrar issue
+Aprobar PR → Merge → Auto-move a Ready → Cerrar issue
 ```
 
 ---
@@ -229,7 +231,7 @@ Aprobar PR → Merge → Auto-move a Done → Cerrar issue
 
 ### Efficiency
 
-- Tiempo de cycle (Backlog → Done)
+- Tiempo de cycle (Backlog → Ready)
 - Tiempo de review (In Review)
 - Tasa de re-trabajo
 

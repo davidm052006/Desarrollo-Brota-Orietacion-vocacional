@@ -29,6 +29,12 @@ const FILA_EJEMPLO_PLANTILLA = {
   condiciones_socioeconomicas: 'Estrato 3', rol: 'estudiante',
 };
 
+function validarColumnas(filas) {
+  const columnas = Object.keys(filas[0] || {});
+  const faltantes = COLUMNAS_ESPERADAS.filter(columna => !columnas.includes(columna));
+  return faltantes.length > 0 ? `Faltan columnas obligatorias: ${faltantes.join(', ')}` : null;
+}
+
 // Sección "Usuarios" del panel admin: esta pieza solo se encarga de
 //   1. traer la lista de usuarios (paginada/filtrada) del backend,
 //   2. orquestar las operaciones CRUD y qué modal está abierto,
@@ -262,7 +268,9 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
           }
           return normalizada;
         });
-        setCsvFilas(filas);
+        const errorColumnas = validarColumnas(filas);
+        setFormError(errorColumnas);
+        setCsvFilas(errorColumnas ? [] : filas);
       } catch {
         setFormError('No se pudo leer el archivo Excel');
       }
@@ -274,7 +282,9 @@ useEffect(() => { fetchUsuarios(); }, [fetchUsuarios]); // eslint-disable-line r
           if (resultado.errors.length > 0) {
             setFormError(`El CSV tiene ${resultado.errors.length} fila(s) con formato inválido`);
           }
-          setCsvFilas(resultado.data);
+          const errorColumnas = validarColumnas(resultado.data);
+          setFormError(errorColumnas);
+          setCsvFilas(errorColumnas ? [] : resultado.data);
         },
         error: () => {
           setFormError('No se pudo leer el archivo CSV');

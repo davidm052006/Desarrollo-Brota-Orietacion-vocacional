@@ -15,7 +15,7 @@ function ProfileSidebar({ profile }) {
   const diasRacha = profile?.racha_dias ?? 0;
 
   return (
-    <aside style={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <aside className="dashboard-page-sidebar" style={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       {/* Racha */}
       <div
@@ -136,7 +136,7 @@ export default function Dashboard({ user, isDemoMode = false }) {
 
   return (
     <DashboardLayout profile={profileFull} isDemoMode={isDemoMode}>
-      <div style={{
+      <div className="dashboard-page-shell" style={{
         maxWidth: 1180, margin: '0 auto',
         padding: '24px 28px',
         display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20,

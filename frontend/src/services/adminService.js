@@ -240,6 +240,48 @@ export const deletePrograma = async (id) => {
   }
 };
 
+// ─── Convocatorias ─────────────────────────────────────────────────────────
+export const getConvocatorias = async ({ pagina = 1, limite = 10, busqueda = '' } = {}) => {
+  try {
+    const headers = await getAuthHeaders();
+    const params = new URLSearchParams({ pagina, limite, ...(busqueda && { busqueda }) });
+    const res = await fetch(`${API_URL}/api/admin/convocatorias?${params}`, { headers });
+    return parseResponse(res);
+  } catch {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
+export const createConvocatoria = async (datos) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/convocatorias`, { method: 'POST', headers, body: JSON.stringify(datos) });
+    return parseResponse(res);
+  } catch {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
+export const updateConvocatoria = async (id, datos) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/convocatorias/${id}`, { method: 'PATCH', headers, body: JSON.stringify(datos) });
+    return parseResponse(res);
+  } catch {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
+export const deleteConvocatoria = async (id) => {
+  try {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/admin/convocatorias/${id}`, { method: 'DELETE', headers });
+    return parseResponse(res);
+  } catch {
+    return { success: false, error: 'Error de conexión con el servidor' };
+  }
+};
+
 // ─── Cuestionarios ─────────────────────────────────────────────────────────
 export const getCuestionarios = async () => {
   try {
