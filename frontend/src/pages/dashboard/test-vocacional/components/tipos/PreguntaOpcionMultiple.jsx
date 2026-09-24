@@ -32,7 +32,7 @@ export default function PreguntaOpcionMultiple({ opciones = [], seleccionadas = 
       </div>
 
       <div className="bq-multiple" role="group" aria-label="Marca todas las opciones que apliquen">
-        {opciones.map(o => {
+        {opciones.map((o, index) => {
           const active = seleccionadas.includes(o.id);
           return (
             <button
@@ -52,7 +52,7 @@ export default function PreguntaOpcionMultiple({ opciones = [], seleccionadas = 
                 background: active ? 'var(--primary-soft)' : 'var(--surface)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
               }}>
-                {o.icon ?? '•'}
+                {String.fromCharCode(65 + index)}
               </div>
               <span style={{
                 flex: 1, fontSize: 13.5, lineHeight: 1.3,

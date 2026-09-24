@@ -13,7 +13,7 @@ export default function PreguntaOpcionUnica({ opciones = [], seleccionadas = [],
     <>
       <style>{ESTILOS_TIPOS}</style>
       <div className="bq-unica" role="radiogroup" aria-label="Elige una opción">
-        {opciones.map(o => {
+        {opciones.map((o, index) => {
           const active = seleccionadas.includes(o.id);
           return (
             <button
@@ -33,7 +33,7 @@ export default function PreguntaOpcionUnica({ opciones = [], seleccionadas = [],
                 background: active ? 'var(--primary-soft)' : 'var(--surface)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 21,
               }}>
-                {o.icon ?? '•'}
+                {String.fromCharCode(65 + index)}
               </div>
               <span style={{
                 flex: 1, fontSize: 14.5, lineHeight: 1.35,

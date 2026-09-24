@@ -25,7 +25,7 @@ const btnGhost = {
   fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
 };
 
-function OpcionEditor({ opcion, onChange, onQuitar }) {
+function OpcionEditor({ opcion, letra, onChange, onQuitar }) {
   const pesosArray = Object.entries(opcion.pesos || {});
 
   const setPeso = (idx, campo, valor) => {
@@ -41,7 +41,8 @@ function OpcionEditor({ opcion, onChange, onQuitar }) {
 
   return (
     <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 10, marginBottom: 8 }}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center' }}>
+        <span aria-label={`Opción ${letra}`} style={{ width: 24, height: 24, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: 7, background: 'var(--surface-2)', color: 'var(--ink-soft)', fontSize: 11, fontWeight: 800 }}>{letra}</span>
         <input
           placeholder="Texto de la opción" value={opcion.label}
           onChange={e => onChange({ ...opcion, label: e.target.value })}
@@ -130,7 +131,7 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
           Opciones (cada una puede sumar puntos a una o más categorías)
         </p>
         {form.opciones.map((o, i) => (
-          <OpcionEditor key={i} opcion={o} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} />
+          <OpcionEditor key={i} letra={String.fromCharCode(65 + i)} opcion={o} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} />
         ))}
         <button onClick={agregarOpcion} style={{ ...btnGhost, fontSize: 12, marginBottom: 12 }}>+ Agregar opción</button>
 
