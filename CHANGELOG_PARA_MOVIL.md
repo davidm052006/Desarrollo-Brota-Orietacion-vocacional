@@ -9,6 +9,15 @@ cambió y por qué le importa al móvil. Más nuevo arriba.
 
 ---
 
+## 2026-10-12 — `79a15be` — preguntas de respuesta abierta
+
+Se agregaron `respuesta_corta` y `respuesta_larga` al catálogo de preguntas.
+Flutter debe ofrecer campos de texto y guardar su contenido como una respuesta asociada a la pregunta; no aporta puntos al perfil vocacional.
+
+## 2026-10-12 — `3799f8e` — fecha de modificación de preguntas
+
+`GET /api/institucion/preguntas` ahora incluye `updated_at`, actualizado automáticamente al editar. La migración `supabase/migrations/20260924000000_add_updated_at_to_preguntas.sql` debe aplicarse para habilitar este dato.
+
 ## 2026-09-28 — `cdf1544` (repo movil) — el CRUD de cuestionarios ya existe en Flutter
 
 No es un cambio de este repo: es el aviso en sentido inverso. `brota_flutter_app`

@@ -28,6 +28,10 @@ const CATEGORIAS_VOCACIONALES = CATEGORIA_OPCIONES.filter(({ value }) =>
 );
 const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'single', orden: '', categoria: '', peso: '1.0', opciones: OPCIONES_INICIALES };
 
+const formatearFecha = fecha => fecha
+  ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
+  : 'Sin registrar';
+
 function FormCampos({ f, setF, cuestionarios, respuestasCorrectasDisponibles }) {
   return (
     <div className="space-y-3">
@@ -313,7 +317,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
           <table className="w-full">
             <thead>
               <tr className="text-left border-b border-gray-100">
-                {['Orden', 'Texto', 'Tipo', 'Categoría', 'Peso', 'Acciones'].map(h => (
+                {['Orden', 'Texto', 'Tipo', 'Categoría', 'Peso', 'Modificada', 'Acciones'].map(h => (
                   <th key={h} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -332,6 +336,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORIA_COLORS[p.categoria] || 'bg-gray-100 text-gray-600'}`}>{p.categoria || '—'}</span>
                   </td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">{p.peso}</td>
+                  <td className="px-5 py-3.5 text-xs text-gray-500 whitespace-nowrap">{formatearFecha(p.updated_at || p.created_at)}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
                       <button onClick={() => abrirEditar(p)} className="p-1.5 text-primary hover:bg-primary-soft rounded-lg" title="Editar">✏️</button>
@@ -361,6 +366,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
       {modalEditar && (
         <Modal title="Editar pregunta" onClose={() => setModalEditar(null)} size="lg">
           <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} respuestasCorrectasDisponibles={respuestasCorrectasDisponibles} />
+          <p className="text-xs text-gray-400 mt-3">Última modificación: {formatearFecha(modalEditar.updated_at || modalEditar.created_at)}</p>
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalEditar(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>

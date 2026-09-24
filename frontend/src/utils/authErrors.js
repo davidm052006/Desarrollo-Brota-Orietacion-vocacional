@@ -24,6 +24,7 @@
 const AUTH_ERRORS = {
   // Credenciales incorrectas al iniciar sesión
   'invalid login credentials': 'Correo o contraseña incorrectos.',
+  'invalid email or password': 'Correo o contraseña incorrectos.',
   'invalid credential':        'Correo o contraseña incorrectos.',
 
   // El usuario no confirmó su correo (Supabase puede requerir verificación)
@@ -49,7 +50,10 @@ const AUTH_ERRORS = {
 
   // Problemas de red o de conexión al servidor
   'network error': 'Error de conexión. Revisa tu internet e intenta de nuevo.',
-  'fetch failed':  'No se pudo conectar al servidor. Revisa tu internet.',
+  'fetch failed': 'No se pudo conectar al servidor. Revisa tu internet.',
+  'failed to fetch': 'No se pudo conectar al servicio de autenticación. Revisa tu internet o intenta más tarde.',
+  'err_name_not_resolved': 'No se pudo resolver la dirección del servicio de autenticación. Verifica la conexión o intenta más tarde.',
+  'network request failed': 'No se pudo conectar al servicio de autenticación. Verifica tu conexión e intenta de nuevo.',
 
   // Sesión expirada (token JWT vencido)
   'jwt expired':   'Tu sesión expiró. Inicia sesión de nuevo.',

@@ -13,7 +13,7 @@ export const loginWithEmail = async (email, password) => {
     return { success: true };
   } catch (err) {
     console.error('authService.loginWithEmail:', err);
-    return { success: false, error: 'Error de conexión. Intenta nuevamente.' };
+    return { success: false, error: translateAuthError(err?.message || String(err)) };
   }
 };
 
@@ -61,7 +61,7 @@ export const signUpWithEmail = async (email, password, nombre, apellido, extraFi
     return { success: true };
   } catch (err) {
     console.error('authService.signUpWithEmail:', err);
-    return { success: false, error: 'Error de conexión. Intenta nuevamente.' };
+    return { success: false, error: translateAuthError(err?.message || String(err)) };
   }
 };
 
@@ -75,7 +75,7 @@ export const sendPasswordReset = async (email) => {
     return { success: true };
   } catch (err) {
     console.error('authService.sendPasswordReset:', err);
-    return { success: false, error: 'Error de conexión. Intenta nuevamente.' };
+    return { success: false, error: translateAuthError(err?.message || String(err)) };
   }
 };
  
@@ -103,7 +103,7 @@ export const verifyOtpAndUpdatePassword = async (email, token, newPassword) => {
     return { success: true };
   } catch (err) {
     console.error('authService.verifyOtpAndUpdatePassword:', err);
-    return { success: false, error: 'Error de conexión. Intenta nuevamente.' };
+    return { success: false, error: translateAuthError(err?.message || String(err)) };
   }
 };
   
@@ -117,6 +117,6 @@ export const updatePassword = async (newPassword) => {
     return { success: true };
   } catch (err) {
     console.error('authService.updatePassword:', err);
-    return { success: false, error: 'Error de conexión. Intenta nuevamente.' };
+    return { success: false, error: translateAuthError(err?.message || String(err)) };
   }
 };
