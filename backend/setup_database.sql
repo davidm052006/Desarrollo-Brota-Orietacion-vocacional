@@ -95,7 +95,8 @@ CREATE TABLE IF NOT EXISTS preguntas (
   categoria VARCHAR(100),
   peso DECIMAL(3,2) DEFAULT 1.0,
   opciones JSONB DEFAULT '[]', -- legado, las opciones reales viven en la tabla `opciones`
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS opciones (
@@ -394,6 +395,8 @@ CREATE TRIGGER update_instituciones_updated_at BEFORE UPDATE ON instituciones
 CREATE TRIGGER update_programas_updated_at BEFORE UPDATE ON programas
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_cuestionarios_updated_at BEFORE UPDATE ON cuestionarios
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_preguntas_updated_at BEFORE UPDATE ON preguntas
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================

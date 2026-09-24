@@ -59,7 +59,7 @@ const getPreguntas = asyncHandler('institucion/preguntasController.getPreguntas'
   const { data, error } = await supabase
     .from('preguntas')
     .select(`
-      id, texto, tipo, orden, categoria, peso,
+      *,
       opciones (
         id, label, icon, orden,
         pesos_opciones ( categoria, puntos )

@@ -25,6 +25,10 @@ const btnGhost = {
   fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
 };
 
+const formatearFecha = fecha => fecha
+  ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
+  : 'Sin registrar';
+
 function OpcionEditor({ opcion, onChange, onQuitar }) {
   const pesosArray = Object.entries(opcion.pesos || {});
 
@@ -100,6 +104,9 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>
       <div style={{ background: 'var(--surface)', borderRadius: 18, padding: 22, width: 560, maxHeight: '88vh', overflowY: 'auto' }}>
         <h2 style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>{pregunta ? 'Editar pregunta' : 'Nueva pregunta'}</h2>
+        {pregunta && <p style={{ fontSize: 11.5, color: 'var(--ink-soft)', marginBottom: 10 }}>
+          Última modificación: {formatearFecha(pregunta.updated_at || pregunta.created_at)}
+        </p>}
 
         <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Texto de la pregunta</label>
         <textarea rows={2} value={form.texto} onChange={e => setForm(f => ({ ...f, texto: e.target.value }))} style={{ ...inputStyle, resize: 'vertical', marginBottom: 10 }} />
@@ -208,7 +215,7 @@ function CuestionarioCard({ cuestionario, onActivar, onEliminar }) {
           ) : (
             preguntas.map(p => (
               <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--line)' }}>
-                <span style={{ fontSize: 12.5 }}>{p.texto} <span style={{ color: 'var(--ink-soft)' }}>({p.opciones?.length || 0} opciones)</span></span>
+                <span style={{ fontSize: 12.5 }}>{p.texto} <span style={{ color: 'var(--ink-soft)' }}>({p.opciones?.length || 0} opciones) · modificada {formatearFecha(p.updated_at || p.created_at)}</span></span>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => setModalPregunta(p)} style={{ ...btnGhost, fontSize: 11.5 }}>Editar</button>
                   <button onClick={() => eliminarPregunta(p.id)} style={{ ...btnGhost, color: '#dc2626', fontSize: 11.5 }}>Eliminar</button>
