@@ -8,6 +8,7 @@ Punto de entrada a la documentación técnica y de producto. Para contexto de de
 
 ## Gestión y calidad
 - [`gestion_proyecto.md`](gestion_proyecto.md) — Tablero Kanban (GitHub Projects) y cómo se gestiona el desarrollo.
+- [`trazabilidad_historias_usuario.md`](trazabilidad_historias_usuario.md) — Matriz de historias, issues, ramas, PRs, commits y criterios de cierre.
 - [`estrategia_pruebas.md`](estrategia_pruebas.md) — Alcance y tipos de prueba del MVP.
 - [`auditoria_sustentacion.md`](auditoria_sustentacion.md) — Auditoría honesta contra la rúbrica de sustentación (26 ago 2026): qué existe, qué se corrigió, qué queda pendiente.
 - [`guion_sustentacion.md`](guion_sustentacion.md) — Guion de los 15 minutos de exposición, repartido por persona.

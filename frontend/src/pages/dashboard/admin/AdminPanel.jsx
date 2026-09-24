@@ -7,6 +7,7 @@ import StatsCard from './components/StatsCard';
 import ModulesNav from './components/ModulesNav';
 import UsuariosSection from './sections/UsuariosSection';
 import OportunidadesSection from './sections/OportunidadesSection';
+import ConvocatoriasSection from './sections/ConvocatoriasSection';
 import InstitucionesSection from './sections/InstitucionesSection';
 import CuestionariosSection from './sections/CuestionariosSection';
 import PreguntasSection from './sections/PreguntasSection';
@@ -18,6 +19,7 @@ import AnaliticasSection from './sections/AnaliticasSection';
 const SECTIONS = {
   usuarios:      UsuariosSection,
   oportunidades: OportunidadesSection,
+  convocatorias: ConvocatoriasSection,
   instituciones: InstitucionesSection,
   cuestionarios: CuestionariosSection,
   preguntas:     PreguntasSection,

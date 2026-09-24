@@ -10,7 +10,7 @@
 |---|---|---|
 | `perfiles_usuario` | `user_id` (FK → `auth.users`), `rol` (`estudiante`\|`orientador`\|`admin`, string directo — **no** hay tabla `roles` separada), `nombre`, `apellido`, `edad`, `ciudad`, `nivel_educativo`, `condiciones_socioeconomicas` | 1:1 con `auth.users` |
 | `cuestionarios` | `nombre`, `version`, `activo` | 1:N → `preguntas` |
-| `preguntas` | `cuestionario_id` (FK), `texto`, `tipo` (`likert`\|`opcion_multiple`), `orden`, `categoria`, `peso`, `opciones` (JSONB, legado) | N:1 ← `cuestionarios`; 1:N → `opciones` |
+| `preguntas` | `cuestionario_id` (FK), `texto`, `tipo` (`likert`\|`opcion_multiple`\|`respuesta_corta`\|`respuesta_larga`), `orden`, `categoria`, `peso`, `opciones` (JSONB, legado) | N:1 ← `cuestionarios`; 1:N → `opciones`; los tipos abiertos no requieren opciones |
 | `opciones` | `pregunta_id` (FK), `label`, `icon`, `orden` | N:1 ← `preguntas`; 1:N → `pesos_opciones` |
 | `pesos_opciones` | `opcion_id` (FK), `categoria`, `puntos` | N:1 ← `opciones` |
 | `resultados` | `perfil_usuario_id` (FK), `cuestionario_id` (FK), `respuestas` (JSONB), `perfil_vocacional` (JSONB) | 1:N → `recomendaciones` |

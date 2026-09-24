@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as adminService from '../../../../services/adminService';
 import Modal from '../components/Modal';
+import { TIPOS_PREGUNTA, esPreguntaAbierta } from '../../../../utils/tiposPregunta';
 
 const TIPO_COLORS = {
   'opcion_multiple': 'bg-blue-100 text-blue-700',
@@ -14,7 +15,12 @@ const CATEGORIA_COLORS = {
   'contexto':    'bg-orange-100 text-orange-700',
 };
 
-const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_multiple', orden: '', categoria: '', peso: '1.0' };
+const OPCIONES_INICIALES = [{ label: '' }, { label: '' }];
+const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_multiple', orden: '', categoria: '', peso: '1.0', opciones: OPCIONES_INICIALES };
+
+const formatearFecha = fecha => fecha
+  ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
+  : 'Sin registrar';
 
 function FormCampos({ f, setF, cuestionarios }) {
   return (
@@ -37,8 +43,7 @@ function FormCampos({ f, setF, cuestionarios }) {
           <label className="block text-xs font-semibold text-gray-600 mb-1">Tipo</label>
           <select value={f.tipo} onChange={e => setF(p => ({ ...p, tipo: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
-            <option value="opcion_multiple">Opción múltiple</option>
-            <option value="likert">Likert</option>
+            {TIPOS_PREGUNTA.map(tipo => <option key={tipo.value} value={tipo.value}>{tipo.label}</option>)}
           </select>
         </div>
         <div>
@@ -60,6 +65,29 @@ function FormCampos({ f, setF, cuestionarios }) {
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
         </div>
       </div>
+      {!esPreguntaAbierta(f.tipo) && (
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-semibold text-gray-600">Opciones de respuesta *</label>
+            <button type="button" onClick={() => setF(p => ({ ...p, opciones: [...p.opciones, { label: '' }] }))}
+              className="text-xs font-semibold text-primary hover:underline">+ Agregar opción</button>
+          </div>
+          <div className="space-y-2">
+            {f.opciones.map((opcion, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <span className="w-6 text-center text-xs text-gray-400">{index + 1}</span>
+                <input type="text" value={opcion.label || ''} placeholder={`Opción ${index + 1}`}
+                  onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                <button type="button" disabled={f.opciones.length <= 2}
+                  onClick={() => setF(p => ({ ...p, opciones: p.opciones.filter((_, i) => i !== index) }))}
+                  className="px-2 py-1 text-sm text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed" title="Quitar opción">×</button>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-1">Agrega al menos dos opciones y escribe el texto de cada una.</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -101,15 +129,32 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   }, []);
 
   const abrirEditar = (p) => {
-    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: p.tipo || 'opcion_multiple', orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0' });
+    const opciones = Array.isArray(p.opciones) && p.opciones.length > 0 ? p.opciones : OPCIONES_INICIALES;
+    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: p.tipo || 'opcion_multiple', orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0', opciones });
     setFormError(null);
     setModalEditar(p);
+  };
+
+  const prepararDatos = () => ({
+    ...form,
+    orden: parseInt(form.orden) || 1,
+    peso: parseFloat(form.peso) || 1.0,
+    opciones: esPreguntaAbierta(form.tipo) ? [] : form.opciones.filter(opcion => opcion.label?.trim()).map((opcion, index) => ({ ...opcion, label: opcion.label.trim(), orden: index })),
+  });
+
+  const validarOpciones = () => {
+    if (!esPreguntaAbierta(form.tipo) && (form.opciones.length < 2 || form.opciones.some(opcion => !opcion.label?.trim()))) {
+      setFormError('Las preguntas con opciones necesitan al menos 2 opciones con texto.');
+      return false;
+    }
+    return true;
   };
 
   const guardarEdicion = async () => {
     setGuardando(true);
     setFormError(null);
-    const { success, error } = await adminService.updatePregunta(modalEditar.id, { ...form, orden: parseInt(form.orden) || 1, peso: parseFloat(form.peso) || 1.0 });
+    if (!validarOpciones()) { setGuardando(false); return; }
+    const { success, error } = await adminService.updatePregunta(modalEditar.id, prepararDatos());
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalEditar(null);
     setGuardando(false);
@@ -119,7 +164,8 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   const crearPregunta = async () => {
     setGuardando(true);
     setFormError(null);
-    const { success, error } = await adminService.createPregunta({ ...form, orden: parseInt(form.orden) || 1, peso: parseFloat(form.peso) || 1.0 });
+    if (!validarOpciones()) { setGuardando(false); return; }
+    const { success, error } = await adminService.createPregunta(prepararDatos());
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalNuevo(false);
     setGuardando(false);
@@ -173,7 +219,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
           <table className="w-full">
             <thead>
               <tr className="text-left border-b border-gray-100">
-                {['Orden', 'Texto', 'Tipo', 'Categoría', 'Peso', 'Acciones'].map(h => (
+                {['Orden', 'Texto', 'Tipo', 'Categoría', 'Peso', 'Modificada', 'Acciones'].map(h => (
                   <th key={h} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -192,6 +238,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORIA_COLORS[p.categoria] || 'bg-gray-100 text-gray-600'}`}>{p.categoria || '—'}</span>
                   </td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">{p.peso}</td>
+                  <td className="px-5 py-3.5 text-xs text-gray-500 whitespace-nowrap">{formatearFecha(p.updated_at || p.created_at)}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
                       <button onClick={() => abrirEditar(p)} className="p-1.5 text-primary hover:bg-primary-soft rounded-lg" title="Editar">✏️</button>
@@ -221,6 +268,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
       {modalEditar && (
         <Modal title="Editar pregunta" onClose={() => setModalEditar(null)} size="lg">
           <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} />
+          <p className="text-xs text-gray-400 mt-3">Última modificación: {formatearFecha(modalEditar.updated_at || modalEditar.created_at)}</p>
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalEditar(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>

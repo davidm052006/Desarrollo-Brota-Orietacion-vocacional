@@ -1,5 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
+const { esPreguntaAbierta, esTipoPreguntaValido } = require('../../utils/tiposPregunta');
 
 // A diferencia de admin/preguntasController.js (que solo escribe la columna
 // legada `preguntas.opciones` JSONB, nunca leída por el motor real del test),
@@ -58,7 +59,7 @@ const getPreguntas = asyncHandler('institucion/preguntasController.getPreguntas'
   const { data, error } = await supabase
     .from('preguntas')
     .select(`
-      id, texto, tipo, orden, categoria, peso,
+      *,
       opciones (
         id, label, icon, orden,
         pesos_opciones ( categoria, puntos )
@@ -90,7 +91,10 @@ const createPregunta = asyncHandler('institucion/preguntasController.createPregu
   if (!cuestionario_id || !texto || !tipo) {
     return res.status(400).json({ success: false, message: 'cuestionario_id, texto y tipo son obligatorios' });
   }
-  if (!Array.isArray(opciones) || opciones.length < 2) {
+  if (!esTipoPreguntaValido(tipo)) {
+    return res.status(400).json({ success: false, message: 'Tipo de pregunta no válido' });
+  }
+  if (!esPreguntaAbierta(tipo) && (!Array.isArray(opciones) || opciones.length < 2)) {
     return res.status(400).json({ success: false, message: 'La pregunta necesita al menos 2 opciones' });
   }
 

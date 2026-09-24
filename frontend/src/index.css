@@ -219,3 +219,14 @@ html.dark textarea::placeholder {
 /* ─── Scrollbar oculta para navs horizontales ─────────────────────────────── */
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (max-width: 900px) {
+  .dashboard-page-shell {
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 18px 16px 32px !important;
+  }
+
+  .dashboard-page-sidebar {
+    width: auto !important;
+  }
+}
