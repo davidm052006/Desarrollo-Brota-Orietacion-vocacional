@@ -75,7 +75,7 @@ function FormCampos({ f, setF, cuestionarios }) {
           <div className="space-y-2">
             {f.opciones.map((opcion, index) => (
               <div key={index} className="flex items-center gap-2">
-                <span className="w-6 text-center text-xs text-gray-400">{index + 1}</span>
+                <span className="w-6 text-center text-xs font-semibold text-gray-500">{String.fromCharCode(65 + index)}</span>
                 <input type="text" value={opcion.label || ''} placeholder={`Opción ${index + 1}`}
                   onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))}
                   className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />

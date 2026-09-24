@@ -155,7 +155,7 @@ export default function TestQuestion({
       ) : (
         /* Multiple / single grid */
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 24 }}>
-          {opciones.map(o => {
+          {opciones.map((o, index) => {
             const active = seleccionadas.includes(o.id);
             return (
               <button key={o.id} onClick={() => onSeleccionar(o.id)} style={{
@@ -170,7 +170,7 @@ export default function TestQuestion({
                   background: active ? 'var(--primary-soft)' : 'var(--surface)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
                 }}>
-                  {o.icon ?? '•'}
+                  {String.fromCharCode(65 + index)}
                 </div>
                 <span style={{
                   flex: 1, fontSize: 13.5, lineHeight: 1.3,
