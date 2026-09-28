@@ -9,6 +9,26 @@ cambió y por qué le importa al móvil. Más nuevo arriba.
 
 ---
 
+## 2026-09-27 — `b10ab48` — vocabulario unico de tipos de pregunta + 400 si no es valido
+
+`preguntas.tipo` tenia cinco valores en circulacion (`single`, `multiple`,
+`likert`, `opcion_multiple`, `seleccion`). Ahora las claves canonicas son
+solo tres — `opcion_unica`, `opcion_multiple`, `likert` — y los valores
+viejos quedan como alias (`single`/`seleccion` -> `opcion_unica`,
+`multiple` -> `opcion_multiple`). El catalogo vive en
+`frontend/src/utils/tiposPregunta.js` y `backend/src/utils/tiposPregunta.js`.
+
+**Le importa al movil por dos cosas:** (1) `POST`/`PATCH` de
+`/api/institucion/preguntas` y `/api/admin/preguntas` ahora responden **400**
+si `tipo` no esta en el catalogo (antes se guardaba cualquier string), y
+normalizan el alias antes de escribir — o sea que el `GET` puede devolver
+tanto un alias viejo (filas ya guardadas, no se migraron) como una clave
+canonica. (2) `tipo_pregunta.dart` en `lib/features/cuestionarios/domain/`
+tiene que replicar exactamente ese catalogo **con los alias** y un fallback
+seguro a `opcionUnica` para tipos desconocidos.
+
+---
+
 ## 2026-09-02 — `8d51823` — backend desplegado en Railway, URL fija
 
 El backend dejó de vivir solo en `localhost`/túneles — ahora corre en
