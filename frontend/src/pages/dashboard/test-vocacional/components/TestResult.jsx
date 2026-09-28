@@ -50,6 +50,7 @@ const AREA_INFO = {
 
 function ProgramaCard({ rec, onVer }) {
   const pct = rec.compatibilidad;
+  const razones = parseRazones(rec.razones);
   const areaInfo = AREA_INFO[rec.area] ?? null;
   const compatColor = pct >= 85 ? 'var(--primary)' : pct >= 70 ? '#4A90D9' : 'var(--ink-soft)';
   const compatBg    = pct >= 85 ? 'var(--primary-soft)' : pct >= 70 ? '#E8F0FC' : 'var(--surface-2)';
@@ -72,13 +73,19 @@ function ProgramaCard({ rec, onVer }) {
           fontSize: 11, padding: '2px 8px', borderRadius: 999, flexShrink: 0,
           fontWeight: 700, background: compatBg, color: compatColor,
         }}>
-          {pct}%
+          {pct}% afinidad
         </span>
       </div>
 
       {rec.descripcion && (
         <div style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 8, lineHeight: 1.4 }}>
           {rec.descripcion}
+        </div>
+      )}
+
+      {razones[0] && (
+        <div style={{ fontSize: 11.5, color: 'var(--primary-deep)', background: 'var(--primary-soft)', borderRadius: 10, padding: '8px 10px', margin: '8px 0', lineHeight: 1.4 }}>
+          <strong>Para ti:</strong> {razones[0]}
         </div>
       )}
 
@@ -184,7 +191,7 @@ function ProgramaDetalleModal({ rec, onClose }) {
           fontSize: 12, padding: '3px 10px', borderRadius: 999, display: 'inline-block',
           fontWeight: 700, background: compatBg, color: compatColor, marginTop: 8,
         }}>
-          {pct}% de compatibilidad
+          {pct}% de afinidad estimada
         </span>
 
         <div style={{
@@ -192,7 +199,7 @@ function ProgramaDetalleModal({ rec, onClose }) {
           background: 'var(--primary-soft)', color: 'var(--primary-deep)',
           fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1.35,
         }}>
-          🎓 <span>Obtendrás el título de: <strong>{rec.nombre}</strong></span>
+          🎓 <span>Esta opción se relaciona con tus intereses. Explora el programa para ver si también encaja con tus metas.</span>
         </div>
 
         <div style={{ fontSize: 14, fontWeight: 700, marginTop: 14 }}>{rec.institucion}</div>
@@ -438,7 +445,10 @@ export default function TestResult({
         background: 'var(--surface)', border: '1px solid var(--line)',
         borderRadius: 20, padding: 24, boxShadow: 'var(--shadow)',
       }}>
-        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>🎓 Programas recomendados para ti</div>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>🎓 Programas recomendados para ti</div>
+        <p style={{ fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.5, margin: '0 0 16px' }}>
+          Se priorizan programas relacionados con tus áreas de interés. La afinidad es una guía para explorar opciones, no una decisión por ti.
+        </p>
 
         {cargando && (
           <div>
