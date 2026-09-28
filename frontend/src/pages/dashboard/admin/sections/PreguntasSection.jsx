@@ -18,7 +18,8 @@ const CATEGORIA_COLORS = {
   'contexto':    'bg-orange-100 text-orange-700',
 };
 
-const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_unica', orden: '', categoria: '', peso: '1.0' };
+const OPCIONES_INICIALES = [{ label: '', es_correcta: false }, { label: '', es_correcta: false }];
+const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_unica', orden: '', categoria: '', peso: '1.0', opciones: OPCIONES_INICIALES };
 
 function FormCampos({ f, setF, cuestionarios }) {
   return (
@@ -66,6 +67,30 @@ function FormCampos({ f, setF, cuestionarios }) {
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
         </div>
       </div>
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-xs font-semibold text-gray-600">Opciones de respuesta *</label>
+          <button type="button" onClick={() => setF(p => ({ ...p, opciones: [...p.opciones, { label: '', es_correcta: false }] }))}
+            className="text-xs font-semibold text-primary hover:underline">+ Agregar opción</button>
+        </div>
+        <div className="space-y-2">
+          {(f.opciones || []).map((opcion, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <span className="w-6 text-center text-xs font-semibold text-gray-500">{String.fromCharCode(65 + index)}</span>
+              <input type="text" value={opcion.label || ''} placeholder={`Opción ${index + 1}`}
+                onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))}
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+              <label className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap" title="Marcar como respuesta correcta">
+                <input type="checkbox" checked={Boolean(opcion.es_correcta)} onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, es_correcta: e.target.checked } : item) }))} /> Correcta
+              </label>
+              <button type="button" disabled={f.opciones.length <= 2}
+                onClick={() => setF(p => ({ ...p, opciones: p.opciones.filter((_, i) => i !== index) }))}
+                className="px-2 py-1 text-sm text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed" title="Quitar opción">×</button>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400 mt-1">Agrega al menos dos opciones y escribe el texto de cada una.</p>
+      </div>
     </div>
   );
 }
@@ -107,7 +132,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   }, []);
 
   const abrirEditar = (p) => {
-    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: normalizarTipo(p.tipo), orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0' });
+    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: normalizarTipo(p.tipo), orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0', opciones: p.opciones || [] });
     setFormError(null);
     setModalEditar(p);
   };

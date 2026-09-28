@@ -55,6 +55,7 @@ export default function TestQuestion({
   onAnterior     = () => {},
   onSiguiente    = () => {},
   puedeAvanzar   = false,
+  errorRespuesta = '',
   guardando      = false,
   esUltima       = false,
 }) {
@@ -90,7 +91,9 @@ export default function TestQuestion({
           {verde && <span style={{ color: 'var(--primary)' }}>{verde}</span>}
         </div>
         <div style={{ color: 'var(--ink-soft)', fontSize: 13.5, marginTop: 8 }}>
-          {esMultiple
+          {pregunta.opciones?.some(o => o.es_correcta)
+            ? (esMultiple ? 'Selecciona todas las respuestas correctas para continuar.' : 'Selecciona la respuesta correcta para continuar.')
+            : esMultiple
             ? 'Selecciona todas las opciones que apliquen para ti.'
             : 'No hay respuestas correctas. Elige la opción que mejor te represente.'}
         </div>
@@ -103,6 +106,12 @@ export default function TestQuestion({
         seleccionadas={seleccionadas}
         onSeleccionar={onSeleccionar}
       />
+
+      {errorRespuesta && (
+        <p role="status" style={{ color: errorRespuesta === 'correcta' ? '#15803d' : '#dc2626', background: errorRespuesta === 'correcta' ? '#f0fdf4' : '#fef2f2', borderRadius: 10, padding: '10px 12px', marginTop: 14, fontSize: 13, fontWeight: 600 }}>
+          {errorRespuesta === 'correcta' ? '¡Respuesta correcta!' : errorRespuesta}
+        </p>
+      )}
 
       {/* Navigation */}
       <div style={{
@@ -129,7 +138,7 @@ export default function TestQuestion({
           boxShadow: puedeAvanzar ? '0 8px 20px var(--primary-glow)' : 'none',
           fontFamily: 'inherit', transition: 'all .15s',
         }}>
-          {guardando ? 'Guardando...' : esUltima ? 'Ver resultados →' : 'Siguiente →'}
+          {guardando ? 'Guardando...' : errorRespuesta === 'correcta' ? 'Continuar →' : esUltima ? 'Ver resultados →' : 'Siguiente →'}
         </button>
       </div>
     </div>

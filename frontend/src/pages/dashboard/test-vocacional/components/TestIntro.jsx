@@ -39,8 +39,8 @@ export default function TestIntro({
           Test Vocacional
         </div>
         <p style={{ color: 'var(--ink-soft)', fontSize: 13.5, marginBottom: 28, lineHeight: 1.55 }}>
-          No hay respuestas correctas o incorrectas.<br />
-          Elige todo lo que realmente te represente.
+          Responde con sinceridad y según lo que te representa.<br />
+          Si una pregunta tiene respuesta correcta, se indicará.
         </p>
 
         {/* Stats */}
