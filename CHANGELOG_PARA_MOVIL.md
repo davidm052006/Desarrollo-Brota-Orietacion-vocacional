@@ -9,6 +9,24 @@ cambió y por qué le importa al móvil. Más nuevo arriba.
 
 ---
 
+## 2026-09-28 — `cdf1544` (repo movil) — el CRUD de cuestionarios ya existe en Flutter
+
+No es un cambio de este repo: es el aviso en sentido inverso. `brota_flutter_app`
+tiene ahora `lib/features/cuestionarios/` con el CRUD completo de cuestionarios
+y preguntas contra `/api/institucion/*` (PR #2 del repo movil, rama
+`feat/cuestionarios-crud` hacia `develop` — rama `develop` creada en ese repo,
+antes solo existia `master`).
+
+**Le importa a este repo por dos cosas:** (1) el movil replica el catalogo de
+tipos de `utils/tiposPregunta.js` en `domain/tipo_pregunta.dart` y las
+categorias de `utils/vocacionalCategorias.js` en `domain/categoria_vocacional.dart`
+— si se agrega o renombra un tipo o una categoria aca, hay que tocarlos alla
+tambien. (2) El movil depende de que `/api/institucion/preguntas` siga
+aceptando las opciones anidadas en el body con `pesos` como mapa, y de que el
+`GET` las devuelva aplanadas; cambiar ese shape rompe la app.
+
+---
+
 ## 2026-09-27 — `b10ab48` — vocabulario unico de tipos de pregunta + 400 si no es valido
 
 `preguntas.tipo` tenia cinco valores en circulacion (`single`, `multiple`,
