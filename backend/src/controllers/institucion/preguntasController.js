@@ -25,7 +25,7 @@ async function insertarOpciones(preguntaId, opciones) {
   for (const [i, opcion] of (opciones || []).entries()) {
     const { data: opcionCreada, error: errOpcion } = await supabase
       .from('opciones')
-      .insert([{ pregunta_id: preguntaId, label: opcion.label, icon: opcion.icon || null, orden: opcion.orden ?? i }])
+      .insert([{ pregunta_id: preguntaId, label: opcion.label, icon: opcion.icon || null, orden: opcion.orden ?? i, es_correcta: Boolean(opcion.es_correcta) }])
       .select('id')
       .single();
 
@@ -61,7 +61,7 @@ const getPreguntas = asyncHandler('institucion/preguntasController.getPreguntas'
     .select(`
       *,
       opciones (
-        id, label, icon, orden,
+        id, label, icon, orden, es_correcta,
         pesos_opciones ( categoria, puntos )
       )
     `)
@@ -75,7 +75,7 @@ const getPreguntas = asyncHandler('institucion/preguntasController.getPreguntas'
     opciones: (p.opciones ?? [])
       .sort((a, b) => a.orden - b.orden)
       .map(o => ({
-        id: o.id, label: o.label, icon: o.icon, orden: o.orden,
+        id: o.id, label: o.label, icon: o.icon, orden: o.orden, es_correcta: o.es_correcta,
         pesos: Object.fromEntries((o.pesos_opciones ?? []).map(({ categoria, puntos }) => [categoria, puntos])),
       })),
   }));

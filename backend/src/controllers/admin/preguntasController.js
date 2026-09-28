@@ -8,6 +8,7 @@ async function insertarOpciones(preguntaId, opciones) {
     label: opcion.label,
     icon: opcion.icon || null,
     orden: opcion.orden ?? index,
+    es_correcta: Boolean(opcion.es_correcta),
   }));
   if (filas.length === 0) return;
   const { error } = await supabase.from('opciones').insert(filas);
@@ -20,7 +21,7 @@ const getPreguntas = asyncHandler('admin/preguntasController.getPreguntas', asyn
 
   let query = supabase.from('preguntas').select(`
     *,
-    opciones ( id, label, icon, orden )
+    opciones ( id, label, icon, orden, es_correcta )
   `).order('orden');
 
   if (cuestionarioId) query = query.eq('cuestionario_id', cuestionarioId);

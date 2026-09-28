@@ -107,6 +107,7 @@ export default function TestVocacional({ user, isDemoMode = false }) {
   const [resultadoId, setResultadoId]           = useState(null);
   const [perfilUsuarioId, setPerfilUsuarioId]   = useState(null);
   const [guardando, setGuardando]               = useState(false);
+  const [errorRespuesta, setErrorRespuesta]     = useState('');
 
   const [tieneBorrador, setTieneBorrador]               = useState(false);
   const [tieneResultadoPrevio, setTieneResultadoPrevio] = useState(false);
@@ -240,6 +241,7 @@ export default function TestVocacional({ user, isDemoMode = false }) {
 
   // ── Navegación entre preguntas ────────────────────────────────────────────────
   const toggleOpcion = (opcionId) => {
+    setErrorRespuesta('');
     const pregId = preguntaActual.id;
     const tipo   = preguntaActual.tipo;
     setSeleccionadas((prev) => {
@@ -255,9 +257,25 @@ export default function TestVocacional({ user, isDemoMode = false }) {
     });
   };
 
-  const irAnterior = () => { if (preguntaIdx > 0) setPreguntaIdx(i => i - 1); };
+  const irAnterior = () => {
+    setErrorRespuesta('');
+    if (preguntaIdx > 0) setPreguntaIdx(i => i - 1);
+  };
 
   const irSiguiente = async () => {
+    const opcionesCorrectas = (preguntaActual?.opciones ?? []).filter(o => o.es_correcta).map(o => o.id);
+    if (opcionesCorrectas.length > 0) {
+      const respondidas = idsActuales.slice().sort();
+      if (respondidas.length !== opcionesCorrectas.length || opcionesCorrectas.some(id => !respondidas.includes(id))) {
+        setErrorRespuesta('Respuesta incorrecta. Revisa la pregunta e inténtalo de nuevo.');
+        return;
+      }
+      if (errorRespuesta !== 'correcta') {
+        setErrorRespuesta('correcta');
+        return;
+      }
+    }
+    setErrorRespuesta('');
     if (preguntaIdx < totalPreguntas - 1) { setPreguntaIdx(i => i + 1); return; }
     setFase('calculando');
     setGuardando(true);
@@ -357,6 +375,7 @@ export default function TestVocacional({ user, isDemoMode = false }) {
               onAnterior={irAnterior}
               onSiguiente={irSiguiente}
               puedeAvanzar={puedeAvanzar}
+              errorRespuesta={errorRespuesta}
               guardando={guardando}
               esUltima={preguntaIdx === totalPreguntas - 1}
             />

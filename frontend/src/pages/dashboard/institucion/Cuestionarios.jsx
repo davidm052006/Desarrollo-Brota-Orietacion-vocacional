@@ -54,6 +54,9 @@ function OpcionEditor({ opcion, letra, onChange, onQuitar }) {
         />
         <button onClick={onQuitar} style={{ ...btnGhost, color: '#dc2626' }}>✕</button>
       </div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--ink-soft)', margin: '6px 0' }}>
+        <input type="checkbox" checked={Boolean(opcion.es_correcta)} onChange={e => onChange({ ...opcion, es_correcta: e.target.checked })} /> Respuesta correcta
+      </label>
       {pesosArray.map(([categoria, puntos], i) => (
         <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
           <select value={categoria} onChange={e => setPeso(i, 'categoria', e.target.value)} style={{ ...inputStyle, flex: 1 }}>
@@ -73,7 +76,7 @@ function OpcionEditor({ opcion, letra, onChange, onQuitar }) {
   );
 }
 
-const PREGUNTA_VACIA = { texto: '', tipo: 'opcion_multiple', categoria: '', peso: 1, opciones: [{ label: '', pesos: {} }, { label: '', pesos: {} }] };
+const PREGUNTA_VACIA = { texto: '', tipo: 'opcion_multiple', categoria: '', peso: 1, opciones: [{ label: '', pesos: {}, es_correcta: false }, { label: '', pesos: {}, es_correcta: false }] };
 
 function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
   const [form, setForm] = useState(pregunta || PREGUNTA_VACIA);
@@ -85,7 +88,7 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
     opciones[idx] = nueva;
     setForm(f => ({ ...f, opciones }));
   };
-  const agregarOpcion = () => setForm(f => ({ ...f, opciones: [...f.opciones, { label: '', pesos: {} }] }));
+  const agregarOpcion = () => setForm(f => ({ ...f, opciones: [...f.opciones, { label: '', pesos: {}, es_correcta: false }] }));
   const quitarOpcion = (idx) => setForm(f => ({ ...f, opciones: f.opciones.filter((_, i) => i !== idx) }));
 
   const guardar = async () => {

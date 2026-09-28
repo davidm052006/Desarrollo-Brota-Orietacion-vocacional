@@ -15,7 +15,7 @@ const CATEGORIA_COLORS = {
   'contexto':    'bg-orange-100 text-orange-700',
 };
 
-const OPCIONES_INICIALES = [{ label: '' }, { label: '' }];
+const OPCIONES_INICIALES = [{ label: '', es_correcta: false }, { label: '', es_correcta: false }];
 const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_multiple', orden: '', categoria: '', peso: '1.0', opciones: OPCIONES_INICIALES };
 
 const formatearFecha = fecha => fecha
@@ -79,6 +79,9 @@ function FormCampos({ f, setF, cuestionarios }) {
                 <input type="text" value={opcion.label || ''} placeholder={`Opción ${index + 1}`}
                   onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))}
                   className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                <label className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap" title="Marcar como respuesta correcta">
+                  <input type="checkbox" checked={Boolean(opcion.es_correcta)} onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, es_correcta: e.target.checked } : item) }))} /> Correcta
+                </label>
                 <button type="button" disabled={f.opciones.length <= 2}
                   onClick={() => setF(p => ({ ...p, opciones: p.opciones.filter((_, i) => i !== index) }))}
                   className="px-2 py-1 text-sm text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed" title="Quitar opción">×</button>

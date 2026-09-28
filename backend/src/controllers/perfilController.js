@@ -80,7 +80,7 @@ const obtenerCuestionario = async (req, res) => {
       .select(`
         id, texto, tipo, orden, categoria, peso,
         opciones (
-          id, label, icon, orden,
+          id, label, icon, orden, es_correcta,
           pesos_opciones ( categoria, puntos )
         )
       `)
@@ -101,6 +101,7 @@ const obtenerCuestionario = async (req, res) => {
           label: o.label,
           icon:  o.icon,
           orden: o.orden,
+          es_correcta: o.es_correcta,
           pesos: Object.fromEntries(
             (o.pesos_opciones ?? []).map(({ categoria, puntos }) => [categoria, puntos])
           ),
