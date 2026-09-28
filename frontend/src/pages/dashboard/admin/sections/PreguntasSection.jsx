@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as adminService from '../../../../services/adminService';
 import Modal from '../components/Modal';
+import { OPCIONES_TIPO, TIPOS_PREGUNTA, normalizarTipo } from '../../../../utils/tiposPregunta';
 
+// Un color por tipo canónico — antes solo cubría 2 de los 3, así que una
+// pregunta de opción única se mostraba sin badge.
 const TIPO_COLORS = {
+  'opcion_unica':    'bg-emerald-100 text-emerald-700',
   'opcion_multiple': 'bg-blue-100 text-blue-700',
   'likert':          'bg-purple-100 text-purple-700',
 };
@@ -14,7 +18,7 @@ const CATEGORIA_COLORS = {
   'contexto':    'bg-orange-100 text-orange-700',
 };
 
-const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_multiple', orden: '', categoria: '', peso: '1.0' };
+const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_unica', orden: '', categoria: '', peso: '1.0' };
 
 function FormCampos({ f, setF, cuestionarios }) {
   return (
@@ -37,9 +41,11 @@ function FormCampos({ f, setF, cuestionarios }) {
           <label className="block text-xs font-semibold text-gray-600 mb-1">Tipo</label>
           <select value={f.tipo} onChange={e => setF(p => ({ ...p, tipo: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
-            <option value="opcion_multiple">Opción múltiple</option>
-            <option value="likert">Likert</option>
+            {OPCIONES_TIPO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
+          <p className="mt-1 text-[11px] leading-snug text-gray-500">
+            {TIPOS_PREGUNTA[normalizarTipo(f.tipo)].descripcion}
+          </p>
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Categoría</label>
@@ -101,7 +107,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   }, []);
 
   const abrirEditar = (p) => {
-    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: p.tipo || 'opcion_multiple', orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0' });
+    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: normalizarTipo(p.tipo), orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0' });
     setFormError(null);
     setModalEditar(p);
   };
@@ -186,7 +192,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
                     <span className="line-clamp-2">{p.texto}</span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${TIPO_COLORS[p.tipo] || 'bg-gray-100 text-gray-600'}`}>{p.tipo}</span>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${TIPO_COLORS[normalizarTipo(p.tipo)] || 'bg-gray-100 text-gray-600'}`}>{TIPOS_PREGUNTA[normalizarTipo(p.tipo)].label}</span>
                   </td>
                   <td className="px-5 py-3.5">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORIA_COLORS[p.categoria] || 'bg-gray-100 text-gray-600'}`}>{p.categoria || '—'}</span>

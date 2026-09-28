@@ -31,7 +31,9 @@ describe('TestQuestion (dispatcher por tipo)', () => {
     (tipo) => {
       render(<TestQuestion pregunta={preguntaCon(tipo)} />);
 
-      expect(screen.getByRole('button', { name: /Programar/i })).toBeTruthy();
+      // role="radio": una sola respuesta posible.
+      expect(screen.getByRole('radio', { name: /Programar/i })).toBeTruthy();
+      expect(screen.queryByRole('checkbox', { name: /Programar/i })).toBeNull();
       expect(screen.getByText(/Elige la opción que mejor te represente/i)).toBeTruthy();
       expect(screen.queryByText(AYUDA_MULTIPLE)).toBeNull();
     }
@@ -42,7 +44,9 @@ describe('TestQuestion (dispatcher por tipo)', () => {
     (tipo) => {
       render(<TestQuestion pregunta={preguntaCon(tipo)} />);
 
-      expect(screen.getByRole('button', { name: /Programar/i })).toBeTruthy();
+      // role="checkbox": se pueden marcar varias.
+      expect(screen.getByRole('checkbox', { name: /Programar/i })).toBeTruthy();
+      expect(screen.queryByRole('radio', { name: /Programar/i })).toBeNull();
       expect(screen.getByText(/Selecciona todas las opciones que apliquen/i)).toBeTruthy();
       expect(screen.getByText(AYUDA_MULTIPLE)).toBeTruthy();
     }
@@ -51,9 +55,9 @@ describe('TestQuestion (dispatcher por tipo)', () => {
   it('renderiza likert como escala, no como grilla de botones', () => {
     render(<TestQuestion pregunta={preguntaCon('likert')} />);
 
-    // La escala pinta las etiquetas sin envolverlas en <button>.
-    expect(screen.getByText('Programar')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Programar/i })).toBeNull();
+    // La escala son radios sobre un track, no la grilla de tarjetas.
+    expect(screen.getByRole('radio', { name: /Programar/i })).toBeTruthy();
+    expect(screen.getByRole('radiogroup', { name: /escala/i })).toBeTruthy();
     expect(screen.queryByText(AYUDA_MULTIPLE)).toBeNull();
   });
 
@@ -62,8 +66,8 @@ describe('TestQuestion (dispatcher por tipo)', () => {
 
     render(<TestQuestion pregunta={preguntaCon('cualquier_cosa')} />);
 
-    expect(screen.getByRole('button', { name: /Programar/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Dibujar/i })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: /Programar/i })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: /Dibujar/i })).toBeTruthy();
     expect(warn).toHaveBeenCalled();
   });
 

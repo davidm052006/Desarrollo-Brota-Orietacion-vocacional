@@ -4,6 +4,7 @@ import InstitucionNav from './components/InstitucionNav';
 import { obtenerPerfil } from '../../../services/perfilService';
 import * as institucionService from '../../../services/institucionService';
 import { CATEGORIA_OPCIONES } from '../../../utils/vocacionalCategorias';
+import { OPCIONES_TIPO, TIPOS_PREGUNTA, normalizarTipo } from '../../../utils/tiposPregunta';
 
 const cardStyle = {
   background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16,
@@ -67,7 +68,7 @@ function OpcionEditor({ opcion, onChange, onQuitar }) {
   );
 }
 
-const PREGUNTA_VACIA = { texto: '', tipo: 'seleccion', categoria: '', peso: 1, opciones: [{ label: '', pesos: {} }, { label: '', pesos: {} }] };
+const PREGUNTA_VACIA = { texto: '', tipo: 'opcion_unica', categoria: '', peso: 1, opciones: [{ label: '', pesos: {} }, { label: '', pesos: {} }] };
 
 function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
   const [form, setForm] = useState(pregunta || PREGUNTA_VACIA);
@@ -89,7 +90,7 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
     }
     setGuardando(true);
     setError('');
-    const { success, error: err } = await onGuardar(form);
+    const { success, error: err } = await onGuardar({ ...form, tipo: normalizarTipo(form.tipo) });
     setGuardando(false);
     if (!success) setError(err);
   };
@@ -101,6 +102,18 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
 
         <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Texto de la pregunta</label>
         <textarea rows={2} value={form.texto} onChange={e => setForm(f => ({ ...f, texto: e.target.value }))} style={{ ...inputStyle, resize: 'vertical', marginBottom: 10 }} />
+
+        <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Tipo de pregunta</label>
+        <select
+          value={normalizarTipo(form.tipo)}
+          onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
+          style={{ ...inputStyle, marginBottom: 4 }}
+        >
+          {OPCIONES_TIPO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
+        <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 10, lineHeight: 1.35 }}>
+          {TIPOS_PREGUNTA[normalizarTipo(form.tipo)].descripcion}
+        </p>
 
         <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
           <div style={{ flex: 1 }}>
