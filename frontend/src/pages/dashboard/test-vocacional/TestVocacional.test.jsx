@@ -148,7 +148,7 @@ describe('TestVocacional', () => {
     await user.click(comenzar);
 
     {
-      const opciones = await screen.findAllByRole('button', { name: /Programar y usar tecnología/i });
+      const opciones = await screen.findAllByRole('radio', { name: /Programar y usar tecnología/i });
       const opcionTecnologia = opciones.find(b => !b.disabled) || opciones[0];
       await user.click(opcionTecnologia);
     }
@@ -206,7 +206,7 @@ describe('TestVocacional', () => {
     await user.click(comenzar);
 
     {
-      const opciones = await screen.findAllByRole('button', { name: /Programar y usar tecnología/i });
+      const opciones = await screen.findAllByRole('radio', { name: /Programar y usar tecnología/i });
       const opcionTecnologia = opciones.find(b => !b.disabled) || opciones[0];
       await user.click(opcionTecnologia);
     }
