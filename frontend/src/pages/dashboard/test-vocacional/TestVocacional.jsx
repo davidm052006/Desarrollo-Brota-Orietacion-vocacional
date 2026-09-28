@@ -9,6 +9,7 @@ import TestProgress from './components/TestProgress';
 import TestResult   from './components/TestResult';
 import { getCategoriaInfo, storageKey } from '../../../utils/vocacionalCategorias';
 import { normalizarCategoria } from '../../../utils/areaColors';
+import { esSeleccionMultiple } from '../../../utils/tiposPregunta';
 
 // Calcula el perfil localmente usando los pesos ya cargados en las preguntas.
 // Se usa como respaldo cuando el backend no está disponible o el usuario es anónimo.
@@ -243,7 +244,7 @@ export default function TestVocacional({ user, isDemoMode = false }) {
     const tipo   = preguntaActual.tipo;
     setSeleccionadas((prev) => {
       const actuales = prev[pregId] ?? [];
-      if (tipo === 'single' || tipo === 'likert') return { ...prev, [pregId]: [opcionId] };
+      if (!esSeleccionMultiple(tipo)) return { ...prev, [pregId]: [opcionId] };
       return {
         ...prev,
         [pregId]: actuales.includes(opcionId)
