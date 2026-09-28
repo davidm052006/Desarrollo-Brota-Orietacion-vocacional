@@ -1,5 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
+const { esTipoValido, normalizarTipo, mensajeTipoInvalido } = require('../../utils/tiposPregunta');
 
 // A diferencia de admin/preguntasController.js (que solo escribe la columna
 // legada `preguntas.opciones` JSONB, nunca leída por el motor real del test),
@@ -90,6 +91,9 @@ const createPregunta = asyncHandler('institucion/preguntasController.createPregu
   if (!cuestionario_id || !texto || !tipo) {
     return res.status(400).json({ success: false, message: 'cuestionario_id, texto y tipo son obligatorios' });
   }
+  if (!esTipoValido(tipo)) {
+    return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
+  }
   if (!Array.isArray(opciones) || opciones.length < 2) {
     return res.status(400).json({ success: false, message: 'La pregunta necesita al menos 2 opciones' });
   }
@@ -99,7 +103,7 @@ const createPregunta = asyncHandler('institucion/preguntasController.createPregu
 
   const { data: pregunta, error } = await supabase
     .from('preguntas')
-    .insert([{ cuestionario_id, texto, tipo, orden: orden || 1, categoria, peso: peso || 1.0 }])
+    .insert([{ cuestionario_id, texto, tipo: normalizarTipo(tipo), orden: orden || 1, categoria, peso: peso || 1.0 }])
     .select()
     .single();
 
@@ -118,6 +122,11 @@ const updatePregunta = asyncHandler('institucion/preguntasController.updatePregu
   const { id } = req.params;
   const { texto, tipo, orden, categoria, peso, opciones } = req.body;
 
+  // El PATCH es parcial: solo se valida el tipo si vino en el body.
+  if (tipo !== undefined && !esTipoValido(tipo)) {
+    return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
+  }
+
   const { data: preguntaActual, error: findError } = await supabase
     .from('preguntas').select('cuestionario_id').eq('id', id).single();
 
@@ -130,7 +139,7 @@ const updatePregunta = asyncHandler('institucion/preguntasController.updatePregu
 
   const { error: updateError } = await supabase
     .from('preguntas')
-    .update({ texto, tipo, orden, categoria, peso })
+    .update({ texto, tipo: tipo === undefined ? undefined : normalizarTipo(tipo), orden, categoria, peso })
     .eq('id', id);
 
   if (updateError) throw updateError;

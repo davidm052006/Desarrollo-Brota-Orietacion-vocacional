@@ -33,11 +33,24 @@ const ORIGENES_PERMITIDOS = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://localhost:8080',
+  'http://localhost:8081',
+  'http://localhost:8082',
+  'http://127.0.0.1:8080',
+  'http://127.0.0.1:8081',
+  'http://127.0.0.1:8082',
+  'http://localhost:50311',
+  'http://127.0.0.1:50311',
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    callback(null, !origin || ORIGENES_PERMITIDOS.includes(origin));
+    const esFlutterLocal =
+      origin && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+    callback(
+      null,
+      !origin || ORIGENES_PERMITIDOS.includes(origin) || esFlutterLocal,
+    );
   },
 }));
 // Límite default de express.json() es 100kb — un archivo real de carga

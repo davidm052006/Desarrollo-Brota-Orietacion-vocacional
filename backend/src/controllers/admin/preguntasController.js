@@ -1,5 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
+const { esTipoValido, normalizarTipo, mensajeTipoInvalido } = require('../../utils/tiposPregunta');
 
 const getPreguntas = asyncHandler('admin/preguntasController.getPreguntas', async (req, res) => {
   const cuestionarioId = req.query.cuestionario_id || '';
@@ -20,10 +21,13 @@ const createPregunta = asyncHandler('admin/preguntasController.createPregunta', 
   if (!cuestionario_id || !texto || !tipo) {
     return res.status(400).json({ success: false, message: 'cuestionario_id, texto y tipo son obligatorios' });
   }
+  if (!esTipoValido(tipo)) {
+    return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
+  }
 
   const { data, error } = await supabase
     .from('preguntas')
-    .insert([{ cuestionario_id, texto, tipo, orden: orden || 1, categoria, peso: peso || 1.0, opciones: opciones || [] }])
+    .insert([{ cuestionario_id, texto, tipo: normalizarTipo(tipo), orden: orden || 1, categoria, peso: peso || 1.0, opciones: opciones || [] }])
     .select()
     .single();
 
@@ -35,7 +39,13 @@ const updatePregunta = asyncHandler('admin/preguntasController.updatePregunta', 
   const { id } = req.params;
   const { texto, tipo, orden, categoria, peso, opciones } = req.body;
 
-  const { error } = await supabase.from('preguntas').update({ texto, tipo, orden, categoria, peso, opciones }).eq('id', id);
+  // El PATCH es parcial: solo se valida el tipo si vino en el body.
+  if (tipo !== undefined && !esTipoValido(tipo)) {
+    return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
+  }
+  const tipoNormalizado = tipo === undefined ? undefined : normalizarTipo(tipo);
+
+  const { error } = await supabase.from('preguntas').update({ texto, tipo: tipoNormalizado, orden, categoria, peso, opciones }).eq('id', id);
   if (error) throw error;
   return res.json({ success: true, message: 'Pregunta actualizada' });
 });
