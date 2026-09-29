@@ -75,17 +75,24 @@ const obtenerCuestionario = async (req, res) => {
       cuestionario = data;
     }
 
-    const { data: preguntas, error: errP } = await supabase
+    const consultarPreguntas = incluirEsCorrecta => supabase
       .from('preguntas')
       .select(`
         id, texto, tipo, orden, categoria, peso,
         opciones (
-          id, label, icon, orden, es_correcta,
+          id, label, icon, orden, ${incluirEsCorrecta ? 'es_correcta,' : ''}
           pesos_opciones ( categoria, puntos )
         )
       `)
       .eq('cuestionario_id', cuestionario.id)
       .order('orden', { ascending: true });
+
+    let incluirEsCorrecta = true;
+    let { data: preguntas, error: errP } = await consultarPreguntas(incluirEsCorrecta);
+    if (errP?.code === '42703' || errP?.code === 'PGRST204') {
+      incluirEsCorrecta = false;
+      ({ data: preguntas, error: errP } = await consultarPreguntas(incluirEsCorrecta));
+    }
 
     if (errP) {
       return res.status(500).json({ success: false, message: errP.message });
@@ -101,7 +108,7 @@ const obtenerCuestionario = async (req, res) => {
           label: o.label,
           icon:  o.icon,
           orden: o.orden,
-          es_correcta: o.es_correcta,
+          es_correcta: Boolean(o.es_correcta),
           pesos: Object.fromEntries(
             (o.pesos_opciones ?? []).map(({ categoria, puntos }) => [categoria, puntos])
           ),

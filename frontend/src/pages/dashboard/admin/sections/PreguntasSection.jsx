@@ -22,7 +22,7 @@ const formatearFecha = fecha => fecha
   ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
   : 'Sin registrar';
 
-function FormCampos({ f, setF, cuestionarios }) {
+function FormCampos({ f, setF, cuestionarios, respuestasCorrectasDisponibles }) {
   return (
     <div className="space-y-3">
       <div>
@@ -80,7 +80,7 @@ function FormCampos({ f, setF, cuestionarios }) {
                   onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))}
                   className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
                 <label className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap" title="Marcar como respuesta correcta">
-                  <input type="checkbox" checked={Boolean(opcion.es_correcta)} onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, es_correcta: e.target.checked } : item) }))} /> Correcta
+                  <input type="checkbox" checked={Boolean(opcion.es_correcta)} disabled={!respuestasCorrectasDisponibles} onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, es_correcta: e.target.checked } : item) }))} /> Correcta
                 </label>
                 <button type="button" disabled={f.opciones.length <= 2}
                   onClick={() => setF(p => ({ ...p, opciones: p.opciones.filter((_, i) => i !== index) }))}
@@ -89,6 +89,9 @@ function FormCampos({ f, setF, cuestionarios }) {
             ))}
           </div>
           <p className="text-xs text-gray-400 mt-1">Agrega al menos dos opciones y escribe el texto de cada una.</p>
+          {!respuestasCorrectasDisponibles && (
+            <p className="text-xs text-amber-700 mt-2">Para marcar respuestas correctas, primero aplica la migración de opciones correctas en Supabase.</p>
+          )}
         </div>
       )}
     </div>
@@ -101,6 +104,8 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   const [preguntas, setPreguntas]         = useState([]);
   const [cuestionarios, setCuestionarios] = useState([]);
   const [loading, setLoading]             = useState(true);
+  const [errorCarga, setErrorCarga]       = useState('');
+  const [respuestasCorrectasDisponibles, setRespuestasCorrectasDisponibles] = useState(true);
   const [busqueda, setBusqueda]           = useState('');
   const [filtroC, setFiltroC]             = useState(filtroCuestionarioId);
 
@@ -117,13 +122,40 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   // sin necesidad de sincronizarlo con un efecto.
 
   const fetchPreguntas = useCallback(async () => {
-    setLoading(true);
-    const { success, data } = await adminService.getPreguntas({ cuestionario_id: filtroC, busqueda });
-    if (success) setPreguntas(data);
+    const { success, data, error, meta } = await adminService.getPreguntas({ cuestionario_id: filtroC, busqueda });
+    if (success) {
+      setPreguntas(data || []);
+      setErrorCarga('');
+      setRespuestasCorrectasDisponibles(meta?.es_correcta_disponible !== false);
+    } else {
+      setPreguntas([]);
+      setErrorCarga(error || 'No fue posible cargar las preguntas.');
+    }
     setLoading(false);
   }, [filtroC, busqueda]);
 
-  useEffect(() => { fetchPreguntas(); }, [fetchPreguntas]);
+  const recargarPreguntas = useCallback(() => {
+    setLoading(true);
+    setErrorCarga('');
+    fetchPreguntas();
+  }, [fetchPreguntas]);
+
+  useEffect(() => {
+    let activo = true;
+    adminService.getPreguntas({ cuestionario_id: filtroC, busqueda }).then(({ success, data, error, meta }) => {
+      if (!activo) return;
+      if (success) {
+        setPreguntas(data || []);
+        setErrorCarga('');
+        setRespuestasCorrectasDisponibles(meta?.es_correcta_disponible !== false);
+      } else {
+        setPreguntas([]);
+        setErrorCarga(error || 'No fue posible cargar las preguntas.');
+      }
+      setLoading(false);
+    });
+    return () => { activo = false; };
+  }, [filtroC, busqueda]);
 
   useEffect(() => {
     adminService.getCuestionarios().then(({ success, data }) => {
@@ -161,7 +193,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalEditar(null);
     setGuardando(false);
-    fetchPreguntas();
+    recargarPreguntas();
   };
 
   const crearPregunta = async () => {
@@ -172,7 +204,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalNuevo(false);
     setGuardando(false);
-    fetchPreguntas();
+    recargarPreguntas();
   };
 
   const confirmarEliminar = async () => {
@@ -181,7 +213,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalEliminar(null);
     setGuardando(false);
-    fetchPreguntas();
+    recargarPreguntas();
   };
 
   const abrirNuevo = () => {
@@ -204,9 +236,9 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
 
       <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3">
         <input type="text" placeholder="Buscar preguntas..." value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
+          onChange={e => { setLoading(true); setErrorCarga(''); setBusqueda(e.target.value); }}
           className="flex-1 max-w-sm pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
-        <select value={filtroC} onChange={e => setFiltroC(e.target.value)}
+        <select value={filtroC} onChange={e => { setLoading(true); setErrorCarga(''); setFiltroC(e.target.value); }}
           className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
           <option value="">Todos los cuestionarios</option>
           {cuestionarios.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.version}</option>)}
@@ -216,6 +248,14 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>
+        ) : errorCarga ? (
+          <div role="alert" className="flex flex-col items-center gap-2 py-12 text-center">
+            <p className="text-sm font-semibold text-red-600">No fue posible cargar las preguntas.</p>
+            <p className="text-sm text-gray-500">{errorCarga}</p>
+            <button onClick={recargarPreguntas} className="mt-2 px-3 py-1.5 text-sm font-semibold text-primary hover:bg-primary-soft rounded-lg">
+              Reintentar
+            </button>
+          </div>
         ) : preguntas.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-gray-400"><span className="text-4xl mb-2">❓</span><p className="text-sm">No se encontraron preguntas</p></div>
         ) : (
@@ -257,7 +297,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
 
       {modalNuevo && (
         <Modal title="Nueva pregunta" onClose={() => setModalNuevo(false)} size="lg">
-          <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} />
+          <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} respuestasCorrectasDisponibles={respuestasCorrectasDisponibles} />
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalNuevo(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
@@ -270,7 +310,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
 
       {modalEditar && (
         <Modal title="Editar pregunta" onClose={() => setModalEditar(null)} size="lg">
-          <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} />
+          <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} respuestasCorrectasDisponibles={respuestasCorrectasDisponibles} />
           <p className="text-xs text-gray-400 mt-3">Última modificación: {formatearFecha(modalEditar.updated_at || modalEditar.created_at)}</p>
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
