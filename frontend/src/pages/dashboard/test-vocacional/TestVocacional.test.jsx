@@ -105,6 +105,7 @@ const resultadoMock = {
 describe('TestVocacional', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
 
     perfilService.obtenerCuestionario.mockResolvedValue({
       success: true,
@@ -189,6 +190,38 @@ describe('TestVocacional', () => {
     expect(botonResultados.disabled).toBe(true);
   });
 
+  it('permite una sola respuesta cuando la pregunta tiene una opción correcta', async () => {
+    const user = userEvent.setup();
+    perfilService.obtenerCuestionario.mockResolvedValue({
+      success: true,
+      data: {
+        id: 'cuestionario-123',
+        preguntas: [{
+          id: 'pregunta-matematica',
+          texto: '¿Cuánto es 4 + 4?',
+          tipo: 'multiple',
+          opciones: [
+            { id: 'opcion-8', label: '8', es_correcta: true },
+            { id: 'opcion-10', label: '10', es_correcta: false },
+          ],
+        }],
+      },
+    });
+
+    render(<TestVocacional user={{ id: 'user-123' }} isDemoMode={false} />);
+    await user.click(await screen.findByRole('button', { name: /Comenzar test/i }));
+
+    const opcionOcho = await screen.findByRole('button', { name: /8/ });
+    const opcionDiez = screen.getByRole('button', { name: /10/ });
+    await user.click(opcionOcho);
+    await user.click(opcionDiez);
+
+    expect(opcionOcho).toHaveAttribute('aria-pressed', 'false');
+    expect(opcionDiez).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByText(/Puedes seleccionar varias opciones/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Selecciona la respuesta correcta/i)).toBeInTheDocument();
+  });
+
   it('guarda el resultado al finalizar el test', async () => {
     const user = userEvent.setup();
 
@@ -226,6 +259,26 @@ describe('TestVocacional', () => {
 
     expect(perfilService.guardarResultado).toHaveBeenCalledTimes(1);
   });
+});
+
+it('permite comenzar un test nuevo aunque ya exista un resultado', async () => {
+  const user = userEvent.setup();
+
+  perfilService.obtenerResultado.mockResolvedValue({
+    success: true,
+    data: resultadoMock,
+  });
+
+  render(
+    <TestVocacional
+      user={{ id: 'user-123' }}
+      isDemoMode={false}
+    />
+  );
+
+  await user.click(await screen.findByRole('button', { name: /Comenzar test/i }));
+
+  expect(await screen.findByText('¿Qué actividad prefieres?')).toBeInTheDocument();
 });
 
 it('muestra el resultado previo guardado', async () => {

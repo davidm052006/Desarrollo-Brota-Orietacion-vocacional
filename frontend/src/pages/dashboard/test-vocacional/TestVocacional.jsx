@@ -244,10 +244,11 @@ export default function TestVocacional({ user, isDemoMode = false }) {
     setErrorRespuesta('');
     const pregId = preguntaActual.id;
     const tipo   = preguntaActual.tipo;
+    const cantidadCorrectas = preguntaActual.opciones?.filter(opcion => opcion.es_correcta).length ?? 0;
     setSeleccionadas((prev) => {
       const actuales = prev[pregId] ?? [];
       if (esPreguntaAbierta(tipo)) return { ...prev, [pregId]: [opcionId] };
-      if (esPreguntaUnica(tipo)) return { ...prev, [pregId]: [opcionId] };
+      if (esPreguntaUnica(tipo) || cantidadCorrectas === 1) return { ...prev, [pregId]: [opcionId] };
       return {
         ...prev,
         [pregId]: actuales.includes(opcionId)

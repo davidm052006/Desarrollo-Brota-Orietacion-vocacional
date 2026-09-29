@@ -59,7 +59,8 @@ export default function TestQuestion({
 }) {
   const esLikert   = pregunta.tipo === 'likert';
   const esAbierta  = esPreguntaAbierta(pregunta.tipo);
-  const esMultiple = pregunta.tipo === 'multiple' || pregunta.tipo === 'opcion_multiple';
+  const cantidadCorrectas = pregunta.opciones?.filter(opcion => opcion.es_correcta).length ?? 0;
+  const esMultiple = (pregunta.tipo === 'multiple' || pregunta.tipo === 'opcion_multiple') && cantidadCorrectas !== 1;
   const { normal, verde } = splitTexto(pregunta.texto);
   // Para likert usamos las opciones reales del DB (con sus UUIDs) y les añadimos el emoji de escala
   const opciones = esLikert
@@ -161,7 +162,7 @@ export default function TestQuestion({
           {opciones.map((o, index) => {
             const active = seleccionadas.includes(o.id);
             return (
-              <button key={o.id} onClick={() => onSeleccionar(o.id)} style={{
+              <button key={o.id} aria-pressed={active} onClick={() => onSeleccionar(o.id)} style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '14px 16px', borderRadius: 18, textAlign: 'left',
                 border: `2px solid ${active ? 'var(--primary)' : 'var(--line)'}`,
