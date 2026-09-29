@@ -60,11 +60,11 @@ export default function TestQuestion({
   esUltima       = false,
 }) {
   const tipo       = normalizarTipo(pregunta.tipo);
-  const esMultiple = esSeleccionMultiple(tipo);
+  const cantidadCorrectas = pregunta.opciones?.filter(opcion => opcion.es_correcta).length ?? 0;
+  const esMultiple = esSeleccionMultiple(tipo) && cantidadCorrectas !== 1;
   // Un tipo del catálogo sin vista registrada no debe dejar la pregunta en
   // blanco: cae a la del tipo por defecto, igual que normalizarTipo.
   const VistaOpciones = VISTAS_POR_TIPO[tipo] ?? VISTAS_POR_TIPO[TIPO_POR_DEFECTO];
-
   const { normal, verde } = splitTexto(pregunta.texto);
   const opciones = pregunta.opciones ?? [];
 
