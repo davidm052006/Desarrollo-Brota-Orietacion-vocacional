@@ -62,9 +62,10 @@ export default function TestQuestion({
   const tipo       = normalizarTipo(pregunta.tipo);
   const cantidadCorrectas = pregunta.opciones?.filter(opcion => opcion.es_correcta).length ?? 0;
   const esMultiple = esSeleccionMultiple(tipo) && cantidadCorrectas !== 1;
+  const tipoVista = esSeleccionMultiple(tipo) && cantidadCorrectas === 1 ? 'opcion_unica' : tipo;
   // Un tipo del catálogo sin vista registrada no debe dejar la pregunta en
   // blanco: cae a la del tipo por defecto, igual que normalizarTipo.
-  const VistaOpciones = VISTAS_POR_TIPO[tipo] ?? VISTAS_POR_TIPO[TIPO_POR_DEFECTO];
+  const VistaOpciones = VISTAS_POR_TIPO[tipoVista] ?? VISTAS_POR_TIPO[TIPO_POR_DEFECTO];
   const { normal, verde } = splitTexto(pregunta.texto);
   const opciones = pregunta.opciones ?? [];
 

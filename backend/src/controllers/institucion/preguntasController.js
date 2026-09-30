@@ -19,6 +19,23 @@ async function verificarCuestionarioPropio(cuestionarioId, institucionId) {
   return { ok: true };
 }
 
+function validarOpciones(tipo, opciones) {
+  if (!Array.isArray(opciones) || opciones.length < 2 || opciones.some(opcion =>
+    !opcion || typeof opcion.label !== 'string' || !opcion.label.trim()
+  )) {
+    return 'La pregunta necesita al menos 2 opciones, todas con texto';
+  }
+  if (tipo === 'single' && (
+    opciones.length !== 5 ||
+    opciones.some(opcion => !Object.entries(opcion.pesos || {}).some(([categoria, puntos]) =>
+      categoria.trim() && Number.isFinite(Number(puntos)) && Number(puntos) > 0
+    ))
+  )) {
+    return 'La selección única requiere exactamente 5 opciones, cada una con un área ponderada';
+  }
+  return null;
+}
+
 // Inserta las filas de `opciones` + `pesos_opciones` de una pregunta.
 // `opciones`: [{ label, icon, orden, pesos: { categoria: puntos, ... } }]
 async function insertarOpciones(preguntaId, opciones) {
@@ -94,9 +111,8 @@ const createPregunta = asyncHandler('institucion/preguntasController.createPregu
   if (!esTipoValido(tipo)) {
     return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
   }
-  if (!Array.isArray(opciones) || opciones.length < 2) {
-    return res.status(400).json({ success: false, message: 'La pregunta necesita al menos 2 opciones' });
-  }
+  const errorOpciones = validarOpciones(normalizarTipo(tipo), opciones);
+  if (errorOpciones) return res.status(400).json({ success: false, message: errorOpciones });
 
   const check = await verificarCuestionarioPropio(cuestionario_id, req.institucionId);
   if (!check.ok) return res.status(check.status).json({ success: false, message: check.message });
@@ -128,7 +144,7 @@ const updatePregunta = asyncHandler('institucion/preguntasController.updatePregu
   }
 
   const { data: preguntaActual, error: findError } = await supabase
-    .from('preguntas').select('cuestionario_id').eq('id', id).single();
+    .from('preguntas').select('cuestionario_id, tipo').eq('id', id).single();
 
   if (findError || !preguntaActual) {
     return res.status(404).json({ success: false, message: 'Pregunta no encontrada' });
@@ -136,6 +152,12 @@ const updatePregunta = asyncHandler('institucion/preguntasController.updatePregu
 
   const check = await verificarCuestionarioPropio(preguntaActual.cuestionario_id, req.institucionId);
   if (!check.ok) return res.status(check.status).json({ success: false, message: check.message });
+
+  const tipoFinal = tipo === undefined ? normalizarTipo(preguntaActual.tipo) : normalizarTipo(tipo);
+  if (Array.isArray(opciones) || (tipo !== undefined && tipoFinal === 'single')) {
+    const errorOpciones = validarOpciones(tipoFinal, opciones);
+    if (errorOpciones) return res.status(400).json({ success: false, message: errorOpciones });
+  }
 
   const { error: updateError } = await supabase
     .from('preguntas')

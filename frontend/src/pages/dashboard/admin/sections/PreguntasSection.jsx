@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import * as adminService from '../../../../services/adminService';
 import Modal from '../components/Modal';
 import { OPCIONES_TIPO, TIPOS_PREGUNTA, normalizarTipo } from '../../../../utils/tiposPregunta';
+import { CATEGORIA_OPCIONES } from '../../../../utils/vocacionalCategorias';
 
 // Un color por tipo canónico — antes solo cubría 2 de los 3, así que una
 // pregunta de opción única se mostraba sin badge.
 const TIPO_COLORS = {
   'opcion_unica':    'bg-emerald-100 text-emerald-700',
+  'single':          'bg-emerald-100 text-emerald-700',
   'opcion_multiple': 'bg-blue-100 text-blue-700',
   'likert':          'bg-purple-100 text-purple-700',
 };
@@ -18,8 +20,11 @@ const CATEGORIA_COLORS = {
   'contexto':    'bg-orange-100 text-orange-700',
 };
 
-const OPCIONES_INICIALES = [{ label: '', es_correcta: false }, { label: '', es_correcta: false }];
-const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_unica', orden: '', categoria: '', peso: '1.0', opciones: OPCIONES_INICIALES };
+const OPCIONES_INICIALES = Array.from({ length: 5 }, () => ({ label: '', es_correcta: false, pesos: {} }));
+const CATEGORIAS_VOCACIONALES = CATEGORIA_OPCIONES.filter(({ value }) =>
+  value !== 'ambiente' && value !== 'emprendimiento'
+);
+const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'single', orden: '', categoria: '', peso: '1.0', opciones: OPCIONES_INICIALES };
 
 function FormCampos({ f, setF, cuestionarios, respuestasCorrectasDisponibles }) {
   return (
@@ -70,8 +75,8 @@ function FormCampos({ f, setF, cuestionarios, respuestasCorrectasDisponibles }) 
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="block text-xs font-semibold text-gray-600">Opciones de respuesta *</label>
-          <button type="button" onClick={() => setF(p => ({ ...p, opciones: [...p.opciones, { label: '', es_correcta: false }] }))}
-            className="text-xs font-semibold text-primary hover:underline">+ Agregar opción</button>
+          <button type="button" disabled={f.tipo === 'single' && f.opciones.length >= 5} onClick={() => setF(p => ({ ...p, opciones: [...p.opciones, { label: '', es_correcta: false, pesos: {} }] }))}
+            className="text-xs font-semibold text-primary hover:underline disabled:opacity-40">+ Agregar opción</button>
         </div>
         <div className="space-y-2">
           {(f.opciones || []).map((opcion, index) => (
@@ -80,17 +85,39 @@ function FormCampos({ f, setF, cuestionarios, respuestasCorrectasDisponibles }) 
               <input type="text" value={opcion.label || ''} placeholder={`Opción ${index + 1}`}
                 onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))}
                 className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
-              <label className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap" title="Marcar como respuesta correcta">
-                <input type="checkbox" checked={Boolean(opcion.es_correcta)} disabled={!respuestasCorrectasDisponibles} onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, es_correcta: e.target.checked } : item) }))} /> Correcta
-              </label>
-              <button type="button" disabled={f.opciones.length <= 2}
+              <select
+                aria-label={`Área vocacional de opción ${index + 1}`}
+                value={Object.keys(opcion.pesos || {})[0] || ''}
+                onChange={e => setF(p => ({
+                  ...p,
+                  opciones: p.opciones.map((item, i) => i === index
+                    ? { ...item, pesos: e.target.value ? { [e.target.value]: 1 } : {} }
+                    : item),
+                }))}
+                className="max-w-40 px-2 py-2 border border-gray-200 rounded-lg text-xs bg-white"
+              >
+                <option value="">Sin área</option>
+                {CATEGORIAS_VOCACIONALES.map(categoria => (
+                  <option key={categoria.value} value={categoria.value}>{categoria.label}</option>
+                ))}
+              </select>
+              {f.tipo !== 'single' && (
+                <label className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap" title="Marcar como respuesta correcta">
+                  <input type="checkbox" checked={Boolean(opcion.es_correcta)} disabled={!respuestasCorrectasDisponibles} onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, es_correcta: e.target.checked } : item) }))} /> Correcta
+                </label>
+              )}
+              <button type="button" disabled={f.opciones.length <= (f.tipo === 'single' ? 5 : 2)}
                 onClick={() => setF(p => ({ ...p, opciones: p.opciones.filter((_, i) => i !== index) }))}
                 className="px-2 py-1 text-sm text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed" title="Quitar opción">×</button>
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-400 mt-1">Agrega al menos dos opciones y escribe el texto de cada una.</p>
-        {!respuestasCorrectasDisponibles && (
+        <p className="text-xs text-gray-400 mt-1">
+          {f.tipo === 'single'
+            ? 'Cada opción suma un punto al área asignada; no hay respuestas correctas o incorrectas.'
+            : 'Agrega al menos dos opciones y asigna el área que aporta cada una al perfil.'}
+        </p>
+        {f.tipo !== 'single' && !respuestasCorrectasDisponibles && (
           <p className="text-xs text-amber-700 mt-2">Para marcar respuestas correctas, primero aplica la migración de opciones correctas en Supabase.</p>
         )}
       </div>
@@ -164,15 +191,49 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   }, []);
 
   const abrirEditar = (p) => {
-    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: normalizarTipo(p.tipo), orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0', opciones: p.opciones || [] });
+    const opciones = Array.isArray(p.opciones) && p.opciones.length > 0
+      ? p.opciones
+      : OPCIONES_INICIALES.map(opcion => ({ ...opcion }));
+    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: normalizarTipo(p.tipo), orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0', opciones });
     setFormError(null);
     setModalEditar(p);
   };
 
+  const prepararDatos = () => ({
+    ...form,
+    tipo: normalizarTipo(form.tipo),
+    orden: parseInt(form.orden) || 1,
+    peso: parseFloat(form.peso) || 1.0,
+    opciones: form.opciones.filter(opcion => opcion.label?.trim()).map((opcion, index) => ({
+      ...opcion,
+      label: opcion.label.trim(),
+      orden: index,
+      es_correcta: form.tipo === 'single' ? false : Boolean(opcion.es_correcta),
+      pesos: Object.keys(opcion.pesos || {}).length > 0 ? { [Object.keys(opcion.pesos)[0]]: 1 } : {},
+    })),
+  });
+
+  const validarOpciones = () => {
+    if (form.tipo === 'single' && form.opciones.length !== 5) {
+      setFormError('Las preguntas de selección única deben tener exactamente 5 opciones.');
+      return false;
+    }
+    if (form.opciones.length < 2 || form.opciones.some(opcion => !opcion.label?.trim())) {
+      setFormError('Las preguntas con opciones necesitan al menos 2 opciones con texto.');
+      return false;
+    }
+    if (form.tipo === 'single' && form.opciones.some(opcion => !Object.keys(opcion.pesos || {}).length)) {
+      setFormError('Asigna un área vocacional a cada opción de selección única.');
+      return false;
+    }
+    return true;
+  };
+
   const guardarEdicion = async () => {
+    if (!validarOpciones()) return;
     setGuardando(true);
     setFormError(null);
-    const { success, error } = await adminService.updatePregunta(modalEditar.id, { ...form, orden: parseInt(form.orden) || 1, peso: parseFloat(form.peso) || 1.0 });
+    const { success, error } = await adminService.updatePregunta(modalEditar.id, prepararDatos());
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalEditar(null);
     setGuardando(false);
@@ -180,9 +241,10 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   };
 
   const crearPregunta = async () => {
+    if (!validarOpciones()) return;
     setGuardando(true);
     setFormError(null);
-    const { success, error } = await adminService.createPregunta({ ...form, orden: parseInt(form.orden) || 1, peso: parseFloat(form.peso) || 1.0 });
+    const { success, error } = await adminService.createPregunta(prepararDatos());
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalNuevo(false);
     setGuardando(false);
@@ -199,7 +261,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   };
 
   const abrirNuevo = () => {
-    setForm({ ...FORM_VACIO, cuestionario_id: filtroC });
+    setForm({ ...FORM_VACIO, opciones: OPCIONES_INICIALES.map(opcion => ({ ...opcion })), cuestionario_id: filtroC });
     setFormError(null);
     setModalNuevo(true);
   };

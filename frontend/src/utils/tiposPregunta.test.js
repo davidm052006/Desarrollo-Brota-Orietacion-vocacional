@@ -15,19 +15,19 @@ afterEach(() => {
 
 describe('normalizarTipo', () => {
   it('deja pasar las claves canónicas', () => {
+    expect(normalizarTipo('single')).toBe('single');
     expect(normalizarTipo('opcion_unica')).toBe('opcion_unica');
     expect(normalizarTipo('opcion_multiple')).toBe('opcion_multiple');
     expect(normalizarTipo('likert')).toBe('likert');
   });
 
   it('traduce los alias legados que ya están en la base', () => {
-    expect(normalizarTipo('single')).toBe('opcion_unica');
     expect(normalizarTipo('seleccion')).toBe('opcion_unica');
     expect(normalizarTipo('multiple')).toBe('opcion_multiple');
   });
 
   it('tolera espacios y mayúsculas', () => {
-    expect(normalizarTipo('  Single ')).toBe('opcion_unica');
+    expect(normalizarTipo('  Single ')).toBe('single');
     expect(normalizarTipo('OPCION_MULTIPLE')).toBe('opcion_multiple');
   });
 

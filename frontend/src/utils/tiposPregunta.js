@@ -15,6 +15,11 @@
 // utils/calcularEdad.js. Si se agrega un tipo acá, agregarlo también allá.
 
 export const TIPOS_PREGUNTA = {
+  single: {
+    label: 'Selección única (perfil vocacional)',
+    multiple: false,
+    descripcion: 'Elige una opción que aporta a tu perfil vocacional.',
+  },
   opcion_unica: {
     label: 'Opción única',
     multiple: false,
@@ -40,7 +45,6 @@ export const TIPO_POR_DEFECTO = 'opcion_unica';
 // Valores legados que siguen vivos en la base. No borrar entradas de acá sin
 // migrar antes las filas correspondientes.
 const ALIAS = {
-  single: 'opcion_unica',
   seleccion: 'opcion_unica',
   multiple: 'opcion_multiple',
 };

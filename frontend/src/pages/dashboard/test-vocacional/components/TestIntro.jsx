@@ -39,8 +39,7 @@ export default function TestIntro({
           Test Vocacional
         </div>
         <p style={{ color: 'var(--ink-soft)', fontSize: 13.5, marginBottom: 28, lineHeight: 1.55 }}>
-          Responde con sinceridad y según lo que te representa.<br />
-          Si una pregunta tiene respuesta correcta, se indicará.
+          Responde con sinceridad según tus intereses y lo que te representa.
         </p>
 
         {/* Stats */}

@@ -7,6 +7,11 @@
 // clave canónica, para que la columna deje de ensuciarse con cinco vocabularios.
 
 const TIPOS_PREGUNTA = {
+  single: {
+    label: 'Selección única (perfil vocacional)',
+    multiple: false,
+    descripcion: 'Elige una opción que aporta a tu perfil vocacional.',
+  },
   opcion_unica: {
     label: 'Opción única',
     multiple: false,
@@ -28,7 +33,6 @@ const TIPO_POR_DEFECTO = 'opcion_unica';
 
 // Valores legados que siguen vivos en filas ya guardadas.
 const ALIAS = {
-  single: 'opcion_unica',
   seleccion: 'opcion_unica',
   multiple: 'opcion_multiple',
 };

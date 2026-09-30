@@ -147,6 +147,7 @@ describe('TestVocacional', () => {
     });
 
     await user.click(comenzar);
+    expect(await screen.findByText(/No hay respuestas correctas/i)).toBeInTheDocument();
 
     {
       const opciones = await screen.findAllByRole('radio', { name: /Programar y usar tecnología/i });
@@ -211,13 +212,13 @@ describe('TestVocacional', () => {
     render(<TestVocacional user={{ id: 'user-123' }} isDemoMode={false} />);
     await user.click(await screen.findByRole('button', { name: /Comenzar test/i }));
 
-    const opcionOcho = await screen.findByRole('button', { name: /8/ });
-    const opcionDiez = screen.getByRole('button', { name: /10/ });
+    const opcionOcho = await screen.findByRole('radio', { name: /8/ });
+    const opcionDiez = screen.getByRole('radio', { name: /10/ });
     await user.click(opcionOcho);
     await user.click(opcionDiez);
 
-    expect(opcionOcho).toHaveAttribute('aria-pressed', 'false');
-    expect(opcionDiez).toHaveAttribute('aria-pressed', 'true');
+    expect(opcionOcho).toHaveAttribute('aria-checked', 'false');
+    expect(opcionDiez).toHaveAttribute('aria-checked', 'true');
     expect(screen.queryByText(/Puedes seleccionar varias opciones/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Selecciona la respuesta correcta/i)).toBeInTheDocument();
   });
@@ -278,7 +279,8 @@ it('permite comenzar un test nuevo aunque ya exista un resultado', async () => {
 
   await user.click(await screen.findByRole('button', { name: /Comenzar test/i }));
 
-  expect(await screen.findByText('¿Qué actividad prefieres?')).toBeInTheDocument();
+  const tituloPregunta = document.querySelector('.font-display');
+  expect(tituloPregunta?.textContent).toContain('¿Qué actividad prefieres?');
 });
 
 it('muestra el resultado previo guardado', async () => {

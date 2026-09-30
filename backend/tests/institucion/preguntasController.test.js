@@ -45,6 +45,23 @@ describe('institucion/preguntasController — validación de tipo', () => {
     }));
   });
 
+  it('createPregunta exige cinco opciones ponderadas para selección única', async () => {
+    mockSupabase({});
+    const { createPregunta } = require('../../src/controllers/institucion/preguntasController');
+
+    const { res, status, json } = fakeRes();
+    await createPregunta(
+      { body: { ...bodyValido, tipo: 'single' }, institucionId: 'inst-1' },
+      res
+    );
+
+    expect(status).toHaveBeenCalledWith(400);
+    expect(json).toHaveBeenCalledWith(expect.objectContaining({
+      success: false,
+      message: expect.stringContaining('exactamente 5 opciones'),
+    }));
+  });
+
   it('updatePregunta responde 400 con un tipo fuera del catálogo', async () => {
     mockSupabase({});
     const { updatePregunta } = require('../../src/controllers/institucion/preguntasController');
@@ -115,7 +132,10 @@ describe('admin/preguntasController — validación de tipo', () => {
     const insert = jest.fn(() => ({
       select: jest.fn(() => ({ single: jest.fn().mockResolvedValue({ data: { id: 'preg-1' }, error: null }) })),
     }));
-    mockSupabase({ from: jest.fn(() => ({ insert })) });
+    const select = jest.fn(() => ({
+      limit: jest.fn().mockResolvedValue({ error: null }),
+    }));
+    mockSupabase({ from: jest.fn(() => ({ insert, select })) });
 
     const { createPregunta } = require('../../src/controllers/admin/preguntasController');
     const { res, status } = fakeRes();
