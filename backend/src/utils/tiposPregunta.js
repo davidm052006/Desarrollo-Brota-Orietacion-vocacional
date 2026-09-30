@@ -1,5 +1,6 @@
 const TIPOS_PREGUNTA_VALIDOS = new Set([
   'opcion_multiple',
+  'single',
   'likert',
   'respuesta_corta',
   'respuesta_larga',

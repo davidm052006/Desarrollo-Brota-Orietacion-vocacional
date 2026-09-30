@@ -1,4 +1,5 @@
 export const TIPOS_PREGUNTA = [
+  { value: 'single', label: 'Selección única (perfil vocacional)', abierta: false },
   { value: 'opcion_multiple', label: 'Opción múltiple', abierta: false },
   { value: 'likert', label: 'Escala Likert', abierta: false },
   { value: 'respuesta_corta', label: 'Respuesta corta', abierta: true },

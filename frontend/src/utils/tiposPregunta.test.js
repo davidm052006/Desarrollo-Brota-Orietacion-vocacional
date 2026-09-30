@@ -4,8 +4,9 @@ import { TIPOS_PREGUNTA, esPreguntaAbierta, esPreguntaUnica } from './tiposPregu
 describe('tipos de pregunta', () => {
   it('expone tipos cerrados y abiertos para instituciones', () => {
     expect(TIPOS_PREGUNTA.map(tipo => tipo.value)).toEqual([
-      'opcion_multiple', 'likert', 'respuesta_corta', 'respuesta_larga',
+      'single', 'opcion_multiple', 'likert', 'respuesta_corta', 'respuesta_larga',
     ]);
+    expect(esPreguntaUnica('single')).toBe(true);
     expect(esPreguntaAbierta('respuesta_corta')).toBe(true);
     expect(esPreguntaAbierta('respuesta_larga')).toBe(true);
     expect(esPreguntaAbierta('likert')).toBe(false);

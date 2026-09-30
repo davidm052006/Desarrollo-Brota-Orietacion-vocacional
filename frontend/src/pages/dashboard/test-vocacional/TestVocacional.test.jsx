@@ -147,6 +147,7 @@ describe('TestVocacional', () => {
     });
 
     await user.click(comenzar);
+    expect(await screen.findByText(/No hay respuestas correctas/i)).toBeInTheDocument();
 
     {
       const opciones = await screen.findAllByRole('button', { name: /Programar y usar tecnología/i });
@@ -278,7 +279,8 @@ it('permite comenzar un test nuevo aunque ya exista un resultado', async () => {
 
   await user.click(await screen.findByRole('button', { name: /Comenzar test/i }));
 
-  expect(await screen.findByText('¿Qué actividad prefieres?')).toBeInTheDocument();
+  const tituloPregunta = document.querySelector('.font-display');
+  expect(tituloPregunta?.textContent).toContain('¿Qué actividad prefieres?');
 });
 
 it('muestra el resultado previo guardado', async () => {

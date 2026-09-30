@@ -12,16 +12,34 @@ async function tieneColumnaEsCorrecta() {
 }
 
 async function insertarOpciones(preguntaId, opciones, incluirEsCorrecta) {
-  const filas = (opciones || []).map((opcion, index) => ({
-    pregunta_id: preguntaId,
-    label: opcion.label,
-    icon: opcion.icon || null,
-    orden: opcion.orden ?? index,
-    ...(incluirEsCorrecta && { es_correcta: Boolean(opcion.es_correcta) }),
-  }));
-  if (filas.length === 0) return;
-  const { error } = await supabase.from('opciones').insert(filas);
-  if (error) throw error;
+  for (const [index, opcion] of (opciones || []).entries()) {
+    const { data: opcionCreada, error: errorOpcion } = await supabase
+      .from('opciones')
+      .insert([{
+        pregunta_id: preguntaId,
+        label: opcion.label,
+        icon: opcion.icon || null,
+        orden: opcion.orden ?? index,
+        ...(incluirEsCorrecta && { es_correcta: Boolean(opcion.es_correcta) }),
+      }])
+      .select('id')
+      .single();
+
+    if (errorOpcion) throw errorOpcion;
+
+    const pesos = Object.entries(opcion.pesos || {})
+      .filter(([categoria, puntos]) => categoria && Number(puntos) > 0)
+      .map(([categoria, puntos]) => ({
+        opcion_id: opcionCreada.id,
+        categoria,
+        puntos: Number(puntos),
+      }));
+
+    if (pesos.length > 0) {
+      const { error: errorPesos } = await supabase.from('pesos_opciones').insert(pesos);
+      if (errorPesos) throw errorPesos;
+    }
+  }
 }
 
 const getPreguntas = asyncHandler('admin/preguntasController.getPreguntas', async (req, res) => {
@@ -34,7 +52,7 @@ const getPreguntas = asyncHandler('admin/preguntasController.getPreguntas', asyn
 
   let query = supabase.from('preguntas').select(`
     *,
-    opciones ( ${columnasOpcion} )
+    opciones ( ${columnasOpcion}, pesos_opciones ( categoria, puntos ) )
   `).order('orden');
 
   if (cuestionarioId) query = query.eq('cuestionario_id', cuestionarioId);
@@ -47,6 +65,7 @@ const getPreguntas = asyncHandler('admin/preguntasController.getPreguntas', asyn
     opciones: (p.opciones || []).sort((a, b) => a.orden - b.orden).map(opcion => ({
       ...opcion,
       es_correcta: Boolean(opcion.es_correcta),
+      pesos: Object.fromEntries((opcion.pesos_opciones || []).map(({ categoria, puntos }) => [categoria, puntos])),
     })),
   }));
   return res.json({ success: true, data: preguntas, meta: { es_correcta_disponible: incluirEsCorrecta } });
@@ -59,6 +78,11 @@ const createPregunta = asyncHandler('admin/preguntasController.createPregunta', 
   }
   if (!esTipoPreguntaValido(tipo)) {
     return res.status(400).json({ success: false, message: 'Tipo de pregunta no válido' });
+  }
+  if (tipo === 'single' && (!Array.isArray(opciones) || opciones.length !== 5 || opciones.some(opcion =>
+    !Object.entries(opcion.pesos || {}).some(([categoria, puntos]) => categoria && Number(puntos) > 0)
+  ))) {
+    return res.status(400).json({ success: false, message: 'La selección única requiere exactamente 5 opciones, cada una con un área ponderada' });
   }
   const incluirEsCorrecta = await tieneColumnaEsCorrecta();
   if (!incluirEsCorrecta && (opciones || []).some(opcion => opcion.es_correcta)) {
@@ -79,6 +103,11 @@ const createPregunta = asyncHandler('admin/preguntasController.createPregunta', 
 const updatePregunta = asyncHandler('admin/preguntasController.updatePregunta', async (req, res) => {
   const { id } = req.params;
   const { texto, tipo, orden, categoria, peso, opciones } = req.body;
+  if (tipo === 'single' && (!Array.isArray(opciones) || opciones.length !== 5 || opciones.some(opcion =>
+    !Object.entries(opcion.pesos || {}).some(([categoria, puntos]) => categoria && Number(puntos) > 0)
+  ))) {
+    return res.status(400).json({ success: false, message: 'La selección única requiere exactamente 5 opciones, cada una con un área ponderada' });
+  }
   const incluirEsCorrecta = Array.isArray(opciones) ? await tieneColumnaEsCorrecta() : false;
   if (!incluirEsCorrecta && (opciones || []).some(opcion => opcion.es_correcta)) {
     return res.status(409).json({ success: false, message: ERROR_MIGRACION_CORRECTAS });

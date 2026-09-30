@@ -4,7 +4,7 @@ import InstitucionNav from './components/InstitucionNav';
 import { obtenerPerfil } from '../../../services/perfilService';
 import * as institucionService from '../../../services/institucionService';
 import { CATEGORIA_OPCIONES } from '../../../utils/vocacionalCategorias';
-import { TIPOS_PREGUNTA, esPreguntaAbierta } from '../../../utils/tiposPregunta';
+import { TIPOS_PREGUNTA, esPreguntaAbierta, esPreguntaUnica } from '../../../utils/tiposPregunta';
 
 const cardStyle = {
   background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16,
@@ -29,7 +29,7 @@ const formatearFecha = fecha => fecha
   ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
   : 'Sin registrar';
 
-function OpcionEditor({ opcion, letra, onChange, onQuitar }) {
+function OpcionEditor({ opcion, letra, tipoPregunta, onChange, onQuitar }) {
   const pesosArray = Object.entries(opcion.pesos || {});
 
   const setPeso = (idx, campo, valor) => {
@@ -54,9 +54,11 @@ function OpcionEditor({ opcion, letra, onChange, onQuitar }) {
         />
         <button onClick={onQuitar} style={{ ...btnGhost, color: '#dc2626' }}>✕</button>
       </div>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--ink-soft)', margin: '6px 0' }}>
-        <input type="checkbox" checked={Boolean(opcion.es_correcta)} onChange={e => onChange({ ...opcion, es_correcta: e.target.checked })} /> Respuesta correcta
-      </label>
+      {!esPreguntaUnica(tipoPregunta) && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--ink-soft)', margin: '6px 0' }}>
+          <input type="checkbox" checked={Boolean(opcion.es_correcta)} onChange={e => onChange({ ...opcion, es_correcta: e.target.checked })} /> Respuesta correcta
+        </label>
+      )}
       {pesosArray.map(([categoria, puntos], i) => (
         <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
           <select value={categoria} onChange={e => setPeso(i, 'categoria', e.target.value)} style={{ ...inputStyle, flex: 1 }}>
@@ -142,7 +144,7 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
               Opciones (cada una puede sumar puntos a una o más categorías)
             </p>
             {form.opciones.map((o, i) => (
-              <OpcionEditor key={i} letra={String.fromCharCode(65 + i)} opcion={o} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} />
+              <OpcionEditor key={i} letra={String.fromCharCode(65 + i)} opcion={o} tipoPregunta={form.tipo} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} />
             ))}
             <button onClick={agregarOpcion} style={{ ...btnGhost, fontSize: 12, marginBottom: 12 }}>+ Agregar opción</button>
           </>
