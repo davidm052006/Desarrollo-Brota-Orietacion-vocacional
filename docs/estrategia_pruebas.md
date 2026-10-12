@@ -6,14 +6,26 @@ Garantizar la calidad y funcionalidad del MVP mediante pruebas estructuradas.
 
 ## Tipos de Pruebas
 
-### 1. Pruebas Unitarias
-Validar componentes individuales del sistema.
+### 1. Pruebas unitarias
+Validan una función, componente o módulo aislado. Son rápidas y ayudan a localizar con precisión una regresión. En Brota, ejemplos adecuados son las validaciones de formularios, el cálculo de resultados vocacionales y funciones de servicios con dependencias simuladas.
 
-### 2. Pruebas de Integración
-Verificar la comunicación entre módulos.
+### 2. Pruebas de integración
+Verifican que varias piezas colaboren correctamente, por ejemplo un controlador Express con sus middlewares o un componente React con sus servicios simulados. Conviene aislar servicios externos cuando el objetivo no sea probar la integración real con Supabase.
 
-### 3. Pruebas de Usuario
-Validar la experiencia del usuario final.
+### 3. Pruebas end-to-end (E2E)
+Recorren la aplicación desde el navegador y comprueban un flujo como lo haría una persona usuaria. Son valiosas para detectar fallos entre la interfaz, la API y los servicios externos, pero suelen ser más lentas y sensibles a datos y configuración.
+
+## Pirámide y patrón AAA
+
+La estrategia debe tener muchas pruebas unitarias, menos pruebas de integración y unas pocas E2E para los recorridos de mayor valor. Un defecto detectado tarde puede requerir más diagnóstico y coordinación porque ya alcanzó otras capas o usuarios; probar de forma continua permite detectarlo antes.
+
+Organiza cada prueba con AAA:
+
+1. **Arrange (preparar):** crea el estado inicial y los datos o mocks necesarios.
+2. **Act (actuar):** ejecuta una acción concreta.
+3. **Assert (comprobar):** verifica el resultado observable esperado.
+
+El E2E de login de Brota sigue este patrón: abre el formulario, envía las credenciales de prueba y comprueba que se muestra el dashboard.
 
 ## Alcance del MVP
 
