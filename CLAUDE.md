@@ -8,7 +8,8 @@ Cualquier cambio visual debe respetar la paleta y los tokens definidos ahí.
 - **Frontend**: React 19 + Vite 7 + TailwindCSS 4 (en `frontend/`)
 - **Backend**: Node.js + Express 5 CommonJS (en `backend/`, puerto **3001**)
 - **DB/Auth**: Supabase (PostgreSQL + Supabase Auth)
-- **Dev server frontend**: `npm run dev` desde `frontend/` — corre en puerto 5173 o 5174
+- **Paquetes**: pnpm 10.32.1 con workspaces `backend/`, `frontend/` y `e2e/`.
+- **Dev server frontend**: `pnpm --filter frontend dev` desde la raíz — corre en puerto 5173 o 5174
 
 ## Sincronización con la app móvil (Flutter)
 
@@ -64,7 +65,7 @@ Reemplaza al túnel de la sección anterior para la fase de beta con el equipo (
 **El código no necesitó ningún otro cambio** — `server.js` ya leía `PORT`/`trust proxy`/`FRONTEND_URL` desde variables de entorno por el trabajo previo con el túnel (ver sección de arriba), así que Railway reutiliza exactamente el mismo mecanismo (su proxy de borde agrega un solo salto de `X-Forwarded-For`, igual que ngrok/cloudflared — `trust proxy: 1` sigue siendo el valor correcto).
 
 **Archivos de config nuevos:**
-- `backend/railway.json` — build con Nixpacks, `startCommand: npm start`, healthcheck en `/api/health` (ya existía, no es nuevo).
+- `backend/railway.json` — build con Nixpacks, `startCommand: pnpm start`, healthcheck en `/api/health` (ya existía, no es nuevo).
 - `frontend/vercel.json` — `buildCommand`/`outputDirectory` explícitos + rewrite catch-all a `/index.html` (necesario para que las rutas de React Router no den 404 al refrescar, ej. `/dashboard/perfil`).
 
 **Es un monorepo** — en ambas plataformas hay que fijar el "Root Directory" del servicio/proyecto (`backend` en Railway, `frontend` en Vercel) al crear el servicio; no alcanza con los `railway.json`/`vercel.json` solos.

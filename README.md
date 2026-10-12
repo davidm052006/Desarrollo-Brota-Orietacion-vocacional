@@ -19,7 +19,7 @@ Requiere Node.js 20.19+ y una cuenta de Supabase (o correr en **modo demo**, sin
 ```bash
 git clone <este repo>
 cd Documentacion_Brota
-npm run install:all   # instala backend/ y frontend/
+pnpm install           # instala backend/, frontend/ y e2e/
 cp backend/.env.example backend/.env
 cp frontend/.env.local.example frontend/.env.local
 ```
@@ -27,8 +27,8 @@ cp frontend/.env.local.example frontend/.env.local
 Luego, en dos terminales:
 
 ```bash
-cd backend && npm run dev     # http://localhost:3001
-cd frontend && npm run dev    # http://localhost:5173
+pnpm --filter backend dev     # http://localhost:3001
+pnpm --filter frontend dev    # http://localhost:5173
 ```
 
 Detalle completo de variables de entorno y setup de base de datos (`backend/setup_database.sql`) en [`backend/README.md`](./backend/README.md) y [`frontend/README.md`](./frontend/README.md).
@@ -38,8 +38,8 @@ Detalle completo de variables de entorno y setup de base de datos (`backend/setu
 ## Tests
 
 ```bash
-cd backend && npm test     # Jest, contra Supabase real
-cd frontend && npm test    # Vitest
+pnpm --filter backend test   # Jest
+pnpm --filter frontend test  # Vitest
 ```
 
 Cobertura todavía mínima (arrancada en agosto 2026) — ver `docs/estrategia_pruebas.md` para el alcance planeado.

@@ -16,14 +16,14 @@ Antes de comenzar a programar, asegúrate de tener instalado:
 
 Sigue estos pasos para arrancar el proyecto localmente:
 
-1. **Abre tu terminal** y ubícate en esta carpeta (`/frontend`).
-2. **Instala las dependencias** corriendo el siguiente comando:
+1. **Abre tu terminal** y ubícate en la raíz del repositorio.
+2. **Instala las dependencias del workspace**:
    ```bash
-   npm install
+   pnpm install
    ```
-3. **Inicia el servidor de desarrollo**:
+3. **Inicia el servidor de desarrollo** desde la raíz:
    ```bash
-   npm run dev
+   pnpm --filter frontend dev
    ```
 4. Abre la URL que te arroja la consola (usualmente `http://localhost:5173`) en tu navegador. 
 
@@ -73,7 +73,7 @@ Para que tu código se mantenga profesional y fácil de entender por todo el equ
 
 Cuando el sistema Brota esté listo para salir al aire, en lugar de usar el entorno de desarrollo, deberás generar la versión oficial:
 ```bash
-npm run build
+pnpm --filter frontend build
 ```
 Esto generará una carpeta oculta `dist/` con todo tu código minificado, comprimido y ultra rápido, empaquetado y listo para ser subido a Vercel, Netlify o cualquier servidor.
 

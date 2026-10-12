@@ -1,0 +1,6 @@
+packages:
+  - backend
+  - frontend
+  - e2e
+
+sharedWorkspaceLockfile: false

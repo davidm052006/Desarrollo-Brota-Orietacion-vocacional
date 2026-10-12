@@ -13,19 +13,19 @@ API REST en Node.js + Express 5 (CommonJS) para la plataforma de orientación vo
 
 ## 🛠️ Instalación y Ejecución
 
-1. **Ubicate en esta carpeta** (`/backend`).
-2. **Instalá las dependencias**:
+1. **Ubicate en la raíz del repositorio**.
+2. **Instalá las dependencias del workspace**:
    ```bash
-   npm install
+   pnpm install
    ```
 3. **Configurá las variables de entorno**:
    ```bash
    cp .env.example .env
    ```
 4. **Si es una base de datos nueva**, corré `setup_database.sql` contra tu proyecto de Supabase (SQL Editor → pegar el contenido completo del archivo) — crea las 22 tablas, índices, triggers y políticas RLS.
-5. **Iniciá el servidor de desarrollo** (con recarga automática vía `nodemon`):
+5. **Iniciá el servidor de desarrollo** desde la raíz del repositorio (con recarga automática vía `nodemon`):
    ```bash
-   npm run dev
+   pnpm --filter backend dev
    ```
 6. El servidor queda en `http://localhost:3001` — probar con `GET /api/health`.
 
@@ -34,7 +34,7 @@ API REST en Node.js + Express 5 (CommonJS) para la plataforma de orientación vo
 ## 🧪 Tests
 
 ```bash
-npm test
+pnpm --filter backend test
 ```
 
 Usa Jest y `supertest` para las peticiones HTTP. Los tests corren contra el Supabase real configurado en `.env` (no hay mocks todavía) — ver `test/api.test.js`.

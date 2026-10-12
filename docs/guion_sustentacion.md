@@ -43,7 +43,7 @@ Este bloque queda con David completo porque cubre la parte más técnica (Supaba
 
 | Tiempo | Qué mostrar | Qué decir |
 |---|---|---|
-| 5:00–6:00 | Correr `npm test` en backend y frontend en vivo, mostrar que pasan | "Tenemos suites reales corriendo — Jest en backend, Vitest en frontend — cubriendo el flujo del cuestionario vocacional y el CRUD de usuarios." |
+| 5:00–6:00 | Correr `pnpm --filter backend test` y `pnpm --filter frontend test` en vivo, mostrar que pasan | "Tenemos suites reales corriendo — Jest en backend, Vitest en frontend — cubriendo el flujo del cuestionario vocacional y el CRUD de usuarios." |
 | 6:00–7:00 | Ser honestos sobre el alcance | "La cobertura hoy es un punto de partida, no el 80% completo — arrancamos la infraestructura de testing esta semana. Ya identificamos qué falta (issue #23: middlewares de auth y controllers de comunidad) y quedó asignada para el siguiente sprint." |
 
 **Por qué decirlo así y no inflar el número:** es más fácil defender "esto es lo que tenemos y esto es lo que sigue" que un 80% que no resiste una pregunta de seguimiento tipo "muéstrenme el reporte de cobertura".

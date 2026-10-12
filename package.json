@@ -1,7 +1,13 @@
 {
   "private": true,
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "canvas",
+      "esbuild"
+    ]
+  },
   "scripts": {
-    "postinstall": "node scripts/setup-env.js",
-    "install:all": "npm install --prefix backend && npm install --prefix frontend"
+    "postinstall": "node scripts/setup-env.js"
   }
 }

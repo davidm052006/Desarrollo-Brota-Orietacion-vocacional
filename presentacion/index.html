@@ -695,7 +695,7 @@ const SLIDES = [
   { id:'b2-tests', block:'block2', time:'12:00', speaker:'Eduard', title:'Tests automatizados (bonus, honesto)',
     render: () => e(React.Fragment,null,
       e(Panel,{title:'Qué mostrar — dónde en el sistema',icon:'🖥️',variant:'mostrar'},
-        e('p',null,'Correr ',e('code',null,'npm test'),' en ',e('code',null,'backend/'),' y en ',e('code',null,'frontend/'),' en vivo, mostrar que pasan.')),
+        e('p',null,'Correr ',e('code',null,'pnpm --filter backend test'),' y ',e('code',null,'pnpm --filter frontend test'),' en vivo, mostrar que pasan.')),
       e(Panel,{title:'Qué decir',icon:'🗣️',variant:'decir'},
         e(Quote,null,'"Además de que todo funciona en vivo, tenemos suites automatizadas reales corriendo — Jest en backend, Vitest en frontend."'),
         e(Quote,null,'"No es cobertura del 100% de líneas de código — arrancamos esta infraestructura hace poco — pero ya cubre el flujo del cuestionario vocacional y el CRUD de usuarios, y sigue creciendo (issue #23)."'))
