@@ -48,8 +48,8 @@ jobs:
         working-directory: backend
         run: cp .env.example .env
 
-      - name: Tests
-        run: pnpm --filter backend test
+      - name: Tests y cobertura
+        run: pnpm --filter backend test:coverage
 
   frontend:
     name: Frontend (lint + tests + build)
@@ -77,8 +77,8 @@ jobs:
       - name: Lint
         run: pnpm --filter frontend lint
 
-      - name: Tests
-        run: pnpm --filter frontend test
+      - name: Tests y cobertura
+        run: pnpm --filter frontend test:coverage
 
       - name: Preparar variables de entorno
         working-directory: frontend
@@ -86,3 +86,32 @@ jobs:
 
       - name: Build
         run: pnpm --filter frontend build
+
+  e2e:
+    name: Browser E2E (login validation)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            backend/pnpm-lock.yaml
+            frontend/pnpm-lock.yaml
+            e2e/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar Chromium
+        run: pnpm --dir e2e exec playwright install --with-deps chromium
+
+      - name: E2E sin credenciales externas
+        run: pnpm --dir e2e exec playwright test tests/login-validation.spec.js

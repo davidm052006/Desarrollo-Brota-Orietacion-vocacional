@@ -28,18 +28,39 @@ Validar la experiencia del usuario final.
 
 ## Estado actual (resumen de lo implementado)
 
-- **Backend**
-	- Infra de tests elegida: **Jest** (ver motivo abajo).
-	- Suites implementadas: `usuariosController.createUsuario` (tests de creación, validaciones y rollback) y regresión para `middlewares/verificarAdmin.js` — ✅ todas las pruebas backend actuales pasan (7/7).
+- **Backend:** Jest; 8 suites y 31 pruebas aprobadas en la medición del 12 de octubre de 2026. La suite incluye un smoke test de API que consulta Supabase remoto.
+- **Frontend:** Vitest + Testing Library + V8; 7 archivos y 50 pruebas aprobadas en la misma medición.
+- **E2E:** Playwright está configurado en `e2e/`. Hay un flujo de login exitoso que requiere credenciales dedicadas en `E2E_TEST_EMAIL` y `E2E_TEST_PASSWORD`, y un flujo de validación de login vacío que no necesita Supabase. El segundo se ejecutó en Chromium y se confirmó primero su fallo por una aserción incorrecta y luego se corrigió.
+- La CI ejecuta el E2E de validación del formulario en Chromium; el login real no se ejecuta en CI porque necesita credenciales de prueba privadas.
+- **Codegen:** queda pendiente grabar con `pnpm exec playwright codegen http://localhost:5173/login` y guardar evidencia segura de la sesión grupal.
 
-- **Frontend**
-	- Infra de tests: `vitest` + `@testing-library/react` configurados en `frontend/vitest.config.cjs` y `src/test/setupTests.js`.
-	- Tests implementados: flujo `TestVocacional` → `TestResult` y `createUsuariosMasivo` (mocks y ajustes para Chart.js en jsdom). ✅ (4 archivos, 19 tests, 19/19 pasan).
+## Línea base y umbrales de cobertura
+
+Medición local del 12 de octubre de 2026, incluyendo todos los archivos fuente
+(`src/**/*.{js,jsx}` en frontend y `src/**/*.js` en backend). Las pruebas y
+archivos de setup están excluidos. Los porcentajes medidos quedaron fijados como
+umbrales mínimos en Jest y Vitest; CI ejecuta los tests con cobertura y falla si
+alguna métrica cae por debajo del valor indicado.
+
+| Paquete | Sentencias | Ramas | Funciones | Líneas |
+|---|---:|---:|---:|---:|
+| Backend (Jest) | 32.81% | 15.21% | 20.57% | 35.85% |
+| Frontend (Vitest + V8) | 8.79% | 9.63% | 5.10% | 9.49% |
+
+Comandos para ejecutar cobertura:
+
+```bash
+pnpm --filter backend test:coverage
+pnpm --filter frontend test:coverage
+```
 
 ## Pendientes relevantes
 
 - `createUsuariosMasivo`: pruebas por fila implementadas — se añadieron casos que verifican errores por fila en fallos de red y respuestas de error genéricas (frontend `adminService` tests). ✅
-- Documentación adicional o ejemplos de uso de los mocks de Supabase (opcional).
+- Ejecutar el E2E de login exitoso con un usuario de prueba Supabase y variables de entorno locales; no guardar las credenciales en el repositorio.
+- Grabar y documentar la práctica de Playwright Codegen sin capturar contraseñas, tokens ni datos personales.
+- Cada integrante debe aportar un flujo distinto, su commit individual y participar en la revisión cruzada y retrospectiva.
+- Completar `docs/matriz-rotacion.md` con nombres y flujos del grupo.
 
 ## Decisión: Jest para backend
 
@@ -53,9 +74,7 @@ Validar la experiencia del usuario final.
 
 ## Qué se hizo en este sprint
 
-- Se instaló y configuró `vitest` en frontend y `jest` en backend (scripts y archivos de configuración añadidos).
--- Se agregaron y estabilizaron tests críticos listados en la tarea; se implementaron además pruebas por fila para `createUsuariosMasivo` (errores de red y respuestas sin mensaje). Ahora las suites frontend y backend están verdes.
-
----
-
-Si querés que deje más detalle técnico (comandos exactos ejecutados, fragmentos de configuración o ejemplos de mocks usados), lo agrego en un apartado "Evidencia / comandos ejecutados" debajo.
+- Se instalaron y configuraron `vitest` en frontend y `jest` en backend.
+- Se añadieron los comandos de cobertura con reportes LCOV y umbrales globales; la CI ejecuta ambas suites con cobertura.
+- Se añadió un E2E de validación del login vacío, que no depende de credenciales ni de Supabase. El login exitoso existente aún requiere una cuenta de prueba local.
+- Las mediciones, comandos y tareas grupales pendientes están anotadas arriba y en `docs/matriz-rotacion.md`.

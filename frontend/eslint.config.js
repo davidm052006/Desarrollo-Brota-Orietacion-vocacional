@@ -8,7 +8,7 @@ export default defineConfig([
   // design_handoff_comunidad_vistas/ es un bundle generado por una herramienta
   // externa de handoff de diseño ("do not edit", ver cabecera del archivo) —
   // no es código fuente de la app, no tiene sentido lintearlo.
-  globalIgnores(['dist', 'design_handoff_comunidad_vistas']),
+  globalIgnores(['dist', 'coverage', 'design_handoff_comunidad_vistas']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

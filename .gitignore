@@ -14,6 +14,7 @@ frontend/node_modules/
 backend/dist/
 frontend/dist/
 frontend/build/
+**/coverage/
 
 # Logs
 *.log

@@ -54,9 +54,18 @@ Detalle completo de variables de entorno y setup de base de datos (`backend/setu
 ```bash
 pnpm --filter backend test   # Jest
 pnpm --filter frontend test  # Vitest
+pnpm --filter backend test:coverage
+pnpm --filter frontend test:coverage
 ```
 
-Cobertura todavía mínima (arrancada en agosto 2026) — ver `docs/estrategia_pruebas.md` para el alcance planeado.
+Los comandos de cobertura aplican los umbrales mínimos de CI. El E2E requiere Chromium instalado y, para el login exitoso, un usuario de prueba configurado solo en `E2E_TEST_EMAIL` y `E2E_TEST_PASSWORD`:
+
+```bash
+pnpm --filter brota-e2e exec playwright install chromium
+pnpm --filter brota-e2e test
+```
+
+La cobertura actual y las pruebas pendientes están documentadas en [`docs/estrategia_pruebas.md`](./docs/estrategia_pruebas.md).
 
 ## Estructura del repo
 
