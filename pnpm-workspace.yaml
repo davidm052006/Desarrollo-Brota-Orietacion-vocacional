@@ -4,3 +4,8 @@ packages:
   - e2e
 
 sharedWorkspaceLockfile: false
+
+onlyBuiltDependencies:
+  - canvas
+  - core-js
+  - esbuild

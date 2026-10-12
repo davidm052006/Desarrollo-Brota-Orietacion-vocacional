@@ -12,7 +12,21 @@ Plataforma de orientación vocacional para estudiantes colombianos de colegio (1
 - **[`BRAND.md`](./BRAND.md)** — manual de marca (colores, tipografía, voz y tono).
 - **[`docs/00_START_HERE.md`](./docs/00_START_HERE.md)** — índice de la documentación formal del proyecto (requisitos funcionales, modelo de datos, gestión del proyecto, estrategia de pruebas, despliegue).
 
-## Arrancar el proyecto
+## Arrancar con Docker Compose
+
+Requiere Docker Desktop con Docker Compose v2. Supabase sigue siendo un servicio externo: configura sus credenciales antes de iniciar los contenedores.
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.local.example frontend/.env.local
+docker compose up --build
+```
+
+Abre `http://localhost:5173`. La API queda disponible en `http://localhost:3001` y el frontend la consume a través del proxy de Vite dentro de la red de Compose. El código se monta como volumen para reflejar los cambios durante el desarrollo; las dependencias permanecen en volúmenes Docker.
+
+Para detener los servicios, ejecuta `docker compose down`. Esto conserva los volúmenes de dependencias.
+
+## Arrancar sin Docker
 
 Requiere Node.js 20.19+ y una cuenta de Supabase (o correr en **modo demo**, sin Supabase, ver más abajo). Vite 7 requiere esta versión mínima de Node.js.
 
