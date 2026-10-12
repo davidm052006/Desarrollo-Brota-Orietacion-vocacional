@@ -156,13 +156,6 @@ function SignupCard({
 
   const strength = getPasswordStrength(password);
 
-  const formComplete =
-    primerNombre.trim() !== '' && primerApellido.trim() !== '' &&
-    email.trim() !== '' && password.trim() !== '' && confirmPassword.trim() !== '' &&
-    nivelEducativo !== '' && grado !== '' &&
-    edad.trim() !== '' && ciudad.trim() !== '' && telefono.trim() !== '' &&
-    termsAccepted === true;
-
   const grid2 = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 11 };
 
   return (
@@ -255,13 +248,13 @@ function SignupCard({
 
         <button
           type="submit"
-          disabled={loading || !formComplete}
+          disabled={loading}
           style={{
             background: 'var(--primary)', color: 'var(--primary-ink)',
             textAlign: 'center', fontWeight: 800, fontSize: 15,
             padding: 14, borderRadius: 13, border: 'none', cursor: 'pointer',
             boxShadow: '0 8px 20px var(--primary-glow)',
-            opacity: (loading || !formComplete) ? .5 : 1, marginTop: 6,
+            opacity: loading ? .6 : 1, marginTop: 6,
           }}
         >
           {loading ? 'Creando cuenta…' : 'Crear cuenta'}
