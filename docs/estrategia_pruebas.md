@@ -30,7 +30,7 @@ Validar la experiencia del usuario final.
 
 - **Backend:** Jest; 8 suites y 31 pruebas aprobadas en la medición del 12 de octubre de 2026. La suite incluye un smoke test de API que consulta Supabase remoto.
 - **Frontend:** Vitest + Testing Library + V8; 7 archivos y 50 pruebas aprobadas en la misma medición.
-- **E2E:** Playwright está configurado en `e2e/`. Hay un flujo de login exitoso que requiere credenciales dedicadas en `E2E_TEST_EMAIL` y `E2E_TEST_PASSWORD`, y un flujo de validación de login vacío que no necesita Supabase. El segundo se ejecutó en Chromium y se confirmó primero su fallo por una aserción incorrecta y luego se corrigió.
+- **E2E:** Playwright está configurado en `e2e/` con los flujos aportados por Brayan y David: login con contraseña incorrecta (requiere Supabase real y el correo de una cuenta de prueba en `E2E_TEST_EMAIL`) y validación del login vacío (no necesita Supabase). Ambos pasaron en Chromium el 12 de octubre de 2026; la validación del login vacío también se confirmó primero con una aserción incorrecta para comprobar que falla.
 - La CI ejecuta el E2E de validación del formulario en Chromium; el login real no se ejecuta en CI porque necesita credenciales de prueba privadas.
 - **Codegen:** queda pendiente grabar con `pnpm exec playwright codegen http://localhost:5173/login` y guardar evidencia segura de la sesión grupal.
 
@@ -57,7 +57,6 @@ pnpm --filter frontend test:coverage
 ## Pendientes relevantes
 
 - `createUsuariosMasivo`: pruebas por fila implementadas — se añadieron casos que verifican errores por fila en fallos de red y respuestas de error genéricas (frontend `adminService` tests). ✅
-- Ejecutar el E2E de login exitoso con un usuario de prueba Supabase y variables de entorno locales; no guardar las credenciales en el repositorio.
 - Grabar y documentar la práctica de Playwright Codegen sin capturar contraseñas, tokens ni datos personales.
 - Cada integrante debe aportar un flujo distinto, su commit individual y participar en la revisión cruzada y retrospectiva.
 - Completar `docs/matriz-rotacion.md` con nombres y flujos del grupo.
@@ -76,5 +75,5 @@ pnpm --filter frontend test:coverage
 
 - Se instalaron y configuraron `vitest` en frontend y `jest` en backend.
 - Se añadieron los comandos de cobertura con reportes LCOV y umbrales globales; la CI ejecuta ambas suites con cobertura.
-- Se añadió un E2E de validación del login vacío, que no depende de credenciales ni de Supabase. El login exitoso existente aún requiere una cuenta de prueba local.
+- Se añadieron los E2E de contraseña incorrecta y validación del login vacío; ambos pasaron localmente. El primero requiere Supabase y una cuenta de prueba, el segundo no.
 - Las mediciones, comandos y tareas grupales pendientes están anotadas arriba y en `docs/matriz-rotacion.md`.
