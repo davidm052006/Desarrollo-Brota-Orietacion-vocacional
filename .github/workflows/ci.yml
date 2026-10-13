@@ -114,4 +114,10 @@ jobs:
         run: pnpm --dir e2e exec playwright install --with-deps chromium
 
       - name: E2E sin credenciales externas
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: e2e-public-test-key
         run: pnpm --dir e2e exec playwright test tests/login-validation.spec.js
+
+      - name: E2E búsqueda de recursos en modo demo
+        run: pnpm --dir e2e exec playwright test tests/recursos-navigation.spec.js
