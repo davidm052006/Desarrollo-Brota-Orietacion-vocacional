@@ -66,6 +66,16 @@ pnpm --filter backend test:coverage
 pnpm --filter frontend test:coverage
 ```
 
+### Re-ejecución backend local — 12 de octubre de 2026
+
+`pnpm --filter backend test:coverage` ejecutó 8 suites y 31 pruebas; las 31
+pruebas pasaron. La cobertura medida fue 32.81% de sentencias, 15.14% de ramas,
+20.57% de funciones y 35.85% de líneas. El comando terminó con código 1 porque
+la cobertura de ramas quedó 0.07 puntos porcentuales por debajo del umbral
+configurado (15.21%). Se conserva el umbral: no debe reducirse para hacer pasar
+la ejecución; el equipo debe revisar la diferencia antes de considerar la
+validación completa.
+
 ## Pendientes relevantes
 
 - `createUsuariosMasivo`: pruebas por fila implementadas — se añadieron casos que verifican errores por fila en fallos de red y respuestas de error genéricas (frontend `adminService` tests). ✅
