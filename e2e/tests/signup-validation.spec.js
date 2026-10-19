@@ -2,7 +2,14 @@ import { expect, test } from '@playwright/test';
 
 test('el registro no avanza y muestra validación con los campos obligatorios vacíos', async ({ page }) => {
   // Arrange
+  await page.context().clearCookies();
   await page.goto('/login');
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+  await page.reload();
+  await expect(page).toHaveURL(/\/login$/);
   await page.getByRole('button', { name: 'Regístrate' }).click();
 
   // Act
@@ -28,5 +35,4 @@ test('el registro no avanza y muestra validación con los campos obligatorios va
 
   await expect(page.getByRole('heading', { name: 'Crea tu cuenta' })).toBeVisible();
   await expect(page).toHaveURL(/\/login$/);
-  await page.screenshot({ path: 'tests/Evidencia_codegen/Evidencia-Test-signup-validation.png' });
 });

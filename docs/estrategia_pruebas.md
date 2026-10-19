@@ -42,9 +42,11 @@ El E2E de login de Brota sigue este patrón: abre el formulario, envía las cred
 
 - **Backend:** Jest; 8 suites y 31 pruebas aprobadas en la medición del 12 de octubre de 2026. La suite incluye un smoke test de API que consulta Supabase remoto.
 - **Frontend:** Vitest + Testing Library + V8; 7 archivos y 50 pruebas aprobadas en la misma medición.
-- **E2E:** Playwright está configurado en `e2e/` con los flujos aportados por Brayan y David: login con contraseña incorrecta (requiere Supabase real y el correo de una cuenta de prueba en `E2E_TEST_EMAIL`) y validación del login vacío (no necesita Supabase). Ambos pasaron en Chromium el 12 de octubre de 2026; la validación del login vacío también se confirmó primero con una aserción incorrecta para comprobar que falla.
-- La CI ejecuta el E2E de validación del formulario en Chromium; el login real no se ejecuta en CI porque necesita credenciales de prueba privadas.
-- **Codegen:** queda pendiente grabar con `pnpm exec playwright codegen http://localhost:5173/login` y guardar evidencia segura de la sesión grupal.
+- **E2E:** Playwright está configurado en `e2e/` con cinco flujos: login válido (Eduard), contraseña incorrecta (Brayan), registro vacío (Julian), login vacío (David) y búsqueda de recursos. Los dos flujos de autenticación real requieren una cuenta de prueba y secretos; sin ellos se omiten, no se conectan a Supabase.
+- `pnpm --dir e2e test` separa las pruebas de formularios (Supabase simulado, sin enviar credenciales) del flujo de recursos (modo demo). La CI ejecuta el mismo comando y acepta `E2E_TEST_EMAIL`, `E2E_TEST_PASSWORD`, `E2E_SUPABASE_URL` y `E2E_SUPABASE_ANON_KEY` como secretos opcionales.
+- En la ejecución local del 18 de octubre de 2026, los tres flujos sin credenciales externas pasaron en Chromium y los dos flujos de autenticación real se omitieron por falta de secretos.
+- Mutación manual confirmada: se desactivó temporalmente la regla de correo requerido; los E2E de login vacío y registro vacío fallaron al no encontrar el mensaje esperado. La regla original quedó restaurada.
+- **Codegen:** queda pendiente grabar con `pnpm --dir e2e exec playwright codegen http://localhost:5173/login` y guardar evidencia segura de la sesión grupal.
 
 ## Línea base y umbrales de cobertura
 
@@ -66,22 +68,22 @@ pnpm --filter backend test:coverage
 pnpm --filter frontend test:coverage
 ```
 
-### Re-ejecución backend local — 12 de octubre de 2026
+### Verificación local de cobertura — 18 de octubre de 2026
 
-`pnpm --filter backend test:coverage` ejecutó 8 suites y 31 pruebas; las 31
-pruebas pasaron. La cobertura medida fue 32.81% de sentencias, 15.14% de ramas,
-20.57% de funciones y 35.85% de líneas. El comando terminó con código 1 porque
-la cobertura de ramas quedó 0.07 puntos porcentuales por debajo del umbral
-configurado (15.21%). Se conserva el umbral: no debe reducirse para hacer pasar
-la ejecución; el equipo debe revisar la diferencia antes de considerar la
-validación completa.
+`pnpm --filter backend test:coverage` ejecutó 8 suites y 31 pruebas; todas
+pasaron con código 0. Cobertura: 32.81% de sentencias, 15.21% de ramas, 20.57%
+de funciones y 35.85% de líneas.
+
+`pnpm --filter frontend test:coverage` ejecutó 7 archivos y 50 pruebas; todas
+pasaron con código 0. Cobertura: 8.80% de sentencias, 9.67% de ramas, 5.10% de
+funciones y 9.49% de líneas. En ambas partes se cumplen los umbrales existentes.
 
 ## Pendientes relevantes
 
 - `createUsuariosMasivo`: pruebas por fila implementadas — se añadieron casos que verifican errores por fila en fallos de red y respuestas de error genéricas (frontend `adminService` tests). ✅
-- Grabar y documentar la práctica de Playwright Codegen sin capturar contraseñas, tokens ni datos personales.
+- Grabar y documentar la práctica de Playwright Codegen sin capturar contraseñas, tokens ni datos personales; ejecutar el comando desde la raíz con `pnpm --dir e2e exec playwright codegen http://localhost:5173/login`.
 - Cada integrante debe aportar un flujo distinto, su commit individual y participar en la revisión cruzada y retrospectiva.
-- Completar `docs/matriz-rotacion.md` con nombres y flujos del grupo.
+- Los flujos de login exitoso y contraseña incorrecta requieren secretos de una cuenta de prueba para ejecutarse; no guardar esas credenciales en archivos versionados.
 
 ## Decisión: Jest para backend
 
@@ -97,5 +99,5 @@ validación completa.
 
 - Se instalaron y configuraron `vitest` en frontend y `jest` en backend.
 - Se añadieron los comandos de cobertura con reportes LCOV y umbrales globales; la CI ejecuta ambas suites con cobertura.
-- Se añadieron los E2E de contraseña incorrecta y validación del login vacío; ambos pasaron localmente. El primero requiere Supabase y una cuenta de prueba, el segundo no.
+- Se añadieron E2E de login, registro vacío y búsqueda de recursos; los flujos que requieren credenciales reales se omiten explícitamente si no están configuradas.
 - Las mediciones, comandos y tareas grupales pendientes están anotadas arriba y en `docs/matriz-rotacion.md`.

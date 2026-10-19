@@ -1,8 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 const EMAIL = process.env.E2E_TEST_EMAIL;
+const SUPABASE_CONFIGURED = Boolean(
+  process.env.E2E_SUPABASE_URL && process.env.E2E_SUPABASE_ANON_KEY,
+);
 
-test.skip(!EMAIL, 'Falta E2E_TEST_EMAIL para usar la cuenta de prueba de Supabase');
+test.skip(
+  !EMAIL || !SUPABASE_CONFIGURED,
+  'Configura E2E_TEST_EMAIL y las variables E2E_SUPABASE_* para usar la cuenta de prueba de Supabase',
+);
 
 test('una contraseña incorrecta muestra un error y mantiene al usuario en login', async ({ page }) => {
   // Arrange

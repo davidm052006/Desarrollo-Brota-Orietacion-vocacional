@@ -5,8 +5,8 @@
   "type": "module",
   "packageManager": "pnpm@10.32.1",
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
+    "test": "node run-tests.mjs",
+    "test:headed": "node run-tests.mjs --headed",
     "test:ui": "playwright test --ui"
   },
   "devDependencies": {

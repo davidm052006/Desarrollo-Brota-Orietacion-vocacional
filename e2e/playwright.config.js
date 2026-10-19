@@ -1,13 +1,15 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/**
- * Levanta el frontend real de Brota (Vite, puerto 5173) y corre los E2E contra él.
- * El test de contraseña incorrecta requiere frontend/.env con Supabase real y
- * E2E_TEST_EMAIL configurado; el test de validación local no necesita Supabase.
- */
+const usaSupabaseReal = Boolean(
+  process.env.E2E_TEST_EMAIL
+    && process.env.E2E_SUPABASE_URL
+    && process.env.E2E_SUPABASE_ANON_KEY,
+);
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
+  workers: usaSupabaseReal ? 1 : undefined,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: 'list',
@@ -19,10 +21,10 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
   webServer: {
-    command: 'pnpm dev',
+    command: 'pnpm dev -- --host 127.0.0.1 --strictPort',
     cwd: '../frontend',
     url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });
