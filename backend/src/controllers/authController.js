@@ -1,5 +1,20 @@
 const supabase = require('../config/supabase');
 const { calcularEdadDesdeFecha } = require('../utils/calcularEdad');
+const { validarLimitesPerfil } = require('../utils/validarCampos');
+
+async function rollbackUsuarioAuth(userId) {
+  try {
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    if (error) {
+      console.error('authController.registerPerfil — rollback fallido:', error);
+      return false;
+    }
+    return true;
+  } catch (deleteErr) {
+    console.error('authController.registerPerfil — rollback fallido:', deleteErr);
+    return false;
+  }
+}
 
 /**
  * POST /api/auth/register-perfil
@@ -7,7 +22,7 @@ const { calcularEdadDesdeFecha } = require('../utils/calcularEdad');
  * Header: Authorization: Bearer <supabase_token>
  *
  * Crea el registro en perfiles_usuario para el usuario ya autenticado.
- * Si el insert falla, hace rollback eliminando el usuario de Supabase Auth
+ * Si la validación o el insert fallan, hace rollback eliminando el usuario de Supabase Auth
  * usando la service_role_key del backend (operación que no es segura hacer
  * desde el frontend).
  */
@@ -15,11 +30,21 @@ const registerPerfil = async (req, res) => {
   try {
     const { nombre, apellido, fechaNacimiento, ciudad, nivelEducativo, grado, telefono } = req.body;
 
-    if (!nombre) {
-      return res.status(400).json({ success: false, message: 'El campo nombre es requerido' });
+    const userId = req.user.id;
+    const errorValidacion = !nombre
+      ? 'El campo nombre es requerido'
+      : validarLimitesPerfil({ nombre, apellido, ciudad, nivelEducativo, grado, telefono });
+    if (errorValidacion) {
+      const rollbackExitoso = await rollbackUsuarioAuth(userId);
+      if (!rollbackExitoso) {
+        return res.status(500).json({
+          success: false,
+          message: 'No pudimos completar tu registro. Por favor intenta de nuevo.',
+        });
+      }
+      return res.status(400).json({ success: false, message: errorValidacion });
     }
 
-    const userId = req.user.id;
     const edad = calcularEdadDesdeFecha(fechaNacimiento);
 
     const { error } = await supabase
@@ -41,12 +66,7 @@ const registerPerfil = async (req, res) => {
     }
 
     console.error('authController.registerPerfil — insert fallido:', error);
-
-    try {
-      await supabase.auth.admin.deleteUser(userId);
-    } catch (deleteErr) {
-      console.error('authController.registerPerfil — rollback fallido:', deleteErr);
-    }
+    await rollbackUsuarioAuth(userId);
 
     return res.status(500).json({
       success: false,

@@ -54,6 +54,19 @@ pnpm --filter backend test:coverage
 pnpm --filter frontend test:coverage
 ```
 
+### Medición local S2 — 21 de octubre de 2026
+
+Backend: 12 suites y 49 pruebas aprobadas. Cobertura: 37.36% de sentencias,
+18.53% de ramas, 27.75% de funciones y 40.50% de líneas.
+
+Frontend: 8 archivos y 51 pruebas aprobadas. Cobertura: 9.27% de sentencias,
+10.71% de ramas, 5.69% de funciones y 9.99% de líneas.
+
+Ambos comandos de cobertura terminaron con código 0. Las cuatro métricas de cada
+paquete superan sus umbrales configurados; no se redujo ningún umbral. Entre los
+aportes de esta medición están pruebas de `algoritmoRecomendacion`,
+`perfilController`, `validarCampos`, el registro público y `SignupCard`.
+
 ## Pendientes relevantes
 
 - `createUsuariosMasivo`: pruebas por fila implementadas — se añadieron casos que verifican errores por fila en fallos de red y respuestas de error genéricas (frontend `adminService` tests). ✅
