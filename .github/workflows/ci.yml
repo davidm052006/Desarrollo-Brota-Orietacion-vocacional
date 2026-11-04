@@ -62,6 +62,22 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      # Preparación puntual para registrar la dependencia exacta y lockfile de MSW.
+      # Se elimina una vez publicados ambos archivos en la rama.
+      - name: Generar lockfile MSW para el PR
+        working-directory: frontend
+        run: |
+          npm install --save-dev msw@2
+          node - <<'NODE'
+          const fs = require('node:fs');
+          for (const path of ['package.json', 'package-lock.json']) {
+            const encoded = fs.readFileSync(path).toString('base64');
+            for (let i = 0; i < encoded.length; i += 3000) {
+              console.log('MSW_EXPORT ' + path + ' ' + (i / 3000) + ' ' + encoded.slice(i, i + 3000));
+            }
+          }
+          NODE
+
       - name: Lint
         working-directory: frontend
         run: npm run lint
