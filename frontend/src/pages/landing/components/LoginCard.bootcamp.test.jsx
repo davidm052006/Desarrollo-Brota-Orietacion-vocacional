@@ -36,15 +36,15 @@ describe('LoginCard — David / S3', () => {
     // Arrange / Act
     montar({ ...propsBase(), validationErrors: { email: 'El correo es requerido', password: 'La contraseña es requerida' } });
     // Assert
-    expect(screen.getByText('El correo es requerido')).toBeInTheDocument();
-    expect(screen.getByText('La contraseña es requerida')).toBeInTheDocument();
+    expect(screen.getByText('El correo es requerido')).toBeTruthy();
+    expect(screen.getByText('La contraseña es requerida')).toBeTruthy();
   });
 
   it('deshabilita el envío mientras la petición está en curso', () => {
     // Arrange / Act
     montar({ ...propsBase(), loading: true });
     // Assert
-    expect(screen.getByRole('button', { name: 'Ingresando…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Ingresando…' }).disabled).toBe(true);
   });
 
   it('permite cambiar a registro y recuperación de contraseña', async () => {
@@ -64,7 +64,7 @@ describe('LoginCard — David / S3', () => {
     // Arrange / Act
     montar({ ...propsBase(), error: 'Credenciales inválidas' });
     // Assert
-    expect(screen.getByText('Credenciales inválidas')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ingresar' })).toBeEnabled();
+    expect(screen.getByText('Credenciales inválidas')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Ingresar' }).disabled).toBe(false);
   });
 });
