@@ -21,6 +21,7 @@ function FieldInput({ placeholder, value, onChange, error, type = 'text' }) {
         <input
           type={isPassword && !show ? 'password' : 'text'}
           placeholder={placeholder}
+          aria-label={placeholder}
           value={value}
           onChange={onChange}
           autoComplete="off"
