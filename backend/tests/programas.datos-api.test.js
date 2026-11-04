@@ -9,12 +9,13 @@ const query = {
   order: jest.fn().mockReturnThis(),
   range: jest.fn(),
 };
-const from = jest.fn(() => query);
-jest.mock('../src/config/supabase', () => ({ from }));
+jest.mock('../src/config/supabase', () => ({ from: jest.fn() }));
+const supabaseMock = require('../src/config/supabase');
 const app = require('../src/server');
 
 beforeEach(() => {
   jest.clearAllMocks();
+  supabaseMock.from.mockImplementation(() => query);
   query.range.mockResolvedValue({ data: [], count: 0, error: null });
 });
 
