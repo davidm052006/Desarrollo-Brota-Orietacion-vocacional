@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { obtenerProgramas } from './programasService';
@@ -7,9 +7,17 @@ import { obtenerProgramas } from './programasService';
 const endpoint = 'http://localhost/api/programas';
 const server = setupServer();
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+// Node fetch requiere URL absoluta; Vite usa la ruta relativa /api.
+const nativeFetch = globalThis.fetch;
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'error' });
+  vi.stubGlobal('fetch', (input, init) => nativeFetch(new URL(input, 'http://localhost'), init));
+});
 afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+afterAll(() => {
+  vi.unstubAllGlobals();
+  server.close();
+});
 
 describe('Semana 5 / David — programasService con MSW', () => {
   it('devuelve datos y metadatos que la interfaz usa en la respuesta exitosa', async () => {
