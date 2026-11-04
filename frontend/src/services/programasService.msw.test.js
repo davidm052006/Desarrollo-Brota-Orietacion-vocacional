@@ -8,10 +8,10 @@ const endpoint = 'http://localhost/api/programas';
 const server = setupServer();
 
 // Node fetch requiere URL absoluta; Vite usa la ruta relativa /api.
-const nativeFetch = globalThis.fetch;
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
-  vi.stubGlobal('fetch', (input, init) => nativeFetch(new URL(input, 'http://localhost'), init));
+  const interceptedFetch = globalThis.fetch;
+  vi.stubGlobal('fetch', (input, init) => interceptedFetch(new URL(input, 'http://localhost'), init));
 });
 afterEach(() => server.resetHandlers());
 afterAll(() => {
