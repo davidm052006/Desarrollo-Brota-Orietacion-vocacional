@@ -2,10 +2,12 @@
 // registro público (authController.registerPerfil) como en la creación de
 // usuarios desde el panel admin (controllers/admin/usuariosController.js).
 // No duplicarla de nuevo si se vuelve a tocar este cálculo.
-function calcularEdadDesdeFecha(fechaNacimiento) {
+//
+// `hoy` se puede inyectar para que las pruebas no dependan del reloj del
+// sistema; en producción se omite y toma la fecha actual.
+function calcularEdadDesdeFecha(fechaNacimiento, hoy = new Date()) {
   if (!fechaNacimiento) return null;
 
-  const hoy = new Date();
   const nacimiento = new Date(fechaNacimiento);
   if (isNaN(nacimiento.getTime())) return null;
 
