@@ -8,8 +8,18 @@
 function calcularEdadDesdeFecha(fechaNacimiento, hoy = new Date()) {
   if (!fechaNacimiento) return null;
 
-  const nacimiento = new Date(fechaNacimiento);
+  // Una fecha 'YYYY-MM-DD' (input type="date", CSV) se lee como día de
+  // calendario local, igual que el frontend. `new Date('YYYY-MM-DD')` la toma
+  // como medianoche UTC y en Colombia (UTC-5) cae en el día anterior, lo que
+  // sumaba el año un día antes del cumpleaños.
+  const soloFecha = typeof fechaNacimiento === 'string'
+    && /^(\d{4})-(\d{2})-(\d{2})$/.exec(fechaNacimiento);
+  const nacimiento = soloFecha
+    ? new Date(Number(soloFecha[1]), Number(soloFecha[2]) - 1, Number(soloFecha[3]))
+    : new Date(fechaNacimiento);
   if (isNaN(nacimiento.getTime())) return null;
+  // new Date(2000, 12, 1) se desborda a enero de 2001 en vez de fallar.
+  if (soloFecha && nacimiento.getMonth() !== Number(soloFecha[2]) - 1) return null;
 
   let edad = hoy.getFullYear() - nacimiento.getFullYear();
   const m = hoy.getMonth() - nacimiento.getMonth();
