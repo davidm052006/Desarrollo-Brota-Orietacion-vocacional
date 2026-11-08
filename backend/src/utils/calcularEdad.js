@@ -18,7 +18,9 @@ function calcularEdadDesdeFecha(fechaNacimiento, hoy = new Date()) {
     ? new Date(Number(soloFecha[1]), Number(soloFecha[2]) - 1, Number(soloFecha[3]))
     : new Date(fechaNacimiento);
   if (isNaN(nacimiento.getTime())) return null;
-  // new Date(2000, 12, 1) se desborda a enero de 2001 en vez de fallar.
+  // new Date(2000, 12, 1) se desborda a enero de 2001 en vez de fallar, y un
+  // día inexistente también (2000-02-31 → 2 de marzo): en ambos casos el mes
+  // resultante cambia, así que este chequeo los rechaza.
   if (soloFecha && nacimiento.getMonth() !== Number(soloFecha[2]) - 1) return null;
 
   let edad = hoy.getFullYear() - nacimiento.getFullYear();

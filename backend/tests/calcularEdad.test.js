@@ -46,6 +46,10 @@ describe('calcularEdadDesdeFecha', () => {
       ['undefined', undefined],
       ['texto que no es fecha', 'no-es-una-fecha'],
       ['mes 13', '2000-13-01'],
+      ['31 de febrero (día inexistente)', '2000-02-31'],
+      ['29 de febrero en año no bisiesto', '2001-02-29'],
+      ['31 de abril (mes de 30 días)', '2000-04-31'],
+      ['día 0', '2000-05-00'],
     ])('%s → null', (_caso, fechaNacimiento) => {
       // Arrange + Act
       const edad = calcularEdadDesdeFecha(fechaNacimiento, HOY);
