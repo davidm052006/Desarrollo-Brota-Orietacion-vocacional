@@ -1,5 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
+const { responderErrorInterno } = require('../../utils/errorInterno');
 
 const getConvocatorias = asyncHandler('comunidad/convocatoriasController.getConvocatorias', async (req, res) => {
   const { data, error } = await supabase
@@ -10,7 +11,7 @@ const getConvocatorias = asyncHandler('comunidad/convocatoriasController.getConv
     .order('fecha_cierre', { ascending: true })
     .limit(20);
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/convocatoriasController', error);
 
   const result = (data ?? []).map(c => ({
     id:    c.id,

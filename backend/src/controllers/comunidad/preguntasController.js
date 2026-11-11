@@ -1,6 +1,7 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
 const { timeAgo, getNombreUsuario, esModerador, resolverAutor } = require('../../utils/comunidadHelpers');
+const { responderErrorInterno } = require('../../utils/errorInterno');
 
 const getPreguntas = asyncHandler('comunidad/preguntasController.getPreguntas', async (req, res) => {
   const puedeModerar = await esModerador(req.user?.id);
@@ -12,7 +13,7 @@ const getPreguntas = asyncHandler('comunidad/preguntasController.getPreguntas', 
     .order('created_at', { ascending: false })
     .limit(30);
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/preguntasController', error);
 
   const pregIds = (data ?? []).map(p => p.id);
   let conteoResp = {};
@@ -124,7 +125,7 @@ const crearPregunta = asyncHandler('comunidad/preguntasController.crearPregunta'
     .insert({ user_id: userId, titulo: titulo.trim(), area: area.trim(), anonimo, autor_nombre: autorNombre })
     .select().single();
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/preguntasController', error);
 
   return res.status(201).json({ success: true, data });
 });
@@ -149,7 +150,7 @@ const responderPregunta = asyncHandler('comunidad/preguntasController.responderP
     .insert({ pregunta_id: preguntaId, user_id: userId, contenido: contenido.trim(), anonimo, autor_nombre: autorNombre })
     .select().single();
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/preguntasController', error);
 
   return res.status(201).json({
     success: true,

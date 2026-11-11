@@ -1,6 +1,7 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
 const { timeAgo, incrementarContador, getNombreUsuario, esModerador, resolverAutor } = require('../../utils/comunidadHelpers');
+const { responderErrorInterno } = require('../../utils/errorInterno');
 
 const getForos = asyncHandler('comunidad/forosController.getForos', async (req, res) => {
   const { data: foros, error } = await supabase
@@ -8,7 +9,7 @@ const getForos = asyncHandler('comunidad/forosController.getForos', async (req, 
     .select('id, icon, nombre, descripcion')
     .order('id');
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/forosController', error);
 
   // Conteo de posts por foro
   const { data: conteos } = await supabase.from('posts_foro').select('foro_id');
@@ -36,7 +37,7 @@ const getPostsByForo = asyncHandler('comunidad/forosController.getPostsByForo', 
     .order(orden, { ascending: false })
     .limit(50);
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/forosController', error);
 
   // Conteo de respuestas
   const postIds = (data ?? []).map(p => p.id);
@@ -89,7 +90,7 @@ const createPost = asyncHandler('comunidad/forosController.createPost', async (r
     .select()
     .single();
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/forosController', error);
 
   return res.status(201).json({
     success: true,
@@ -221,7 +222,7 @@ const responderPost = asyncHandler('comunidad/forosController.responderPost', as
     .insert({ post_id: postId, user_id: userId, contenido: contenido.trim(), anonimo, autor_nombre: autorNombre })
     .select().single();
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/forosController', error);
 
   return res.status(201).json({
     success: true,
