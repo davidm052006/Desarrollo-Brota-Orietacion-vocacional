@@ -9,6 +9,12 @@ cambió y por qué le importa al móvil. Más nuevo arriba.
 
 ---
 
+## 2026-11-11 — `b7daa95` — errores de la API siempre en JSON (DEF-03, #58)
+
+Un JSON mal formado ahora responde `400 { success: false, message: "JSON mal formado" }`
+y una ruta inexistente `404 { success: false, message: "Ruta no encontrada" }`
+(antes ambos eran HTML). El móvil ya puede parsear siempre `message` sin caso especial para HTML.
+
 ## 2026-09-02 — `8d51823` — backend desplegado en Railway, URL fija
 
 El backend dejó de vivir solo en `localhost`/túneles — ahora corre en
