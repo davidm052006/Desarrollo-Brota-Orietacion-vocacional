@@ -1,6 +1,7 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
 const { timeAgo, incrementarContador, getNombreUsuario, esModerador, resolverAutor } = require('../../utils/comunidadHelpers');
+const { responderErrorInterno } = require('../../utils/errorInterno');
 
 const getHistorias = asyncHandler('comunidad/historiasController.getHistorias', async (req, res) => {
   const puedeModerar = await esModerador(req.user?.id);
@@ -13,7 +14,7 @@ const getHistorias = asyncHandler('comunidad/historiasController.getHistorias', 
     .order('created_at', { ascending: false })
     .limit(20);
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/historiasController', error);
 
   const userId = req.user?.id ?? null;
   let misLikes = new Set();
@@ -134,7 +135,7 @@ const crearHistoria = asyncHandler('comunidad/historiasController.crearHistoria'
     })
     .select().single();
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/historiasController', error);
 
   return res.status(201).json({ success: true, data, message: 'Historia enviada para revisión' });
 });
