@@ -66,7 +66,7 @@ export function Toggle({ value, onChange, label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
       <span style={{ fontSize: 13.5, color: 'var(--ink-soft)', flex: 1 }}>{label}</span>
-      <button onClick={() => onChange(!value)} style={{
+      <button type="button" role="switch" aria-checked={value} aria-label={label} onClick={() => onChange(!value)} style={{
         width: 44, height: 26, borderRadius: 999,
         background: value ? 'var(--primary)' : 'var(--surface-2)',
         border: 'none', cursor: 'pointer', position: 'relative', transition: 'background .2s',
@@ -87,7 +87,7 @@ export function AreaChips({ value, onChange }) {
       {AREAS_CHIPS.map(a => {
         const active = value === a;
         return (
-          <button key={a} onClick={() => onChange(a)} style={{
+          <button key={a} type="button" aria-pressed={active} onClick={() => onChange(a)} style={{
             fontSize: 12.5, padding: '7px 14px', borderRadius: 999,
             border: active ? 'none' : '1px solid var(--line)',
             background: active ? 'var(--primary)' : 'var(--surface)',
