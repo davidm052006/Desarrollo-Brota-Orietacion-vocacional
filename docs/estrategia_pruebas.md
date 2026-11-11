@@ -36,6 +36,18 @@ Validar la experiencia del usuario final.
 	- Infra de tests: `vitest` + `@testing-library/react` configurados en `frontend/vitest.config.cjs` y `src/test/setupTests.js`.
 	- Tests implementados: flujo `TestVocacional` → `TestResult` y `createUsuariosMasivo` (mocks y ajustes para Chart.js en jsdom). ✅ (4 archivos, 19 tests, 19/19 pasan).
 
+### Medición backend — 15 de octubre de 2026
+
+Se añadieron cuatro pruebas para `calcularEdadDesdeFecha` en
+`backend/tests/calcularEdad.test.js`, cubriendo fechas ausentes o inválidas,
+el cálculo alrededor del cumpleaños y los límites de edad admitidos. La función
+`calcularEdad.js` quedó con 100% en las cuatro métricas.
+
+La ejecución completa pasó 9 suites y 35 pruebas. La cobertura global aumentó a
+33.34% de sentencias, 15.98% de ramas, 20.98% de funciones y 36.29% de líneas;
+las cuatro métricas superan sus umbrales configurados y el comando terminó con
+código 0. No se redujo ningún umbral.
+
 ## Pendientes relevantes
 
 - `createUsuariosMasivo`: pruebas por fila implementadas — se añadieron casos que verifican errores por fila en fallos de red y respuestas de error genéricas (frontend `adminService` tests). ✅

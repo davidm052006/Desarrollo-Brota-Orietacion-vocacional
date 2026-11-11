@@ -1,17 +1,23 @@
 const request = require('supertest');
+
+// Stub de Supabase: el smoke test comprueba el contrato HTTP, no una BD remota.
+// Evita timeouts de red y no lee ni modifica datos de desarrollo.
+jest.mock('../src/config/supabase', () => ({
+  from: jest.fn(() => ({
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    not: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
+    range: jest.fn().mockResolvedValue({ data: [], count: 0, error: null }),
+  })),
+}));
 const app = require('../src/server');
 
-// Pruebas mínimas de arranque para el sistema (agosto 2026) — cubren un
-// CRUD público (lectura de programas) y el guard de autenticación de las
-// rutas admin, los dos casos más rápidos de verificar sin necesitar un
-// token real de Supabase Auth. Corren contra el Supabase real de
-// desarrollo (sin mocks) — complementan a tests/admin y
-// tests/middlewares, que sí mockean supabase para probar lógica aislada.
-
-describe('API — smoke tests', () => {
+describe('API — smoke tests sin servicios externos', () => {
   it('GET /api/programas responde 200 con la forma esperada', async () => {
     const res = await request(app).get('/api/programas');
     expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/application\/json/);
     expect(res.body.success).toBe(true);
     expect(Array.isArray(res.body.data)).toBe(true);
   });
