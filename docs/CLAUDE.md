@@ -1,7 +1,7 @@
 # CLAUDE.md — Contexto del proyecto Brota
 
 ## Manual de marca
-Ver **[BRAND.md](./BRAND.md)** para colores, tipografía, voz, tono, componentes UI y contexto del producto.
+Ver **[BRAND.md](BRAND.md)** para colores, tipografía, voz, tono, componentes UI y contexto del producto.
 Cualquier cambio visual debe respetar la paleta y los tokens definidos ahí.
 
 ## Stack
@@ -15,7 +15,7 @@ Cualquier cambio visual debe respetar la paleta y los tokens definidos ahí.
 
 Existe una app móvil hermana en `~/Proyectos/brota_flutter_app/` (Clean
 Architecture, consume este mismo backend). Su documentación de contexto
-(`MOBILE_DESIGN_BRIEF.md`, `FUNCTIONAL_CONTENT_BRIEF.md`,
+([`MOBILE_DESIGN_BRIEF.md`](https://github.com/davidm052006/brota-flutter-app/blob/master/MOBILE_DESIGN_BRIEF.md), `FUNCTIONAL_CONTENT_BRIEF.md`,
 `WEB_PARITY_ROADMAP.md`) se escribió auditando este repo en un momento
 dado y **se desactualiza silenciosamente** cada vez que acá se agrega un
 endpoint, se cambia el esquema de una tabla, se agrega/quita una
@@ -29,7 +29,7 @@ de arriba (endpoint nuevo/cambiado/borrado, tabla o columna nueva,
 pantalla nueva o que cambió de alcance, cambio de paleta/tipografía/
 assets de marca, o cualquier decisión de producto que el móvil debería
 replicar), agregá una entrada corta a
-**`CHANGELOG_PARA_MOVIL.md`** (raíz de este repo) — fecha, hash del
+**[`CHANGELOG_PARA_MOVIL.md`](https://github.com/davidm052006/brota-flutter-app/blob/master/CHANGELOG_PARA_MOVIL.md)** (repositorio móvil) — fecha, hash del
 commit, qué cambió, por qué le importa al móvil. Dos líneas alcanzan; no
 hace falta prosa larga, es para que la próxima sesión del lado móvil lea
 el changelog en vez de re-auditar todo el repo desde cero.
@@ -77,7 +77,7 @@ Reemplaza al túnel de la sección anterior para la fase de beta con el equipo (
 
 **Orden de despliegue** (hay dependencia circular de URLs): desplegar primero el backend en Railway sin `FRONTEND_URL` todavía → tomar la URL que asigna Railway → desplegar el frontend en Vercel con `VITE_API_URL` apuntando a esa URL → tomar la URL de Vercel → volver a Railway y setear `FRONTEND_URL` con la URL real de Vercel (un cambio de variable de entorno dispara redeploy solo).
 
-Ya avisado en `CHANGELOG_PARA_MOVIL.md` (entrada `2026-09-02`) que el backend tiene URL fija ahora — la app Flutter debería apuntar ahí en vez de a un túnel/IP local.
+Ya avisado en el `CHANGELOG_PARA_MOVIL.md` del repositorio móvil (entrada `2026-09-02`) que el backend tiene URL fija ahora — la app Flutter debería apuntar ahí en vez de a un túnel/IP local.
 
 ## TailwindCSS v4 — IMPORTANTE
 El oxide scanner NO recursiona subdirectorios profundos sin `@source` explícito.
@@ -166,7 +166,7 @@ Regla de Fast Refresh de Vite (`react-refresh/only-export-components`): un archi
 
 ## Rediseño visual implementado (junio 2026)
 
-### Basado en diseños en `frontend/public/diseños/`
+### Basado en diseños en `docs/design-references/web-screenshots/`
 Se implementaron todos los cambios visuales basados en los 8 archivos PNG de diseño.
 
 #### ✅ Completado
@@ -325,7 +325,7 @@ Fuente única de verdad del catálogo: `CATEGORIAS` (orden en que se muestran en
   En ambos casos, después solo hace falta un item nuevo en `ITEMS` con `categoria: 'variante'` e `imagen` apuntando al archivo.
 - **`fondo`** — 6 fotos reales en `frontend/public/broti/fondos/` (cielo con arcoíris, bosque encantado, arrecife, desierto, ciudad de noche, espacio; 2 gratis + 4 premium), se dibujan como `background: url(...) center / cover` detrás de la mascota (círculo/card completo), no como badge encima.
 
-**Se probó y se descartó** (antes de llegar a `variante`) un sistema de lentes/accesorios fusionados de verdad dentro del SVG del mascota — piezas sueltas combinables con `fondo`, cada una con su propio `transform` calculado para calzar con los ojos o un punto de anclaje. El resultado nunca terminó de verse bien: primera versión con accesorios de Recraft chocaba de estilo con el mascota base (doble contorno, doble brillo en los lentes); segunda versión con stickers generados a mano ya combinaba mejor de estilo pero tenía un bug real de z-order (las orejas, dibujadas después en el SVG, tapaban las patillas de los lentes). Se sacó todo el mecanismo (`BrotiMascota.jsx`, `brotiFusion.js`, los assets en `frontend/public/broti/lentes|accesorios/`) a favor de `variante` — quedan de referencia en `logos/variantes/` (lámina de stickers generada con IA, recortes individuales, SVG de Recraft) por si se retoma la idea de piezas combinables más adelante, pero no están en uso.
+**Se probó y se descartó** (antes de llegar a `variante`) un sistema de lentes/accesorios fusionados de verdad dentro del SVG del mascota — piezas sueltas combinables con `fondo`, cada una con su propio `transform` calculado para calzar con los ojos o un punto de anclaje. El resultado nunca terminó de verse bien: primera versión con accesorios de Recraft chocaba de estilo con el mascota base (doble contorno, doble brillo en los lentes); segunda versión con stickers generados a mano ya combinaba mejor de estilo pero tenía un bug real de z-order (las orejas, dibujadas después en el SVG, tapaban las patillas de los lentes). Se sacó todo el mecanismo (`BrotiMascota.jsx`, `brotiFusion.js`, los assets en `frontend/public/broti/lentes|accesorios/`) a favor de `variante` — quedan de referencia en `docs/marca/logos/variantes/` (lámina de stickers generada con IA, recortes individuales, SVG de Recraft) por si se retoma la idea de piezas combinables más adelante, pero no están en uso.
 
 **`Racha.jsx` todavía NO respeta `variante`** — sigue mostrando siempre las 4 expresiones del perezoso (feliz/triste/guiño/base, según `racha_dias`/`racha_rota`) sin importar la variante equipada, porque cada variante hoy es una sola imagen estática sin sus propias expresiones. Si se agregan expresiones por variante habría que resolver ese cruce ahí (hoy `estadoMascota()` devuelve un path fijo a uno de los 4 SVG del perezoso).
 

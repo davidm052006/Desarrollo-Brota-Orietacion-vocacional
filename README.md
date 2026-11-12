@@ -8,8 +8,8 @@ Plataforma de orientación vocacional para estudiantes colombianos de colegio (1
 
 ## Documentación
 
-- **[`CLAUDE.md`](./CLAUDE.md)** — contexto técnico día a día: mapa de rutas, arquitectura, bugs conocidos, deuda técnica. Punto de partida si vas a tocar código.
-- **[`BRAND.md`](./BRAND.md)** — manual de marca (colores, tipografía, voz y tono).
+- **[`docs/CLAUDE.md`](./docs/CLAUDE.md)** — contexto técnico día a día: mapa de rutas, arquitectura, bugs conocidos, deuda técnica. Punto de partida si vas a tocar código.
+- **[`docs/BRAND.md`](./docs/BRAND.md)** — manual de marca (colores, tipografía, voz y tono).
 - **[`docs/00_START_HERE.md`](./docs/00_START_HERE.md)** — índice de la documentación formal del proyecto (requisitos funcionales, modelo de datos, gestión del proyecto, estrategia de pruebas, despliegue).
 
 ## Arrancar con Docker Compose
@@ -73,8 +73,7 @@ La cobertura actual y las pruebas pendientes están documentadas en [`docs/estra
 /
 ├── frontend/     # React + Vite (ver frontend/README.md)
 ├── backend/      # Express + Supabase (ver backend/README.md)
-├── docs/         # Documentación formal del proyecto (ver docs/00_START_HERE.md)
-├── logos/        # Assets de marca y de la mascota "Broti"
-├── CLAUDE.md     # Contexto técnico de desarrollo
-└── BRAND.md      # Manual de marca
+├── docs/         # Documentación del proyecto (ver docs/00_START_HERE.md y docs/CLAUDE.md)
+├── scripts/      # Automatización y diagnósticos de desarrollo
+└── supabase/     # Configuración y migraciones de Supabase
 ```

@@ -83,4 +83,4 @@ Ver `.env.example` para la lista completa. Las principales:
 ## 🔗 Ver también
 
 - [`docs/00_START_HERE.md`](../docs/00_START_HERE.md) — documentación formal del proyecto.
-- [`CLAUDE.md`](../CLAUDE.md) — mapa de rutas de la API, arquitectura de controllers, bugs conocidos.
+- [`docs/CLAUDE.md`](../docs/CLAUDE.md) — mapa de rutas de la API, arquitectura de controllers, bugs conocidos.

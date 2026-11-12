@@ -92,4 +92,4 @@ La interfaz usa los tokens definidos en `src/index.css`, no una paleta fija por 
 | `--primary-deep` | `#0E7D43` | `#1FA862` | Hover y acentos oscuros |
 | `--accent` | `#E07A42` | `#F0996A` | Acento secundario |
 
-Tipografía: **Bricolage Grotesque** para títulos destacados y **Plus Jakarta Sans** para texto de interfaz. Para ampliar las reglas de marca, consulta [`BRAND.md`](../BRAND.md).
+Tipografía: **Bricolage Grotesque** para títulos destacados y **Plus Jakarta Sans** para texto de interfaz. Para ampliar las reglas de marca, consulta [`docs/BRAND.md`](../docs/BRAND.md).

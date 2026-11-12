@@ -8,7 +8,7 @@ Las imágenes en `referencias/` (`ref 1.jpeg`, `ref 2.jpeg`, `ref 3.jpeg`) son l
 ## Estructura de carpetas (reorganizado agosto 2026)
 
 ```
-logos/
+docs/marca/logos/
 ├── referencias/    fotos de estilo que dio el usuario (input, no se edita)
 ├── fuente/         export crudo de Recraft, fuente de verdad — no editar directamente
 ├── historico/       primer intento, superado — se conserva solo de referencia
