@@ -4,7 +4,8 @@ import InstitucionNav from './components/InstitucionNav';
 import { obtenerPerfil } from '../../../services/perfilService';
 import * as institucionService from '../../../services/institucionService';
 import { CATEGORIA_OPCIONES } from '../../../utils/vocacionalCategorias';
-import { TIPOS_PREGUNTA, esPreguntaAbierta } from '../../../utils/tiposPregunta';
+import { OPCIONES_TIPO, TIPOS_PREGUNTA, normalizarTipo } from '../../../utils/tiposPregunta';
+import { esPreguntaAbierta } from '../../../utils/tiposPregunta';
 
 const cardStyle = {
   background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16,
@@ -29,7 +30,7 @@ const formatearFecha = fecha => fecha
   ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
   : 'Sin registrar';
 
-function OpcionEditor({ opcion, onChange, onQuitar }) {
+function OpcionEditor({ opcion, letra, tipoPregunta, onChange, onQuitar, quitarDeshabilitado }) {
   const pesosArray = Object.entries(opcion.pesos || {});
 
   const setPeso = (idx, campo, valor) => {
@@ -45,14 +46,20 @@ function OpcionEditor({ opcion, onChange, onQuitar }) {
 
   return (
     <div style={{ border: '1px solid var(--line)', borderRadius: 10, padding: 10, marginBottom: 8 }}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center' }}>
+        <span aria-label={`Opción ${letra}`} style={{ width: 24, height: 24, flexShrink: 0, display: 'grid', placeItems: 'center', borderRadius: 7, background: 'var(--surface-2)', color: 'var(--ink-soft)', fontSize: 11, fontWeight: 800 }}>{letra}</span>
         <input
           placeholder="Texto de la opción" value={opcion.label}
           onChange={e => onChange({ ...opcion, label: e.target.value })}
           style={{ ...inputStyle, flex: 1 }}
         />
-        <button onClick={onQuitar} style={{ ...btnGhost, color: '#dc2626' }}>✕</button>
+        <button onClick={onQuitar} disabled={quitarDeshabilitado} style={{ ...btnGhost, color: '#dc2626', opacity: quitarDeshabilitado ? .5 : 1 }}>✕</button>
       </div>
+      {tipoPregunta !== 'single' && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--ink-soft)', margin: '6px 0' }}>
+          <input type="checkbox" checked={Boolean(opcion.es_correcta)} onChange={e => onChange({ ...opcion, es_correcta: e.target.checked })} /> Respuesta correcta
+        </label>
+      )}
       {pesosArray.map(([categoria, puntos], i) => (
         <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
           <select value={categoria} onChange={e => setPeso(i, 'categoria', e.target.value)} style={{ ...inputStyle, flex: 1 }}>
@@ -72,10 +79,14 @@ function OpcionEditor({ opcion, onChange, onQuitar }) {
   );
 }
 
-const PREGUNTA_VACIA = { texto: '', tipo: 'opcion_multiple', categoria: '', peso: 1, opciones: [{ label: '', pesos: {} }, { label: '', pesos: {} }] };
+const OPCION_VACIA = { label: '', pesos: {}, es_correcta: false };
+const PREGUNTA_VACIA = { texto: '', tipo: 'opcion_unica', categoria: '', peso: 1, opciones: [{ ...OPCION_VACIA }, { ...OPCION_VACIA }] };
 
 function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
-  const [form, setForm] = useState(pregunta || PREGUNTA_VACIA);
+  const [form, setForm] = useState(() => ({
+    ...(pregunta || PREGUNTA_VACIA),
+    opciones: (pregunta?.opciones || PREGUNTA_VACIA.opciones).map(opcion => ({ ...opcion, pesos: { ...(opcion.pesos || {}) } })),
+  }));
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
 
@@ -84,17 +95,27 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
     opciones[idx] = nueva;
     setForm(f => ({ ...f, opciones }));
   };
-  const agregarOpcion = () => setForm(f => ({ ...f, opciones: [...f.opciones, { label: '', pesos: {} }] }));
+  const agregarOpcion = () => setForm(f => ({ ...f, opciones: [...f.opciones, { label: '', pesos: {}, es_correcta: false }] }));
   const quitarOpcion = (idx) => setForm(f => ({ ...f, opciones: f.opciones.filter((_, i) => i !== idx) }));
 
   const guardar = async () => {
     if (!form.texto.trim()) { setError('El texto de la pregunta es obligatorio'); return; }
-    if (!esPreguntaAbierta(form.tipo) && (form.opciones.length < 2 || form.opciones.some(o => !o.label.trim()))) {
-      setError('Necesitás al menos 2 opciones, todas con texto'); return;
+    if (!esPreguntaAbierta(form.tipo)) {
+      if (form.tipo === 'single' && form.opciones.length !== 5) {
+        setError('Las preguntas de selección única deben tener exactamente 5 opciones'); return;
+      }
+      if (form.opciones.length < 2 || form.opciones.some(o => !o.label.trim())) {
+        setError('Necesitás al menos 2 opciones, todas con texto'); return;
+      }
+    }
+    if (form.tipo === 'single' && form.opciones.some(o =>
+      !Object.entries(o.pesos || {}).some(([categoria, puntos]) => categoria && Number(puntos) > 0)
+    )) {
+      setError('Asigna un área vocacional a cada opción de selección única'); return;
     }
     setGuardando(true);
     setError('');
-    const datos = { ...form, opciones: esPreguntaAbierta(form.tipo) ? [] : form.opciones };
+    const datos = { ...form, tipo: normalizarTipo(form.tipo), opciones: esPreguntaAbierta(form.tipo) ? [] : form.opciones };
     const { success, error: err } = await onGuardar(datos);
     setGuardando(false);
     if (!success) setError(err);
@@ -111,13 +132,26 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
         <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Texto de la pregunta</label>
         <textarea rows={2} value={form.texto} onChange={e => setForm(f => ({ ...f, texto: e.target.value }))} style={{ ...inputStyle, resize: 'vertical', marginBottom: 10 }} />
 
+        <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Tipo de pregunta</label>
+        <select
+          value={normalizarTipo(form.tipo)}
+          onChange={e => setForm(f => {
+            const tipo = e.target.value;
+            const totalOpciones = tipo === 'single' ? 5 : Math.max(f.opciones.length, 2);
+            const opciones = f.opciones.length < totalOpciones
+              ? [...f.opciones, ...Array.from({ length: totalOpciones - f.opciones.length }, () => ({ ...OPCION_VACIA }))]
+              : f.opciones;
+            return { ...f, tipo, opciones };
+          })}
+          style={{ ...inputStyle, marginBottom: 4 }}
+        >
+          {OPCIONES_TIPO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
+        <p style={{ fontSize: 11, color: 'var(--ink-soft)', marginBottom: 10, lineHeight: 1.35 }}>
+          {TIPOS_PREGUNTA[normalizarTipo(form.tipo)].descripcion}
+        </p>
+
         <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Tipo de pregunta</label>
-            <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))} style={inputStyle}>
-              {TIPOS_PREGUNTA.map(tipo => <option key={tipo.value} value={tipo.value}>{tipo.label}</option>)}
-            </select>
-          </div>
           <div style={{ flex: 1 }}>
             <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--ink-soft)', display: 'block', marginBottom: 4 }}>Orden</label>
             <input type="number" value={form.orden || ''} onChange={e => setForm(f => ({ ...f, orden: e.target.value }))} style={inputStyle} />
@@ -138,9 +172,13 @@ function ModalPregunta({ pregunta, onGuardar, onCerrar }) {
               Opciones (cada una puede sumar puntos a una o más categorías)
             </p>
             {form.opciones.map((o, i) => (
-              <OpcionEditor key={i} opcion={o} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} />
+              <OpcionEditor key={i} letra={String.fromCharCode(65 + i)} opcion={o} tipoPregunta={normalizarTipo(form.tipo)} onChange={(n) => cambiarOpcion(i, n)} onQuitar={() => quitarOpcion(i)} quitarDeshabilitado={normalizarTipo(form.tipo) === 'single' && form.opciones.length <= 5} />
             ))}
-            <button onClick={agregarOpcion} style={{ ...btnGhost, fontSize: 12, marginBottom: 12 }}>+ Agregar opción</button>
+            <button
+              onClick={agregarOpcion}
+              disabled={normalizarTipo(form.tipo) === 'single' && form.opciones.length >= 5}
+              style={{ ...btnGhost, fontSize: 12, marginBottom: 12, opacity: normalizarTipo(form.tipo) === 'single' && form.opciones.length >= 5 ? .5 : 1 }}
+            >+ Agregar opción</button>
           </>
         )}
 

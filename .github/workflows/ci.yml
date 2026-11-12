@@ -20,19 +20,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            backend/pnpm-lock.yaml
+            frontend/pnpm-lock.yaml
+            e2e/pnpm-lock.yaml
 
       - name: Instalar dependencias
-        working-directory: backend
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        working-directory: backend
-        run: npx eslint .
+        run: pnpm --filter backend exec eslint .
 
       # backend/.env.example trae credenciales reales de desarrollo a propósito
       # (ver CLAUDE.md, "Credenciales reales expuestas en el repo" — decisión
@@ -42,9 +48,8 @@ jobs:
         working-directory: backend
         run: cp .env.example .env
 
-      - name: Tests
-        working-directory: backend
-        run: npm test
+      - name: Tests y cobertura
+        run: pnpm --filter backend test:coverage
 
   frontend:
     name: Frontend (lint + tests + build)
@@ -52,28 +57,61 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            backend/pnpm-lock.yaml
+            frontend/pnpm-lock.yaml
+            e2e/pnpm-lock.yaml
 
       - name: Instalar dependencias
-        working-directory: frontend
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint
-        working-directory: frontend
-        run: npm run lint
+        run: pnpm --filter frontend lint
 
-      - name: Tests
-        working-directory: frontend
-        run: npm test
+      - name: Tests y cobertura
+        run: pnpm --filter frontend test:coverage
 
       - name: Preparar variables de entorno
         working-directory: frontend
         run: cp .env.local.example .env.local
 
       - name: Build
-        working-directory: frontend
-        run: npm run build
+        run: pnpm --filter frontend build
+
+  e2e:
+    name: Browser E2E (login validation)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            backend/pnpm-lock.yaml
+            frontend/pnpm-lock.yaml
+            e2e/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar Chromium
+        run: pnpm --dir e2e exec playwright install --with-deps chromium
+
+      - name: E2E sin credenciales externas
+        run: pnpm --dir e2e exec playwright test tests/login-validation.spec.js

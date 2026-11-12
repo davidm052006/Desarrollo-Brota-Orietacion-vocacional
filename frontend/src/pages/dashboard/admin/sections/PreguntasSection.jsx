@@ -1,11 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as adminService from '../../../../services/adminService';
 import Modal from '../components/Modal';
-import { TIPOS_PREGUNTA, esPreguntaAbierta } from '../../../../utils/tiposPregunta';
+import { OPCIONES_TIPO, TIPOS_PREGUNTA, normalizarTipo, esPreguntaAbierta } from '../../../../utils/tiposPregunta';
+import { CATEGORIA_OPCIONES } from '../../../../utils/vocacionalCategorias';
 
+// Un color por tipo canónico — antes solo cubría 2 de los 3, así que una
+// pregunta de opción única se mostraba sin badge.
 const TIPO_COLORS = {
+  'opcion_unica':    'bg-emerald-100 text-emerald-700',
+  'single':          'bg-emerald-100 text-emerald-700',
   'opcion_multiple': 'bg-blue-100 text-blue-700',
   'likert':          'bg-purple-100 text-purple-700',
+  'respuesta_corta': 'bg-amber-100 text-amber-700',
+  'respuesta_larga': 'bg-orange-100 text-orange-700',
 };
 
 const CATEGORIA_COLORS = {
@@ -15,14 +22,17 @@ const CATEGORIA_COLORS = {
   'contexto':    'bg-orange-100 text-orange-700',
 };
 
-const OPCIONES_INICIALES = [{ label: '' }, { label: '' }];
-const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'opcion_multiple', orden: '', categoria: '', peso: '1.0', opciones: OPCIONES_INICIALES };
+const OPCIONES_INICIALES = Array.from({ length: 5 }, () => ({ label: '', es_correcta: false, pesos: {} }));
+const CATEGORIAS_VOCACIONALES = CATEGORIA_OPCIONES.filter(({ value }) =>
+  value !== 'ambiente' && value !== 'emprendimiento'
+);
+const FORM_VACIO = { cuestionario_id: '', texto: '', tipo: 'single', orden: '', categoria: '', peso: '1.0', opciones: OPCIONES_INICIALES };
 
 const formatearFecha = fecha => fecha
   ? new Date(fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
   : 'Sin registrar';
 
-function FormCampos({ f, setF, cuestionarios }) {
+function FormCampos({ f, setF, cuestionarios, respuestasCorrectasDisponibles }) {
   return (
     <div className="space-y-3">
       <div>
@@ -43,8 +53,11 @@ function FormCampos({ f, setF, cuestionarios }) {
           <label className="block text-xs font-semibold text-gray-600 mb-1">Tipo</label>
           <select value={f.tipo} onChange={e => setF(p => ({ ...p, tipo: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
-            {TIPOS_PREGUNTA.map(tipo => <option key={tipo.value} value={tipo.value}>{tipo.label}</option>)}
+            {OPCIONES_TIPO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
+          <p className="mt-1 text-[11px] leading-snug text-gray-500">
+            {TIPOS_PREGUNTA[normalizarTipo(f.tipo)].descripcion}
+          </p>
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Categoría</label>
@@ -65,29 +78,59 @@ function FormCampos({ f, setF, cuestionarios }) {
             className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
         </div>
       </div>
-      {!esPreguntaAbierta(f.tipo) && (
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="block text-xs font-semibold text-gray-600">Opciones de respuesta *</label>
-            <button type="button" onClick={() => setF(p => ({ ...p, opciones: [...p.opciones, { label: '' }] }))}
-              className="text-xs font-semibold text-primary hover:underline">+ Agregar opción</button>
-          </div>
-          <div className="space-y-2">
-            {f.opciones.map((opcion, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <span className="w-6 text-center text-xs text-gray-400">{index + 1}</span>
-                <input type="text" value={opcion.label || ''} placeholder={`Opción ${index + 1}`}
-                  onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
-                <button type="button" disabled={f.opciones.length <= 2}
-                  onClick={() => setF(p => ({ ...p, opciones: p.opciones.filter((_, i) => i !== index) }))}
-                  className="px-2 py-1 text-sm text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed" title="Quitar opción">×</button>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 mt-1">Agrega al menos dos opciones y escribe el texto de cada una.</p>
+      {esPreguntaAbierta(f.tipo) ? (
+        <p className="rounded-lg bg-gray-50 p-3 text-xs text-gray-600">
+          La respuesta escrita se guarda con el resultado del cuestionario y no modifica el perfil vocacional.
+        </p>
+      ) : <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-xs font-semibold text-gray-600">Opciones de respuesta *</label>
+          <button type="button" disabled={f.tipo === 'single' && f.opciones.length >= 5} onClick={() => setF(p => ({ ...p, opciones: [...p.opciones, { label: '', es_correcta: false, pesos: {} }] }))}
+            className="text-xs font-semibold text-primary hover:underline disabled:opacity-40">+ Agregar opción</button>
         </div>
-      )}
+        <div className="space-y-2">
+          {(f.opciones || []).map((opcion, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <span className="w-6 text-center text-xs font-semibold text-gray-500">{String.fromCharCode(65 + index)}</span>
+              <input type="text" value={opcion.label || ''} placeholder={`Opción ${index + 1}`}
+                onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, label: e.target.value } : item) }))}
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+              <select
+                aria-label={`Área vocacional de opción ${index + 1}`}
+                value={Object.keys(opcion.pesos || {})[0] || ''}
+                onChange={e => setF(p => ({
+                  ...p,
+                  opciones: p.opciones.map((item, i) => i === index
+                    ? { ...item, pesos: e.target.value ? { [e.target.value]: 1 } : {} }
+                    : item),
+                }))}
+                className="max-w-40 px-2 py-2 border border-gray-200 rounded-lg text-xs bg-white"
+              >
+                <option value="">Sin área</option>
+                {CATEGORIAS_VOCACIONALES.map(categoria => (
+                  <option key={categoria.value} value={categoria.value}>{categoria.label}</option>
+                ))}
+              </select>
+              {f.tipo !== 'single' && (
+                <label className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap" title="Marcar como respuesta correcta">
+                  <input type="checkbox" checked={Boolean(opcion.es_correcta)} disabled={!respuestasCorrectasDisponibles} onChange={e => setF(p => ({ ...p, opciones: p.opciones.map((item, i) => i === index ? { ...item, es_correcta: e.target.checked } : item) }))} /> Correcta
+                </label>
+              )}
+              <button type="button" disabled={f.opciones.length <= (f.tipo === 'single' ? 5 : 2)}
+                onClick={() => setF(p => ({ ...p, opciones: p.opciones.filter((_, i) => i !== index) }))}
+                className="px-2 py-1 text-sm text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed" title="Quitar opción">×</button>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400 mt-1">
+          {f.tipo === 'single'
+            ? 'Cada opción suma un punto al área asignada; no hay respuestas correctas o incorrectas.'
+            : 'Agrega al menos dos opciones y asigna el área que aporta cada una al perfil.'}
+        </p>
+        {f.tipo !== 'single' && !respuestasCorrectasDisponibles && (
+          <p className="text-xs text-amber-700 mt-2">Para marcar respuestas correctas, primero aplica la migración de opciones correctas en Supabase.</p>
+        )}
+      </div>}
     </div>
   );
 }
@@ -98,6 +141,8 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   const [preguntas, setPreguntas]         = useState([]);
   const [cuestionarios, setCuestionarios] = useState([]);
   const [loading, setLoading]             = useState(true);
+  const [errorCarga, setErrorCarga]       = useState('');
+  const [respuestasCorrectasDisponibles, setRespuestasCorrectasDisponibles] = useState(true);
   const [busqueda, setBusqueda]           = useState('');
   const [filtroC, setFiltroC]             = useState(filtroCuestionarioId);
 
@@ -114,13 +159,40 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   // sin necesidad de sincronizarlo con un efecto.
 
   const fetchPreguntas = useCallback(async () => {
-    setLoading(true);
-    const { success, data } = await adminService.getPreguntas({ cuestionario_id: filtroC, busqueda });
-    if (success) setPreguntas(data);
+    const { success, data, error, meta } = await adminService.getPreguntas({ cuestionario_id: filtroC, busqueda });
+    if (success) {
+      setPreguntas(data || []);
+      setErrorCarga('');
+      setRespuestasCorrectasDisponibles(meta?.es_correcta_disponible !== false);
+    } else {
+      setPreguntas([]);
+      setErrorCarga(error || 'No fue posible cargar las preguntas.');
+    }
     setLoading(false);
   }, [filtroC, busqueda]);
 
-  useEffect(() => { fetchPreguntas(); }, [fetchPreguntas]);
+  const recargarPreguntas = useCallback(() => {
+    setLoading(true);
+    setErrorCarga('');
+    fetchPreguntas();
+  }, [fetchPreguntas]);
+
+  useEffect(() => {
+    let activo = true;
+    adminService.getPreguntas({ cuestionario_id: filtroC, busqueda }).then(({ success, data, error, meta }) => {
+      if (!activo) return;
+      if (success) {
+        setPreguntas(data || []);
+        setErrorCarga('');
+        setRespuestasCorrectasDisponibles(meta?.es_correcta_disponible !== false);
+      } else {
+        setPreguntas([]);
+        setErrorCarga(error || 'No fue posible cargar las preguntas.');
+      }
+      setLoading(false);
+    });
+    return () => { activo = false; };
+  }, [filtroC, busqueda]);
 
   useEffect(() => {
     adminService.getCuestionarios().then(({ success, data }) => {
@@ -129,47 +201,65 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
   }, []);
 
   const abrirEditar = (p) => {
-    const opciones = Array.isArray(p.opciones) && p.opciones.length > 0 ? p.opciones : OPCIONES_INICIALES;
-    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: p.tipo || 'opcion_multiple', orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0', opciones });
+    const opciones = Array.isArray(p.opciones) && p.opciones.length > 0
+      ? p.opciones
+      : OPCIONES_INICIALES.map(opcion => ({ ...opcion }));
+    setForm({ cuestionario_id: p.cuestionario_id || '', texto: p.texto || '', tipo: normalizarTipo(p.tipo), orden: p.orden ?? '', categoria: p.categoria || '', peso: p.peso ?? '1.0', opciones });
     setFormError(null);
     setModalEditar(p);
   };
 
   const prepararDatos = () => ({
     ...form,
+    tipo: normalizarTipo(form.tipo),
     orden: parseInt(form.orden) || 1,
     peso: parseFloat(form.peso) || 1.0,
-    opciones: esPreguntaAbierta(form.tipo) ? [] : form.opciones.filter(opcion => opcion.label?.trim()).map((opcion, index) => ({ ...opcion, label: opcion.label.trim(), orden: index })),
+    opciones: esPreguntaAbierta(form.tipo) ? [] : form.opciones.filter(opcion => opcion.label?.trim()).map((opcion, index) => ({
+      ...opcion,
+      label: opcion.label.trim(),
+      orden: index,
+      es_correcta: form.tipo === 'single' ? false : Boolean(opcion.es_correcta),
+      pesos: Object.keys(opcion.pesos || {}).length > 0 ? { [Object.keys(opcion.pesos)[0]]: 1 } : {},
+    })),
   });
 
   const validarOpciones = () => {
-    if (!esPreguntaAbierta(form.tipo) && (form.opciones.length < 2 || form.opciones.some(opcion => !opcion.label?.trim()))) {
+    if (esPreguntaAbierta(form.tipo)) return true;
+    if (form.tipo === 'single' && form.opciones.length !== 5) {
+      setFormError('Las preguntas de selección única deben tener exactamente 5 opciones.');
+      return false;
+    }
+    if (form.opciones.length < 2 || form.opciones.some(opcion => !opcion.label?.trim())) {
       setFormError('Las preguntas con opciones necesitan al menos 2 opciones con texto.');
+      return false;
+    }
+    if (form.tipo === 'single' && form.opciones.some(opcion => !Object.keys(opcion.pesos || {}).length)) {
+      setFormError('Asigna un área vocacional a cada opción de selección única.');
       return false;
     }
     return true;
   };
 
   const guardarEdicion = async () => {
+    if (!validarOpciones()) return;
     setGuardando(true);
     setFormError(null);
-    if (!validarOpciones()) { setGuardando(false); return; }
     const { success, error } = await adminService.updatePregunta(modalEditar.id, prepararDatos());
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalEditar(null);
     setGuardando(false);
-    fetchPreguntas();
+    recargarPreguntas();
   };
 
   const crearPregunta = async () => {
+    if (!validarOpciones()) return;
     setGuardando(true);
     setFormError(null);
-    if (!validarOpciones()) { setGuardando(false); return; }
     const { success, error } = await adminService.createPregunta(prepararDatos());
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalNuevo(false);
     setGuardando(false);
-    fetchPreguntas();
+    recargarPreguntas();
   };
 
   const confirmarEliminar = async () => {
@@ -178,11 +268,11 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
     if (!success) { setFormError(error); setGuardando(false); return; }
     setModalEliminar(null);
     setGuardando(false);
-    fetchPreguntas();
+    recargarPreguntas();
   };
 
   const abrirNuevo = () => {
-    setForm({ ...FORM_VACIO, cuestionario_id: filtroC });
+    setForm({ ...FORM_VACIO, opciones: OPCIONES_INICIALES.map(opcion => ({ ...opcion })), cuestionario_id: filtroC });
     setFormError(null);
     setModalNuevo(true);
   };
@@ -201,9 +291,9 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
 
       <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3">
         <input type="text" placeholder="Buscar preguntas..." value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
+          onChange={e => { setLoading(true); setErrorCarga(''); setBusqueda(e.target.value); }}
           className="flex-1 max-w-sm pl-4 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
-        <select value={filtroC} onChange={e => setFiltroC(e.target.value)}
+        <select value={filtroC} onChange={e => { setLoading(true); setErrorCarga(''); setFiltroC(e.target.value); }}
           className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/40 bg-white">
           <option value="">Todos los cuestionarios</option>
           {cuestionarios.map(c => <option key={c.id} value={c.id}>{c.nombre} {c.version}</option>)}
@@ -213,6 +303,14 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" /></div>
+        ) : errorCarga ? (
+          <div role="alert" className="flex flex-col items-center gap-2 py-12 text-center">
+            <p className="text-sm font-semibold text-red-600">No fue posible cargar las preguntas.</p>
+            <p className="text-sm text-gray-500">{errorCarga}</p>
+            <button onClick={recargarPreguntas} className="mt-2 px-3 py-1.5 text-sm font-semibold text-primary hover:bg-primary-soft rounded-lg">
+              Reintentar
+            </button>
+          </div>
         ) : preguntas.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-gray-400"><span className="text-4xl mb-2">❓</span><p className="text-sm">No se encontraron preguntas</p></div>
         ) : (
@@ -232,7 +330,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
                     <span className="line-clamp-2">{p.texto}</span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${TIPO_COLORS[p.tipo] || 'bg-gray-100 text-gray-600'}`}>{p.tipo}</span>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${TIPO_COLORS[normalizarTipo(p.tipo)] || 'bg-gray-100 text-gray-600'}`}>{TIPOS_PREGUNTA[normalizarTipo(p.tipo)].label}</span>
                   </td>
                   <td className="px-5 py-3.5">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORIA_COLORS[p.categoria] || 'bg-gray-100 text-gray-600'}`}>{p.categoria || '—'}</span>
@@ -254,7 +352,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
 
       {modalNuevo && (
         <Modal title="Nueva pregunta" onClose={() => setModalNuevo(false)} size="lg">
-          <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} />
+          <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} respuestasCorrectasDisponibles={respuestasCorrectasDisponibles} />
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">
             <button onClick={() => setModalNuevo(false)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
@@ -267,7 +365,7 @@ export default function PreguntasSection({ filtroCuestionarioId = '' }) {
 
       {modalEditar && (
         <Modal title="Editar pregunta" onClose={() => setModalEditar(null)} size="lg">
-          <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} />
+          <FormCampos f={form} setF={setForm} cuestionarios={cuestionarios} respuestasCorrectasDisponibles={respuestasCorrectasDisponibles} />
           <p className="text-xs text-gray-400 mt-3">Última modificación: {formatearFecha(modalEditar.updated_at || modalEditar.created_at)}</p>
           {formError && <p className="text-sm text-red-500 mt-3">{formError}</p>}
           <div className="flex justify-end gap-2 mt-4">

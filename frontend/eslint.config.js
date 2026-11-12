@@ -5,10 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  // design_handoff_comunidad_vistas/ es un bundle generado por una herramienta
-  // externa de handoff de diseño ("do not edit", ver cabecera del archivo) —
-  // no es código fuente de la app, no tiene sentido lintearlo.
-  globalIgnores(['dist', 'design_handoff_comunidad_vistas']),
+  globalIgnores(['dist', 'coverage']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

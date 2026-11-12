@@ -1,7 +1,6 @@
 'use strict';
 const fs            = require('fs');
 const path          = require('path');
-const { execSync }  = require('child_process');
 
 const root = path.resolve(__dirname, '..');
 
@@ -17,15 +16,6 @@ for (const [src, dst] of envPairs) {
   if (!fs.existsSync(dstPath) && fs.existsSync(srcPath)) {
     fs.copyFileSync(srcPath, dstPath);
     console.log(`[setup] Creado ${dst}`);
-  }
-}
-
-// ── Instalar dependencias de backend y frontend si faltan ─────────────────────
-for (const dir of ['backend', 'frontend']) {
-  const nmPath = path.join(root, dir, 'node_modules');
-  if (!fs.existsSync(nmPath)) {
-    console.log(`[setup] Instalando dependencias de ${dir}...`);
-    execSync('npm install', { cwd: path.join(root, dir), stdio: 'inherit' });
   }
 }
 

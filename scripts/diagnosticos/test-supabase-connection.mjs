@@ -2,7 +2,7 @@
 // TEST DE CONEXIÓN A SUPABASE
 // ==========================================
 // Este script prueba si la conexión a Supabase funciona
-// Uso: node test-supabase-connection.mjs
+// Uso: node scripts/diagnosticos/test-supabase-connection.mjs
 
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';

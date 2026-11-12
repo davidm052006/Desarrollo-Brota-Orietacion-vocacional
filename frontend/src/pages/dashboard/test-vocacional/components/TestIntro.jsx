@@ -39,8 +39,7 @@ export default function TestIntro({
           Test Vocacional
         </div>
         <p style={{ color: 'var(--ink-soft)', fontSize: 13.5, marginBottom: 28, lineHeight: 1.55 }}>
-          No hay respuestas correctas o incorrectas.<br />
-          Elige todo lo que realmente te represente.
+          Responde con sinceridad según tus intereses y lo que te representa.
         </p>
 
         {/* Stats */}
@@ -71,11 +70,15 @@ export default function TestIntro({
         {/* Botones según estado */}
         {tieneResultado && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <button onClick={onVerResultado} style={btnPrimary}>✓ Ver mi resultado anterior</button>
-            {tieneBorrador && (
-              <button onClick={onContinuar} style={btnOutline}>▶ Continuar test en progreso</button>
+            {tieneBorrador ? (
+              <>
+                <button onClick={onContinuar} style={btnPrimary}>▶ Continuar donde lo dejé</button>
+                <button onClick={onStart} style={btnOutline}>↺ Empezar un test nuevo</button>
+              </>
+            ) : (
+              <button onClick={onStart} style={btnPrimary}>Comenzar test →</button>
             )}
-            <button onClick={onStart} style={btnOutline}>↺ Reiniciar test</button>
+            <button onClick={onVerResultado} style={btnOutline}>✓ Ver mi resultado anterior</button>
           </div>
         )}
 

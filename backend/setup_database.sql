@@ -104,7 +104,8 @@ CREATE TABLE IF NOT EXISTS opciones (
   pregunta_id UUID REFERENCES preguntas(id) ON DELETE CASCADE,
   label       TEXT NOT NULL,
   icon        TEXT,
-  orden       INTEGER NOT NULL DEFAULT 0
+  orden       INTEGER NOT NULL DEFAULT 0,
+  es_correcta BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS pesos_opciones (

@@ -42,6 +42,14 @@ const CATEGORIA_ALIAS = {
   ambiente:       'ambiental',
 };
 
+const NOMBRES_AREA = {
+  tecnologia: 'tecnología', salud: 'salud', ciencias: 'ciencias', diseño: 'diseño',
+  arte: 'arte', educacion: 'educación', social: 'ciencias sociales',
+  comunicacion: 'comunicación', juridico: 'derecho', negocios: 'negocios',
+  administrativo: 'administración', humanidades: 'humanidades', ambiental: 'medio ambiente',
+  deporte: 'deporte',
+};
+
 // Normaliza un score para que su categoría coincida con area_academica en BD.
 function normalizarScore(s) {
   return { ...s, categoria: CATEGORIA_ALIAS[s.categoria] ?? s.categoria };
@@ -81,16 +89,17 @@ function generarRazones(programa, perfilVocacional) {
   const pct  = Math.round(pctAbsoluto(scores, area));
   const razones = [];
 
-  razones.push(`Tu perfil en ${area} (${pct}% de tus intereses) tiene afinidad con este programa`);
+  const nombreArea = NOMBRES_AREA[area] ?? String(area ?? 'esta área').replace(/_/g, ' ');
+  razones.push(`El ${pct}% de tus respuestas ponderadas se relaciona con ${nombreArea}`);
 
   if (area === categoriaPrincipal) {
-    razones.push('Coincide con tu área de mayor fortaleza');
+    razones.push('Está en el área que más te interesó en el test');
   } else if (area === categoriaSecundaria) {
-    razones.push('Complementa tu perfil secundario');
+    razones.push('Se relaciona con tu segunda área de interés');
   }
 
-  if (programa.tipo === 'Técnica' || programa.tipo === 'Tecnológica') {
-    razones.push('Formación práctica con rápida inserción laboral');
+  if ((programa.tipo === 'Técnica' || programa.tipo === 'Tecnológica') && programa.duracion) {
+    razones.push(`Formación ${programa.tipo.toLowerCase()} con duración de ${programa.duracion}`);
   }
 
   return razones;

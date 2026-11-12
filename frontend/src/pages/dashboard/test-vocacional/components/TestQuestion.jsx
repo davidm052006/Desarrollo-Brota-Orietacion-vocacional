@@ -1,7 +1,17 @@
-import { esPreguntaAbierta } from '../../../../utils/tiposPregunta';
+import { normalizarTipo, esSeleccionMultiple, esPreguntaAbierta, TIPO_POR_DEFECTO } from '../../../../utils/tiposPregunta';
+import { VISTAS_POR_TIPO } from './tipos';
 
+// Dispatcher de preguntas del test vocacional.
+//
+// Se queda solo con lo que es común a todos los tipos —badge de categoría,
+// título, copy de ayuda y barra de navegación— y delega el cuerpo de opciones
+// al componente registrado en `tipos/index.js` para el tipo ya normalizado.
+// Antes este archivo tenía el render de los tres tipos mezclado con `if`s sobre
+// `pregunta.tipo` comparado contra strings sueltos (`'likert'`, `'multiple'`),
+// que no cubrían los valores que escriben los CRUD de admin e institución.
+//
 // Props:
-//   pregunta: { id, texto, tipo, categoria?, opciones: [{id, label, icon}] }
+//   pregunta: { id, texto, tipo, categoria?, opciones: [{id, label, icon, orden}] }
 //   preguntaNumero: number (1-based)
 //   totalPreguntas: number
 //   seleccionadas: string[]
@@ -14,7 +24,7 @@ import { esPreguntaAbierta } from '../../../../utils/tiposPregunta';
 const PREGUNTA_DEMO = {
   id: 'demo',
   texto: '¿Qué actividades disfrutas en tu tiempo libre?',
-  tipo: 'multiple',
+  tipo: 'opcion_multiple',
   opciones: [
     { id: 'a', label: 'Dibujar, diseñar o crear cosas',                icon: '🎨' },
     { id: 'b', label: 'Pasar tiempo con amigos o conocer gente nueva', icon: '🤝' },
@@ -36,14 +46,6 @@ function splitTexto(texto) {
   return { normal: w.slice(0, h).join(' '), verde: w.slice(h).join(' ') };
 }
 
-const LIKERT_MARKS = [
-  '/logos/logo-triste.svg',
-  '/logos/logo-triste.svg',
-  '/logos/logo-base-limpio.svg',
-  '/logos/logo-guino.svg',
-  '/logos/logo-feliz.svg',
-];
-
 export default function TestQuestion({
   pregunta       = PREGUNTA_DEMO,
   preguntaNumero = 1,
@@ -53,19 +55,20 @@ export default function TestQuestion({
   onAnterior     = () => {},
   onSiguiente    = () => {},
   puedeAvanzar   = false,
+  errorRespuesta = '',
   guardando      = false,
   esUltima       = false,
 }) {
-  const esLikert   = pregunta.tipo === 'likert';
-  const esAbierta  = esPreguntaAbierta(pregunta.tipo);
-  const esMultiple = pregunta.tipo === 'multiple' || pregunta.tipo === 'opcion_multiple';
+  const tipo       = normalizarTipo(pregunta.tipo);
+  const cantidadCorrectas = pregunta.opciones?.filter(opcion => opcion.es_correcta).length ?? 0;
+  const esMultiple = esSeleccionMultiple(tipo) && cantidadCorrectas !== 1;
+  const esAbierta = esPreguntaAbierta(tipo);
+  const tipoVista = esSeleccionMultiple(tipo) && cantidadCorrectas === 1 ? 'opcion_unica' : tipo;
+  // Un tipo del catálogo sin vista registrada no debe dejar la pregunta en
+  // blanco: cae a la del tipo por defecto, igual que normalizarTipo.
+  const VistaOpciones = VISTAS_POR_TIPO[tipoVista] ?? VISTAS_POR_TIPO[TIPO_POR_DEFECTO];
   const { normal, verde } = splitTexto(pregunta.texto);
-  // Para likert usamos las opciones reales del DB (con sus UUIDs) y les añadimos el emoji de escala
-  const opciones = esLikert
-    ? (pregunta.opciones ?? [])
-        .slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-        .map((o, i) => ({ ...o, mark: LIKERT_MARKS[i] ?? '•' }))
-    : pregunta.opciones;
+  const opciones = pregunta.opciones ?? [];
 
   const catLabel = pregunta.categoria
     ? pregunta.categoria.charAt(0).toUpperCase() + pregunta.categoria.slice(1)
@@ -90,117 +93,28 @@ export default function TestQuestion({
           {verde && <span style={{ color: 'var(--primary)' }}>{verde}</span>}
         </div>
         <div style={{ color: 'var(--ink-soft)', fontSize: 13.5, marginTop: 8 }}>
-          {esMultiple
+          {esAbierta
+            ? 'Escribe tu respuesta para continuar.'
+            : pregunta.opciones?.some(o => o.es_correcta)
+            ? (esMultiple ? 'Selecciona todas las respuestas correctas para continuar.' : 'Selecciona la respuesta correcta para continuar.')
+            : esMultiple
             ? 'Selecciona todas las opciones que apliquen para ti.'
             : 'No hay respuestas correctas. Elige la opción que mejor te represente.'}
         </div>
       </div>
 
-      {/* Options */}
-      {esLikert ? (
-        /* Likert horizontal scale */
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginTop: 30 }}>
-          {/* Track line */}
-          <div style={{
-            position: 'absolute', top: 32, left: '8%', right: '8%',
-            height: 3, background: 'var(--surface-2)', borderRadius: 999,
-          }} />
-          {opciones.map(o => {
-            const active = seleccionadas.includes(o.id);
-            return (
-              <div key={o.id} onClick={() => onSeleccionar(o.id)} style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                gap: 11, zIndex: 1, cursor: 'pointer',
-              }}>
-                <span style={{
-                  width: 64, height: 64, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, border: `3px solid ${active ? 'var(--primary)' : 'var(--line)'}`,
-                  background: active ? 'var(--primary)' : 'var(--surface)',
-                  transform: active ? 'scale(1.12)' : 'scale(1)',
-                  transition: 'all .2s',
-                }}>
-                  {o.mark.startsWith('/') ? <img src={o.mark} alt="" style={{ width: 54, height: 54 }} /> : o.mark}
-                </span>
-                <span style={{
-                  fontSize: 12, fontWeight: active ? 700 : 600, textAlign: 'center',
-                  maxWidth: 90, lineHeight: 1.25,
-                  color: active ? 'var(--primary-deep)' : 'var(--ink-soft)',
-                }}>
-                  {o.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      ) : esAbierta ? (
-        <div style={{ marginTop: 24 }}>
-          {pregunta.tipo === 'respuesta_larga' ? (
-            <textarea
-              value={seleccionadas[0] ?? ''}
-              onChange={event => onSeleccionar(event.target.value)}
-              rows={5}
-              placeholder="Escribe tu respuesta..."
-              style={{ width: '100%', resize: 'vertical', padding: '14px 16px', borderRadius: 16, border: '2px solid var(--line)', background: 'var(--surface-2)', color: 'var(--ink)', fontFamily: 'inherit', fontSize: 14, outline: 'none' }}
-            />
-          ) : (
-            <input
-              value={seleccionadas[0] ?? ''}
-              onChange={event => onSeleccionar(event.target.value)}
-              placeholder="Escribe tu respuesta..."
-              style={{ width: '100%', padding: '14px 16px', borderRadius: 16, border: '2px solid var(--line)', background: 'var(--surface-2)', color: 'var(--ink)', fontFamily: 'inherit', fontSize: 14, outline: 'none' }}
-            />
-          )}
-        </div>
-      ) : (
-        /* Multiple / single grid */
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 24 }}>
-          {opciones.map(o => {
-            const active = seleccionadas.includes(o.id);
-            return (
-              <button key={o.id} onClick={() => onSeleccionar(o.id)} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '14px 16px', borderRadius: 18, textAlign: 'left',
-                border: `2px solid ${active ? 'var(--primary)' : 'var(--line)'}`,
-                background: active ? 'var(--primary-soft)' : 'var(--surface-2)',
-                cursor: 'pointer', transition: 'all .15s', fontFamily: 'inherit',
-              }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                  background: active ? 'var(--primary-soft)' : 'var(--surface)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-                }}>
-                  {o.icon ?? '•'}
-                </div>
-                <span style={{
-                  flex: 1, fontSize: 13.5, lineHeight: 1.3,
-                  color: active ? 'var(--primary-deep)' : 'var(--ink)',
-                  fontWeight: active ? 600 : 400,
-                }}>
-                  {o.label}
-                </span>
-                <div style={{
-                  width: 20, height: 20, flexShrink: 0, borderRadius: esMultiple ? 6 : '50%',
-                  border: `2px solid ${active ? 'var(--primary)' : 'var(--line)'}`,
-                  background: active ? 'var(--primary)' : 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {active && (
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="var(--primary-ink)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
+      {/* Cuerpo de opciones — lo pone la vista del tipo */}
+      <VistaOpciones
+        pregunta={pregunta}
+        opciones={opciones}
+        seleccionadas={seleccionadas}
+        onSeleccionar={onSeleccionar}
+      />
 
-      {esMultiple && (
-        <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 10 }}>
-          💡 Puedes seleccionar varias opciones
-        </div>
+      {errorRespuesta && (
+        <p role="status" style={{ color: errorRespuesta === 'correcta' ? '#15803d' : '#dc2626', background: errorRespuesta === 'correcta' ? '#f0fdf4' : '#fef2f2', borderRadius: 10, padding: '10px 12px', marginTop: 14, fontSize: 13, fontWeight: 600 }}>
+          {errorRespuesta === 'correcta' ? '¡Respuesta correcta!' : errorRespuesta}
+        </p>
       )}
 
       {/* Navigation */}
@@ -228,7 +142,7 @@ export default function TestQuestion({
           boxShadow: puedeAvanzar ? '0 8px 20px var(--primary-glow)' : 'none',
           fontFamily: 'inherit', transition: 'all .15s',
         }}>
-          {guardando ? 'Guardando...' : esUltima ? 'Ver resultados →' : 'Siguiente →'}
+          {guardando ? 'Guardando...' : errorRespuesta === 'correcta' ? 'Continuar →' : esUltima ? 'Ver resultados →' : 'Siguiente →'}
         </button>
       </div>
     </div>

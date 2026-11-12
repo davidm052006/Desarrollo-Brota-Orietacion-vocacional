@@ -1,6 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
-const { esPreguntaAbierta, esTipoPreguntaValido } = require('../../utils/tiposPregunta');
+const { esTipoValido, normalizarTipo, esPreguntaAbierta, mensajeTipoInvalido } = require('../../utils/tiposPregunta');
 
 // A diferencia de admin/preguntasController.js (que solo escribe la columna
 // legada `preguntas.opciones` JSONB, nunca leída por el motor real del test),
@@ -19,13 +19,35 @@ async function verificarCuestionarioPropio(cuestionarioId, institucionId) {
   return { ok: true };
 }
 
+function validarOpciones(tipo, opciones) {
+  if (esPreguntaAbierta(tipo)) {
+    return Array.isArray(opciones) && opciones.length > 0
+      ? 'Las preguntas abiertas no admiten opciones'
+      : null;
+  }
+  if (!Array.isArray(opciones) || opciones.length < 2 || opciones.some(opcion =>
+    !opcion || typeof opcion.label !== 'string' || !opcion.label.trim()
+  )) {
+    return 'La pregunta necesita al menos 2 opciones, todas con texto';
+  }
+  if (tipo === 'single' && (
+    opciones.length !== 5 ||
+    opciones.some(opcion => !Object.entries(opcion.pesos || {}).some(([categoria, puntos]) =>
+      categoria.trim() && Number.isFinite(Number(puntos)) && Number(puntos) > 0
+    ))
+  )) {
+    return 'La selección única requiere exactamente 5 opciones, cada una con un área ponderada';
+  }
+  return null;
+}
+
 // Inserta las filas de `opciones` + `pesos_opciones` de una pregunta.
 // `opciones`: [{ label, icon, orden, pesos: { categoria: puntos, ... } }]
 async function insertarOpciones(preguntaId, opciones) {
   for (const [i, opcion] of (opciones || []).entries()) {
     const { data: opcionCreada, error: errOpcion } = await supabase
       .from('opciones')
-      .insert([{ pregunta_id: preguntaId, label: opcion.label, icon: opcion.icon || null, orden: opcion.orden ?? i }])
+      .insert([{ pregunta_id: preguntaId, label: opcion.label, icon: opcion.icon || null, orden: opcion.orden ?? i, es_correcta: Boolean(opcion.es_correcta) }])
       .select('id')
       .single();
 
@@ -61,7 +83,7 @@ const getPreguntas = asyncHandler('institucion/preguntasController.getPreguntas'
     .select(`
       *,
       opciones (
-        id, label, icon, orden,
+        id, label, icon, orden, es_correcta,
         pesos_opciones ( categoria, puntos )
       )
     `)
@@ -75,7 +97,7 @@ const getPreguntas = asyncHandler('institucion/preguntasController.getPreguntas'
     opciones: (p.opciones ?? [])
       .sort((a, b) => a.orden - b.orden)
       .map(o => ({
-        id: o.id, label: o.label, icon: o.icon, orden: o.orden,
+        id: o.id, label: o.label, icon: o.icon, orden: o.orden, es_correcta: o.es_correcta,
         pesos: Object.fromEntries((o.pesos_opciones ?? []).map(({ categoria, puntos }) => [categoria, puntos])),
       })),
   }));
@@ -91,25 +113,24 @@ const createPregunta = asyncHandler('institucion/preguntasController.createPregu
   if (!cuestionario_id || !texto || !tipo) {
     return res.status(400).json({ success: false, message: 'cuestionario_id, texto y tipo son obligatorios' });
   }
-  if (!esTipoPreguntaValido(tipo)) {
-    return res.status(400).json({ success: false, message: 'Tipo de pregunta no válido' });
+  if (!esTipoValido(tipo)) {
+    return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
   }
-  if (!esPreguntaAbierta(tipo) && (!Array.isArray(opciones) || opciones.length < 2)) {
-    return res.status(400).json({ success: false, message: 'La pregunta necesita al menos 2 opciones' });
-  }
+  const errorOpciones = validarOpciones(normalizarTipo(tipo), opciones);
+  if (errorOpciones) return res.status(400).json({ success: false, message: errorOpciones });
 
   const check = await verificarCuestionarioPropio(cuestionario_id, req.institucionId);
   if (!check.ok) return res.status(check.status).json({ success: false, message: check.message });
 
   const { data: pregunta, error } = await supabase
     .from('preguntas')
-    .insert([{ cuestionario_id, texto, tipo, orden: orden || 1, categoria, peso: peso || 1.0 }])
+    .insert([{ cuestionario_id, texto, tipo: normalizarTipo(tipo), orden: orden || 1, categoria, peso: peso || 1.0 }])
     .select()
     .single();
 
   if (error) throw error;
 
-  await insertarOpciones(pregunta.id, opciones);
+  await insertarOpciones(pregunta.id, esPreguntaAbierta(tipo) ? [] : opciones);
 
   return res.status(201).json({ success: true, data: pregunta });
 });
@@ -122,8 +143,13 @@ const updatePregunta = asyncHandler('institucion/preguntasController.updatePregu
   const { id } = req.params;
   const { texto, tipo, orden, categoria, peso, opciones } = req.body;
 
+  // El PATCH es parcial: solo se valida el tipo si vino en el body.
+  if (tipo !== undefined && !esTipoValido(tipo)) {
+    return res.status(400).json({ success: false, message: mensajeTipoInvalido(tipo) });
+  }
+
   const { data: preguntaActual, error: findError } = await supabase
-    .from('preguntas').select('cuestionario_id').eq('id', id).single();
+    .from('preguntas').select('cuestionario_id, tipo').eq('id', id).single();
 
   if (findError || !preguntaActual) {
     return res.status(404).json({ success: false, message: 'Pregunta no encontrada' });
@@ -132,18 +158,25 @@ const updatePregunta = asyncHandler('institucion/preguntasController.updatePregu
   const check = await verificarCuestionarioPropio(preguntaActual.cuestionario_id, req.institucionId);
   if (!check.ok) return res.status(check.status).json({ success: false, message: check.message });
 
+  const tipoFinal = tipo === undefined ? normalizarTipo(preguntaActual.tipo) : normalizarTipo(tipo);
+  if (Array.isArray(opciones) || (tipo !== undefined && tipoFinal === 'single')) {
+    const errorOpciones = validarOpciones(tipoFinal, opciones);
+    if (errorOpciones) return res.status(400).json({ success: false, message: errorOpciones });
+  }
+  const limpiarOpciones = tipo !== undefined && esPreguntaAbierta(tipoFinal);
+
   const { error: updateError } = await supabase
     .from('preguntas')
-    .update({ texto, tipo, orden, categoria, peso })
+    .update({ texto, tipo: tipo === undefined ? undefined : normalizarTipo(tipo), orden, categoria, peso })
     .eq('id', id);
 
   if (updateError) throw updateError;
 
-  if (Array.isArray(opciones)) {
+  if (Array.isArray(opciones) || limpiarOpciones) {
     // Borra las opciones viejas (cascada a pesos_opciones) y arma las nuevas.
     const { error: deleteError } = await supabase.from('opciones').delete().eq('pregunta_id', id);
     if (deleteError) throw deleteError;
-    await insertarOpciones(id, opciones);
+    await insertarOpciones(id, limpiarOpciones ? [] : opciones);
   }
 
   return res.json({ success: true, message: 'Pregunta actualizada' });

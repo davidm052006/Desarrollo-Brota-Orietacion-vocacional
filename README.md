@@ -8,18 +8,32 @@ Plataforma de orientación vocacional para estudiantes colombianos de colegio (1
 
 ## Documentación
 
-- **[`CLAUDE.md`](./CLAUDE.md)** — contexto técnico día a día: mapa de rutas, arquitectura, bugs conocidos, deuda técnica. Punto de partida si vas a tocar código.
-- **[`BRAND.md`](./BRAND.md)** — manual de marca (colores, tipografía, voz y tono).
+- **[`docs/CLAUDE.md`](./docs/CLAUDE.md)** — contexto técnico día a día: mapa de rutas, arquitectura, bugs conocidos, deuda técnica. Punto de partida si vas a tocar código.
+- **[`docs/BRAND.md`](./docs/BRAND.md)** — manual de marca (colores, tipografía, voz y tono).
 - **[`docs/00_START_HERE.md`](./docs/00_START_HERE.md)** — índice de la documentación formal del proyecto (requisitos funcionales, modelo de datos, gestión del proyecto, estrategia de pruebas, despliegue).
 
-## Arrancar el proyecto
+## Arrancar con Docker Compose
+
+Requiere Docker Desktop con Docker Compose v2. Supabase sigue siendo un servicio externo: configura sus credenciales antes de iniciar los contenedores.
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.local.example frontend/.env.local
+docker compose up --build
+```
+
+Abre `http://localhost:5173`. La API queda disponible en `http://localhost:3001` y el frontend la consume a través del proxy de Vite dentro de la red de Compose. El código se monta como volumen para reflejar los cambios durante el desarrollo; las dependencias permanecen en volúmenes Docker.
+
+Para detener los servicios, ejecuta `docker compose down`. Esto conserva los volúmenes de dependencias.
+
+## Arrancar sin Docker
 
 Requiere Node.js 20.19+ y una cuenta de Supabase (o correr en **modo demo**, sin Supabase, ver más abajo). Vite 7 requiere esta versión mínima de Node.js.
 
 ```bash
 git clone <este repo>
 cd Documentacion_Brota
-npm run install:all   # instala backend/ y frontend/
+pnpm install           # instala backend/, frontend/ y e2e/
 cp backend/.env.example backend/.env
 cp frontend/.env.local.example frontend/.env.local
 ```
@@ -27,8 +41,8 @@ cp frontend/.env.local.example frontend/.env.local
 Luego, en dos terminales:
 
 ```bash
-cd backend && npm run dev     # http://localhost:3001
-cd frontend && npm run dev    # http://localhost:5173
+pnpm --filter backend dev     # http://localhost:3001
+pnpm --filter frontend dev    # http://localhost:5173
 ```
 
 Detalle completo de variables de entorno y setup de base de datos (`backend/setup_database.sql`) en [`backend/README.md`](./backend/README.md) y [`frontend/README.md`](./frontend/README.md).
@@ -38,11 +52,20 @@ Detalle completo de variables de entorno y setup de base de datos (`backend/setu
 ## Tests
 
 ```bash
-cd backend && npm test     # Jest, contra Supabase real
-cd frontend && npm test    # Vitest
+pnpm --filter backend test   # Jest
+pnpm --filter frontend test  # Vitest
+pnpm --filter backend test:coverage
+pnpm --filter frontend test:coverage
 ```
 
-Cobertura todavía mínima (arrancada en agosto 2026) — ver `docs/estrategia_pruebas.md` para el alcance planeado.
+Los comandos de cobertura aplican los umbrales mínimos de CI. El E2E requiere Chromium instalado y, para el login exitoso, un usuario de prueba configurado solo en `E2E_TEST_EMAIL` y `E2E_TEST_PASSWORD`:
+
+```bash
+pnpm --filter brota-e2e exec playwright install chromium
+pnpm --filter brota-e2e test
+```
+
+La cobertura actual y las pruebas pendientes están documentadas en [`docs/estrategia_pruebas.md`](./docs/estrategia_pruebas.md).
 
 ## Estructura del repo
 
@@ -50,8 +73,7 @@ Cobertura todavía mínima (arrancada en agosto 2026) — ver `docs/estrategia_p
 /
 ├── frontend/     # React + Vite (ver frontend/README.md)
 ├── backend/      # Express + Supabase (ver backend/README.md)
-├── docs/         # Documentación formal del proyecto (ver docs/00_START_HERE.md)
-├── logos/        # Assets de marca y de la mascota "Broti"
-├── CLAUDE.md     # Contexto técnico de desarrollo
-└── BRAND.md      # Manual de marca
+├── docs/         # Documentación del proyecto (ver docs/00_START_HERE.md y docs/CLAUDE.md)
+├── scripts/      # Automatización y diagnósticos de desarrollo
+└── supabase/     # Configuración y migraciones de Supabase
 ```
