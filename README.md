@@ -58,7 +58,7 @@ pnpm --filter backend test:coverage
 pnpm --filter frontend test:coverage
 ```
 
-Los comandos de cobertura aplican los umbrales mínimos de CI. El E2E requiere Chromium instalado y, para el login exitoso, un usuario de prueba configurado solo en `E2E_TEST_EMAIL` y `E2E_TEST_PASSWORD`:
+Los comandos de cobertura aplican los umbrales mínimos de CI. El E2E requiere Chromium instalado. La prueba de contraseña incorrecta necesita Supabase real y el correo de una cuenta de prueba configurado localmente en `E2E_TEST_EMAIL`:
 
 ```bash
 pnpm --filter brota-e2e exec playwright install chromium

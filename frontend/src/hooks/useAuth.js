@@ -103,11 +103,6 @@ export const useAuth = () => {
     e.preventDefault();
     clearMessages();
 
-    if (!termsAccepted) {
-      setError('Debes aceptar los términos y condiciones para continuar.'); 
-      return;
-    }
-
     const nombre   = `${primerNombre} ${segundoNombre}`.trim();
     const apellido = `${primerApellido} ${segundoApellido}`.trim();
 
@@ -123,6 +118,11 @@ export const useAuth = () => {
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
+      return;
+    }
+
+    if (!termsAccepted) {
+      setError('Debes aceptar los términos y condiciones para continuar.');
       return;
     }
 
