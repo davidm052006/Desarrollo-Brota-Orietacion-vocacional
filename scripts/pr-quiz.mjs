@@ -64,12 +64,35 @@ export function vecinos(n, minimo = 0) {
   );
 }
 
+const PRUEBA = /(^|\/)(__tests__|tests?|e2e|cypress)\/|[._-](test|spec|cy)\.[cm]?[jt]sx?$|(^|\/)test_[^/]+\.py$|_test\.(py|go|dart)$/i;
+export const NINGUNA_PRUEBA = 'Ninguno: este PR no trae pruebas';
+
+export function esPrueba(ruta) {
+  return PRUEBA.test(ruta);
+}
+
+// Pregunta sobre las pruebas del PR. Si el PR no toca ningún archivo de prueba,
+// la respuesta correcta es "Ninguno", para que se note que faltan tests.
+function preguntaPruebas(archivos, fuera, azar) {
+  const pruebasPr = archivos.filter((a) => a.status !== 'removed' && esPrueba(a.filename)).map((a) => a.filename);
+  const pruebasFuera = fuera.filter(esPrueba);
+  const texto = '¿Qué archivo de pruebas agrega o modifica este PR?';
+  if (pruebasPr.length) {
+    // Distractores: otras pruebas del repo; si no alcanzan, archivos del PR que no son pruebas.
+    const relleno = archivos.map((a) => a.filename).filter((r) => !esPrueba(r));
+    const distractores = pruebasFuera.length >= 2 ? pruebasFuera : [...pruebasFuera, ...relleno];
+    return armar('pruebas', texto, alAzar(pruebasPr, azar), [...distractores, NINGUNA_PRUEBA], azar);
+  }
+  return armar('pruebas', texto, NINGUNA_PRUEBA, pruebasFuera, azar);
+}
+
 // archivos: salida de pulls.listFiles ({ filename, status, additions, deletions, patch }).
 // archivosRepo: rutas del repositorio, para sacar distractores.
 export function generarQuiz({ archivos, archivosRepo = [], semilla, maximo = 4 }) {
   const azar = crearAzar(semilla);
   const enPr = new Set(archivos.map((a) => a.filename));
   const fuera = archivosRepo.filter((ruta) => !enPr.has(ruta));
+  const pruebas = archivos.length ? preguntaPruebas(archivos, fuera, azar) : null;
   const contenido = [];
 
   if (archivos.length) {
@@ -113,8 +136,12 @@ export function generarQuiz({ archivos, archivosRepo = [], semilla, maximo = 4 }
     armar('cantidad', '¿Cuántos archivos cambia el PR?', String(archivos.length), vecinos(archivos.length, 1).map(String), azar),
   ];
 
-  // Primero las de contenido; las numéricas solo rellenan.
-  return [...barajar(contenido.filter(Boolean), azar), ...barajar(numericas.filter(Boolean), azar)].slice(0, maximo);
+  // La de pruebas va siempre que se pueda armar; luego las de contenido; las numéricas solo rellenan.
+  return [
+    ...(pruebas ? [pruebas] : []),
+    ...barajar(contenido.filter(Boolean), azar),
+    ...barajar(numericas.filter(Boolean), azar),
+  ].slice(0, maximo);
 }
 
 export function firmar(secreto, sha, id, letra) {

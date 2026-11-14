@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   LETRAS,
+  NINGUNA_PRUEBA,
+  esPrueba,
   generarQuiz,
   crearMeta,
   renderComentario,
@@ -111,4 +113,66 @@ test('parsearRespuestas rechaza cantidad o letras inválidas', () => {
   assert.match(parsearRespuestas('/quiz A B', 4).error, /4 preguntas/);
   assert.match(parsearRespuestas('/quiz A B C E', 4).error, /A, B, C y D/);
   assert.ok(parsearRespuestas('hola', 4).error);
+});
+
+const respuestaDe = (p) => p.opciones[LETRAS.indexOf(p.correcta)];
+const repoConPruebas = [
+  'src/edad.mjs',
+  'src/otro.mjs',
+  'tests/edad.test.mjs',
+  'tests/otro.test.mjs',
+  'backend/tests/api/seguridad.test.js',
+  'frontend/src/components/Modal.test.jsx',
+];
+
+test('esPrueba reconoce las convenciones de pruebas del proyecto', () => {
+  for (const ruta of [
+    'tests/edad.test.mjs',
+    'backend/tests/api/errores.test.js',
+    'frontend/src/components/Modal.test.jsx',
+    'src/__tests__/util.js',
+    'e2e/login.spec.ts',
+    'app/test_modelo.py',
+  ]) {
+    assert.ok(esPrueba(ruta), ruta);
+  }
+  for (const ruta of ['src/edad.mjs', 'README.md', 'src/contest.js', 'docs/testing.md']) {
+    assert.ok(!esPrueba(ruta), ruta);
+  }
+});
+
+test('la pregunta de pruebas va primero y su respuesta es la prueba del PR', () => {
+  const pr = [
+    { filename: 'src/edad.mjs', status: 'modified', additions: 5, deletions: 0, patch: '@@\n+export function esMayor() {}' },
+    { filename: 'tests/mayor.test.mjs', status: 'added', additions: 9, deletions: 0, patch: '@@\n+test()' },
+  ];
+  for (const semilla of ['s1', 's2', 's3']) {
+    const [primera] = generarQuiz({ archivos: pr, archivosRepo: [...repoConPruebas, 'tests/mayor.test.mjs'], semilla });
+    assert.equal(primera.id, 'pruebas');
+    assert.equal(respuestaDe(primera), 'tests/mayor.test.mjs');
+    assert.ok(primera.opciones.includes(NINGUNA_PRUEBA) || primera.opciones.length === 4);
+  }
+});
+
+test('si el PR no trae pruebas la respuesta es "Ninguno"', () => {
+  const pr = [{ filename: 'src/edad.mjs', status: 'modified', additions: 2, deletions: 1, patch: '@@\n+const x = 1;' }];
+  const [primera] = generarQuiz({ archivos: pr, archivosRepo: repoConPruebas, semilla: SHA });
+  assert.equal(primera.id, 'pruebas');
+  assert.equal(respuestaDe(primera), NINGUNA_PRUEBA);
+  assert.ok(primera.opciones.filter((o) => o !== NINGUNA_PRUEBA).every(esPrueba));
+});
+
+test('un archivo de pruebas borrado no cuenta como prueba del PR', () => {
+  const pr = [
+    { filename: 'src/edad.mjs', status: 'modified', additions: 1, deletions: 0, patch: '@@\n+// x' },
+    { filename: 'tests/otro.test.mjs', status: 'removed', additions: 0, deletions: 8, patch: '@@\n-test()' },
+  ];
+  const [primera] = generarQuiz({ archivos: pr, archivosRepo: repoConPruebas, semilla: SHA });
+  assert.equal(respuestaDe(primera), NINGUNA_PRUEBA);
+});
+
+test('sin pruebas en el repo ni en el PR la pregunta se omite', () => {
+  const pr = [{ filename: 'src/a.mjs', status: 'modified', additions: 1, deletions: 0, patch: '@@\n+1' }];
+  const quiz = generarQuiz({ archivos: pr, archivosRepo: ['src/a.mjs', 'src/b.mjs', 'README.md'], semilla: SHA });
+  assert.ok(!quiz.some((p) => p.id === 'pruebas'));
 });
