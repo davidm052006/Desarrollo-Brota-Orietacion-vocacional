@@ -8,6 +8,7 @@
     ]
   },
   "scripts": {
-    "postinstall": "node scripts/setup-env.js"
+    "postinstall": "node scripts/setup-env.js",
+    "test:pr-quiz": "node --test scripts/pr-quiz.test.mjs"
   }
 }
