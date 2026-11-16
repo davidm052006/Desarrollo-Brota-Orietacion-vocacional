@@ -5,15 +5,14 @@ module.exports = {
   coverageReporters: ['text', 'lcov'],
   coverageDirectory: 'coverage',
   // Semana 5: umbral = max(60, cobertura real redondeada hacia abajo).
-  // Medición del 16-nov-2026: sentencias 64.63, ramas 51.45, funciones 63.37,
-  // líneas 67.54. Ramas sigue por debajo de 60: se fija en su valor real
-  // para que no baje mientras se completa.
+  // Medición del 16-nov-2026: sentencias 73.27, ramas 62.13, funciones 69.95,
+  // líneas 76.69.
   coverageThreshold: {
     global: {
-      branches: 51,
-      functions: 63,
-      lines: 67,
-      statements: 64,
+      branches: 62,
+      functions: 69,
+      lines: 76,
+      statements: 73,
     },
   },
 };

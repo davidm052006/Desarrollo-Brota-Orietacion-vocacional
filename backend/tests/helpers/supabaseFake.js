@@ -82,11 +82,17 @@ function respuestaFalsa() {
   return res;
 }
 
-/** Carga un módulo de src/ con el cliente Supabase reemplazado por `fake`. */
-function cargarConFake(rutaDesdeSrc, fake) {
+/**
+ * Carga un módulo de src/ con el cliente Supabase reemplazado por `fake`.
+ * `otros` permite reemplazar más módulos: { 'utils/sleep': () => jest.fn() }.
+ */
+function cargarConFake(rutaDesdeSrc, fake, otros = {}) {
   const path = require('path');
   jest.resetModules();
   jest.doMock(path.resolve(__dirname, '../../src/config/supabase'), () => fake);
+  Object.entries(otros).forEach(([ruta, fabrica]) => {
+    jest.doMock(path.resolve(__dirname, '../../src', ruta), fabrica);
+  });
   return require(path.resolve(__dirname, '../../src', rutaDesdeSrc));
 }
 
