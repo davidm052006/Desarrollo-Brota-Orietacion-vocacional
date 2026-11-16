@@ -1,7 +1,7 @@
 // Pantalla de resultado del test vocacional: perfil, distribución,
 // recomendaciones (con reintento), detalle del programa y exportar a PDF.
 // perfilService y la exportación son stubs; el radar no se dibuja en jsdom.
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 

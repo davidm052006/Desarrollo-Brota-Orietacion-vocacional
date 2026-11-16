@@ -176,6 +176,16 @@ describe('editar y eliminar', () => {
     expect(screen.getAllByPlaceholderText(/^Opción \d$/)).toHaveLength(5);
   });
 
+  it('una pregunta de selección única guardada con 3 opciones no se puede guardar así', async () => {
+    const opciones = ['A', 'B', 'C'].map((label) => ({ label, pesos: { tecnologia: 1 } }));
+    api.getPreguntas.mockResolvedValue(ok([{ ...PREGUNTA, tipo: 'single', opciones }]));
+    const user = await montar();
+    await user.click(screen.getByTitle('Editar'));
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+    expect(screen.getByText('Las preguntas de selección única deben tener exactamente 5 opciones.')).toBeInTheDocument();
+    expect(api.updatePregunta).not.toHaveBeenCalled();
+  });
+
   it('el error del backend al editar se muestra', async () => {
     api.updatePregunta.mockResolvedValue(falla('Orden duplicado'));
     const user = await montar();
