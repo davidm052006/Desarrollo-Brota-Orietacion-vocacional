@@ -113,5 +113,12 @@ jobs:
       - name: Instalar Chromium
         run: pnpm --dir e2e exec playwright install --with-deps chromium
 
+      # login-route.spec.js necesita VITE_SUPABASE_URL para que la app no entre
+      # en modo demo; igual nunca llega a Supabase: page.route corta y simula
+      # todas las peticiones a *.supabase.co.
+      - name: Preparar variables de entorno del frontend
+        working-directory: frontend
+        run: cp .env.local.example .env.local
+
       - name: E2E sin credenciales externas
-        run: pnpm --dir e2e exec playwright test tests/login-validation.spec.js
+        run: pnpm --dir e2e exec playwright test tests/login-validation.spec.js tests/login-route.spec.js
