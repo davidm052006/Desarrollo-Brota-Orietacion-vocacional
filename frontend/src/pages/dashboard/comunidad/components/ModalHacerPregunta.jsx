@@ -55,7 +55,7 @@ export default function ModalHacerPregunta({ onClose, onPublicada }) {
             </div>
             <div style={{ fontSize: 13, color: 'var(--ink-soft)', marginTop: 6 }}>Miles de estudiantes pasaron por lo mismo.</div>
           </div>
-          <button type="button" onClick={onClose} style={{
+          <button type="button" onClick={onClose} aria-label="Cerrar" style={{
             width: 34, height: 34, borderRadius: '50%', background: 'var(--surface-2)',
             border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--ink-soft)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -63,8 +63,8 @@ export default function ModalHacerPregunta({ onClose, onPublicada }) {
         </div>
 
         <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink-soft)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.4px' }}>Tu pregunta</div>
-          <textarea value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
+          <label htmlFor="pregunta-titulo" style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--ink-soft)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.4px' }}>Tu pregunta</label>
+          <textarea id="pregunta-titulo" value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
             placeholder="¿Qué quieres saber?" required rows={3}
             style={{ width: '100%', boxSizing: 'border-box', background: 'var(--surface-2)', border: '1px solid var(--line)', borderRadius: 11, padding: '11px 14px', fontSize: 14, color: 'var(--ink)', fontFamily: 'inherit', resize: 'vertical', outline: 'none', lineHeight: 1.6 }} />
         </div>
@@ -76,7 +76,7 @@ export default function ModalHacerPregunta({ onClose, onPublicada }) {
 
         <Toggle value={form.anonimo} onChange={v => setForm(f => ({ ...f, anonimo: v }))} label="Publicar como anónimo." />
 
-        {error && <div style={{ fontSize: 12.5, color: '#dc2626', textAlign: 'center' }}>{error}</div>}
+        {error && <div role="alert" style={{ fontSize: 12.5, color: '#dc2626', textAlign: 'center' }}>{error}</div>}
 
         <button type="submit" disabled={enviando} style={{
           background: 'var(--primary)', color: 'var(--primary-ink)', fontWeight: 700,
