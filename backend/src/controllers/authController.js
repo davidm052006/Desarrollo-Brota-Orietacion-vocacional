@@ -2,29 +2,14 @@ const supabase = require('../config/supabase');
 const { calcularEdadDesdeFecha } = require('../utils/calcularEdad');
 const { validarLimitesPerfil } = require('../utils/validarCampos');
 
-async function rollbackUsuarioAuth(userId) {
-  try {
-    const { error } = await supabase.auth.admin.deleteUser(userId);
-    if (error) {
-      console.error('authController.registerPerfil — rollback fallido:', error);
-      return false;
-    }
-    return true;
-  } catch (deleteErr) {
-    console.error('authController.registerPerfil — rollback fallido:', deleteErr);
-    return false;
-  }
-}
-
 /**
  * POST /api/auth/register-perfil
  * Body: { nombre, apellido }
  * Header: Authorization: Bearer <supabase_token>
  *
  * Crea el registro en perfiles_usuario para el usuario ya autenticado.
- * Si el insert falla, intenta revertir la cuenta creada en Supabase Auth
- * usando la service_role_key del backend (operación que no es segura hacer
- * desde el frontend).
+ * No elimina cuentas de Auth en caso de error: la sesión autenticada podría
+ * pertenecer a una cuenta existente y el endpoint no prueba que sea nueva.
  */
 const registerPerfil = async (req, res) => {
   try {
@@ -60,8 +45,6 @@ const registerPerfil = async (req, res) => {
     }
 
     console.error('authController.registerPerfil — insert fallido:', error);
-    await rollbackUsuarioAuth(userId);
-
     return res.status(500).json({
       success: false,
       message: 'No pudimos crear tu perfil. Por favor intenta registrarte de nuevo.',
