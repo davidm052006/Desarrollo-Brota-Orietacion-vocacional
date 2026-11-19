@@ -43,10 +43,10 @@ describe('authController.registerPerfil', () => {
       message: 'El campo nombre no puede superar 100 caracteres',
     });
     expect(supabaseMock.from).not.toHaveBeenCalled();
-    expect(deleteUser).toHaveBeenCalledWith('usuario-1');
+    expect(deleteUser).not.toHaveBeenCalled();
   });
 
-  it('elimina el usuario de Auth cuando falta un campo requerido', async () => {
+  it('conserva la cuenta de Auth cuando falta un campo requerido', async () => {
     const deleteUser = jest.fn().mockResolvedValue({ error: null });
     const supabaseMock = {
       from: jest.fn(),
@@ -68,64 +68,18 @@ describe('authController.registerPerfil', () => {
       message: 'El campo nombre es requerido',
     });
     expect(supabaseMock.from).not.toHaveBeenCalled();
-    expect(deleteUser).toHaveBeenCalledWith('usuario-1');
+    expect(deleteUser).not.toHaveBeenCalled();
   });
 
-  it('devuelve error interno y registra el fallo si no puede eliminar el usuario de Auth', async () => {
-    const deleteError = new Error('No se pudo eliminar el usuario');
-    const deleteUser = jest.fn().mockResolvedValue({ error: deleteError });
-    const supabaseMock = {
-      from: jest.fn(),
-      auth: { admin: { deleteUser } },
-    };
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.doMock(path.resolve(__dirname, '../src/config/supabase'), () => supabaseMock);
+  it('no elimina la cuenta si el nombre excede el límite aunque falle deleteUser', async () => {
+    const deleteUser = jest.fn().mockRejectedValue(new Error('No debe llamarse'));
+    jest.doMock(path.resolve(__dirname, '../src/config/supabase'), () => ({
+      from: jest.fn(), auth: { admin: { deleteUser } },
+    }));
     const { registerPerfil } = require('../src/controllers/authController');
-    const req = {
-      body: { nombre: 'N'.repeat(101) },
-      user: { id: 'usuario-1' },
-    };
     const res = responseMock();
-
-    await registerPerfil(req, res);
-
-    expect(res.statusCode).toBe(500);
-    expect(res.body).toEqual({
-      success: false,
-      message: 'No pudimos completar tu registro. Por favor intenta de nuevo.',
-    });
-    expect(deleteUser).toHaveBeenCalledWith('usuario-1');
-    expect(consoleError).toHaveBeenCalledWith(
-      'authController.registerPerfil — rollback fallido:',
-      deleteError,
-    );
-    consoleError.mockRestore();
-  });
-
-  it('registra una excepción si falla el rollback', async () => {
-    const deleteError = new Error('Error de conexión');
-    const deleteUser = jest.fn().mockRejectedValue(deleteError);
-    const supabaseMock = {
-      from: jest.fn(),
-      auth: { admin: { deleteUser } },
-    };
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.doMock(path.resolve(__dirname, '../src/config/supabase'), () => supabaseMock);
-    const { registerPerfil } = require('../src/controllers/authController');
-    const req = {
-      body: { nombre: 'N'.repeat(101) },
-      user: { id: 'usuario-1' },
-    };
-    const res = responseMock();
-
-    await registerPerfil(req, res);
-
-    expect(res.statusCode).toBe(500);
-    expect(deleteUser).toHaveBeenCalledWith('usuario-1');
-    expect(consoleError).toHaveBeenCalledWith(
-      'authController.registerPerfil — rollback fallido:',
-      deleteError,
-    );
-    consoleError.mockRestore();
+    await registerPerfil({ body: { nombre: 'N'.repeat(101) }, user: { id: 'usuario-1' } }, res);
+    expect(res.statusCode).toBe(400);
+    expect(deleteUser).not.toHaveBeenCalled();
   });
 });
