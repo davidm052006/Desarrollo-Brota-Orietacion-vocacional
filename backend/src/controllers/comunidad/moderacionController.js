@@ -1,5 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
+const { responderErrorInterno } = require('../../utils/errorInterno');
 
 // Mapea el :tipo de la URL a la tabla real — así un solo endpoint sirve
 // para las 3 clases de publicación en vez de triplicar rutas/controllers.
@@ -15,7 +16,7 @@ const ocultarPublicacion = asyncHandler('comunidad/moderacionController.ocultarP
   if (!tabla) return res.status(400).json({ success: false, message: 'Tipo de publicación inválido' });
 
   const { error } = await supabase.from(tabla).update({ oculta: true }).eq('id', id);
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/moderacionController', error);
 
   return res.json({ success: true });
 });
@@ -27,7 +28,7 @@ const eliminarPublicacion = asyncHandler('comunidad/moderacionController.elimina
   if (!tabla) return res.status(400).json({ success: false, message: 'Tipo de publicación inválido' });
 
   const { error } = await supabase.from(tabla).delete().eq('id', id);
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'comunidad/moderacionController', error);
 
   return res.json({ success: true });
 });

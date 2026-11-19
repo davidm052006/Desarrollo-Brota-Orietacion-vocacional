@@ -1,5 +1,6 @@
 const supabase = require('../../config/supabase');
 const asyncHandler = require('../../utils/asyncHandler');
+const { responderErrorInterno } = require('../../utils/errorInterno');
 
 // GET /api/admin/preguntas-comunidad — moderación: preguntas con su conteo de reportes
 const getPreguntasComunidad = asyncHandler('admin/preguntasComunidadController.getPreguntasComunidad', async (req, res) => {
@@ -8,7 +9,7 @@ const getPreguntasComunidad = asyncHandler('admin/preguntasComunidadController.g
     .select('id, titulo, area, autor_nombre, anonimo, resuelta, user_id, created_at')
     .order('created_at', { ascending: false });
 
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'admin/preguntasComunidadController', error);
 
   const ids = (preguntas ?? []).map(p => p.id);
   let conteoReportes = {};
@@ -53,7 +54,7 @@ const deletePreguntaComunidad = asyncHandler('admin/preguntasComunidadController
   const { id } = req.params;
 
   const { error } = await supabase.from('preguntas_comunidad').delete().eq('id', id);
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'admin/preguntasComunidadController', error);
 
   return res.json({ success: true, message: 'Pregunta eliminada correctamente' });
 });

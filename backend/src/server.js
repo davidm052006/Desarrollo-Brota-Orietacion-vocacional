@@ -81,6 +81,27 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Ruta inexistente: responder JSON en vez del "Cannot GET" en HTML de Express.
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Ruta no encontrada' });
+});
+
+// Manejador de errores final. Sin esto, Express responde HTML con el stack
+// trace y rutas internas del servidor (p. ej. ante un JSON mal formado).
+// Express lo reconoce como manejador de errores por tener 4 parámetros.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ success: false, message: 'JSON mal formado' });
+  }
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ success: false, message: 'El cuerpo de la petición es demasiado grande' });
+  }
+  console.error('Error no controlado:', err);
+  const status = err.status >= 400 && err.status < 600 ? err.status : 500;
+  res.status(status).json({ success: false, message: status < 500 ? 'Petición inválida' : 'Error interno del servidor' });
+});
+
 const PORT = process.env.PORT || 3001;
 
 // Solo levanta el servidor si este archivo se ejecuta directo (node server.js /
