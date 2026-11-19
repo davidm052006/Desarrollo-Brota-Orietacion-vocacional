@@ -18,11 +18,13 @@ export default defineConfig({
       include: ['src/**/*.{js,jsx}'],
       exclude: ['src/**/*.{test,spec}.{js,jsx}', 'src/test/**'],
       reporter: ['text', 'lcov'],
+      // Regla del plan (semana 5): max(60, cobertura real redondeada hacia
+      // abajo). Medido el 16-nov-2026: 70.9 / 60.73 / 63.58 / 71.99.
       thresholds: {
-        branches: 9.63,
-        functions: 5.1,
-        lines: 9.49,
-        statements: 8.79,
+        statements: 70,
+        branches: 60,
+        functions: 63,
+        lines: 71,
       },
     },
   },
