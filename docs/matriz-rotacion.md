@@ -1,16 +1,16 @@
-# Matriz de rotación — Semanas 1 a 5
+# Matriz de rotación — Semanas 1 a 6
 
 Capa de cada integrante por semana. Fuente: reparto del "Plan de pruebas Brota"
 (S2 `[Front, API, BD, E2E]`, S4 `[API, BD, E2E, Front]`, S5 `[BD, E2E, Front, API]`
 en el orden David, Brayan, Julian, Edward), corregido con lo que de verdad se
 subió en los PR. La S3 no rota: todos hacen pruebas de componente (Front).
 
-| Integrante | S1 | S2 | S3 | S4 | S5 |
-|---|---|---|---|---|---|
-| David | E2E | Front | Front | BD ¹ | Front ² |
-| Brayan | E2E | API | Front | por confirmar ³ | E2E |
-| Julian | E2E | BD | Front | E2E | API |
-| Edward | E2E | E2E | Front | Front | BD ⁴ |
+| Integrante | S1 | S2 | S3 | S4 | S5 | S6 |
+|---|---|---|---|---|---|---|
+| David | E2E | Front | Front | BD ¹ | Front ² | por definir (no Front) |
+| Brayan | E2E | API | Front | por confirmar ³ | E2E | por definir (no E2E) |
+| Julian | E2E | BD | Front | E2E | API | BD |
+| Edward | E2E | E2E | Front | Front | BD ⁴ | por definir (no BD) |
 
 ## Qué hizo cada uno y dónde está la evidencia
 
@@ -37,6 +37,7 @@ subió en los PR. La S3 no rota: todos hacen pruebas de componente (Front).
 | S5 | Julian | API: sincronización MEN (stub, mock, fake, spy de reloj) | #62 | Abierto, CI verde |
 | S5 | Julian | E2E extra: login con `page.route` (400, red caída, 429) | #64 | Abierto, CI verde |
 | S5 | Edward | BD: capa con repositorio Supabase simulado | — | Sin PR |
+| S6 | Julian | BD: montaje de la BD de pruebas (Supabase local) + `programasRepository` contra la BD real + DEF-05 (#80), DEF-06 (#81) | #79, PR de S6 | Abierto |
 
 ## Notas para cerrar en equipo
 

@@ -63,7 +63,7 @@ Comandos para levantar, correr y apagar: [README → Integración contra la BD d
 
 - Cada test crea sus propios datos. No se usan ids fijos que el test no haya insertado.
 - Los usuarios de prueba se crean en `auth.users` con correos `@prueba.brota.test`. La limpieza borra solo ese dominio, y las FK `ON DELETE CASCADE` se llevan sus filas.
-- **Limpieza: truncado antes de cada test** (`limpiar([...tablas])` → `TRUNCATE … RESTART IDENTITY CASCADE`). Se eligió truncar en vez de usar una transacción con rollback porque el backend usa `supabase-js`, que habla con la BD por HTTP (PostgREST): cada petición abre su propia transacción en el servidor, así que un rollback abierto desde el test no alcanzaría los datos que escribe el API.
+- **Limpieza: borrado explícito antes de cada test** (`limpiar([...tablas])` → `DELETE FROM` cada tabla, hijas primero, más los usuarios de prueba). No se usa una transacción con rollback porque el backend usa `supabase-js`, que habla con la BD por HTTP (PostgREST): cada petición abre su propia transacción en el servidor, así que un rollback abierto desde el test no alcanzaría los datos que escribe el API. Tampoco se usa `TRUNCATE … CASCADE`: vaciar `instituciones` en cascada se llevaría `perfiles_usuario` y `cuestionarios` enteros, incluido el test vocacional que crea la migración. `DELETE` respeta el `ON DELETE` de cada FK.
 - Ningún dato personal real. En los E2E de login, la cuenta de prueba llega por variables locales (`E2E_TEST_EMAIL`) y nunca se versiona.
 
 ## 6. Criterios
@@ -96,6 +96,7 @@ Regla del umbral: el mayor entre el piso de la semana y la cobertura real redond
 - Cada defecto se registra como issue `DEF-NN: <síntoma>` con pasos, resultado esperado y obtenido, y una etiqueta de severidad (`sev:alta`, `sev:media`, `sev:baja`).
 - Ciclo: **detectar** (test que falla, en el PR) → **corregir** (commit `fix: … (DEF-NN)`) → **verificar** (re-ejecución con el test en verde, anotada en el issue) → cerrar el issue.
 - Defectos registrados: DEF-01 #54 (calcularEdad), DEF-02 #56 (botones sin `type` publican), DEF-03 #58 (errores en HTML con stack trace), DEF-04 #59 (500 con mensaje interno). Los cuatro tienen corrección fusionada en `main`.
+- Semana 6 (integración contra la BD real): DEF-05 #80 (PATCH de perfil responde 500 al violar restricciones de la tabla) y DEF-06 #81 (un PATCH sin `edad` la borra). Corrección en el PR de S6 de Julian.
 
 ## 9. Entregables y trazabilidad
 
