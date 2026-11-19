@@ -88,8 +88,13 @@ jobs:
         run: pnpm --filter frontend build
 
   e2e:
-    name: Browser E2E (login validation)
+    name: Browser E2E
     runs-on: ubuntu-latest
+    env:
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+      E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -113,5 +118,5 @@ jobs:
       - name: Instalar Chromium
         run: pnpm --dir e2e exec playwright install --with-deps chromium
 
-      - name: E2E sin credenciales externas
-        run: pnpm --dir e2e exec playwright test tests/login-validation.spec.js
+      - name: Ejecutar suite E2E
+        run: pnpm --dir e2e test
