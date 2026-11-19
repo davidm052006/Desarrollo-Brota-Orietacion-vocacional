@@ -20,11 +20,13 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       // Regla del plan (semana 5): max(60, cobertura real redondeada hacia
       // abajo). Medido el 16-nov-2026: 70.9 / 60.73 / 63.58 / 71.99.
+      // La integración del 18 nov dejó fuera services/servicios.test.js (#70);
+      // restaurado, se mide 72.66 / 62.85 / 65.45 / 73.59 (19-nov-2026).
       thresholds: {
-        statements: 70,
-        branches: 60,
-        functions: 63,
-        lines: 71,
+        statements: 72,
+        branches: 62,
+        functions: 65,
+        lines: 73,
       },
     },
   },

@@ -237,7 +237,8 @@ describe('forosController', () => {
     db.from.mockImplementation(() => { throw new Error('caído'); });
     await ctrl.getForos({}, res);
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(cuerpo(res)).toEqual({ success: false, message: 'caído' });
+    // DEF-04 (#59): el 500 no expone el mensaje interno
+    expect(cuerpo(res)).toEqual({ success: false, message: 'Error interno del servidor' });
   });
 });
 
