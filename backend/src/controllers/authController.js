@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
 const { calcularEdadDesdeFecha } = require('../utils/calcularEdad');
+const { validarLimitesPerfil } = require('../utils/validarCampos');
 
 /**
  * POST /api/auth/register-perfil
@@ -7,19 +8,22 @@ const { calcularEdadDesdeFecha } = require('../utils/calcularEdad');
  * Header: Authorization: Bearer <supabase_token>
  *
  * Crea el registro en perfiles_usuario para el usuario ya autenticado.
- * Si el insert falla, hace rollback eliminando el usuario de Supabase Auth
- * usando la service_role_key del backend (operación que no es segura hacer
- * desde el frontend).
+ * No elimina cuentas de Auth en caso de error: la sesión autenticada podría
+ * pertenecer a una cuenta existente y el endpoint no prueba que sea nueva.
  */
 const registerPerfil = async (req, res) => {
   try {
     const { nombre, apellido, fechaNacimiento, ciudad, nivelEducativo, grado, telefono } = req.body;
 
-    if (!nombre) {
-      return res.status(400).json({ success: false, message: 'El campo nombre es requerido' });
+    const userId = req.user.id;
+    const errorValidacion = !nombre
+      ? 'El campo nombre es requerido'
+      : validarLimitesPerfil({ nombre, apellido, ciudad, nivelEducativo, grado, telefono });
+    if (errorValidacion) {
+      // Nunca borrar una cuenta autenticada solo porque envió datos inválidos.
+      return res.status(400).json({ success: false, message: errorValidacion });
     }
 
-    const userId = req.user.id;
     const edad = calcularEdadDesdeFecha(fechaNacimiento);
 
     const { error } = await supabase
@@ -41,13 +45,6 @@ const registerPerfil = async (req, res) => {
     }
 
     console.error('authController.registerPerfil — insert fallido:', error);
-
-    try {
-      await supabase.auth.admin.deleteUser(userId);
-    } catch (deleteErr) {
-      console.error('authController.registerPerfil — rollback fallido:', deleteErr);
-    }
-
     return res.status(500).json({
       success: false,
       message: 'No pudimos crear tu perfil. Por favor intenta registrarte de nuevo.',
