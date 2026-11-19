@@ -71,11 +71,14 @@ export default function UsuariosSection({ prefillUsuario, onPrefillConsumido }) 
   const [importando, setImportando]                 = useState(false);
   const [reporteImportacion, setReporteImportacion] = useState(null);
 
-  // Debounce: espera 350ms después del último keystroke antes de buscar
+  // Debounce: espera 350ms después del último keystroke antes de buscar.
+  // Solo si la búsqueda cambió: antes también corría al montar y, a los
+  // 350ms, devolvía a la página 1 a quien ya había pasado a la 2.
   useEffect(() => {
+    if (busqueda === busquedaDebounce) return undefined;
     const t = setTimeout(() => { setBusquedaDebounce(busqueda); setPagina(1); }, 350);
     return () => clearTimeout(t);
-  }, [busqueda]);
+  }, [busqueda, busquedaDebounce]);
 
   // ─── READ ─────────────────────────────────────────────────────────────────
   const fetchUsuarios = useCallback(async () => {
