@@ -4,15 +4,15 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.js'],
   coverageReporters: ['text', 'lcov'],
   coverageDirectory: 'coverage',
-  // Semana 5: umbral = max(60, cobertura real redondeada hacia abajo).
-  // Medición del 16-nov-2026: sentencias 73.27, ramas 62.13, funciones 69.95,
-  // líneas 76.69.
+  // Semana 6: umbral = max(70, cobertura real redondeada hacia abajo), medida
+  // SIN DATABASE_URL (como el CI: la integración se salta). Medición del
+  // 19-nov-2026: sentencias 84.87, ramas 72.69, funciones 82.8, líneas 87.57.
   coverageThreshold: {
     global: {
-      branches: 62,
-      functions: 69,
-      lines: 76,
-      statements: 73,
+      branches: 72,
+      functions: 82,
+      lines: 87,
+      statements: 84,
     },
   },
 };
