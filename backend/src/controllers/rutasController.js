@@ -1,11 +1,12 @@
 const supabase = require('../config/supabase');
 const asyncHandler = require('../utils/asyncHandler');
+const { responderErrorInterno } = require('../utils/errorInterno');
 
 // GET /api/rutas — lista las áreas disponibles (para armar los chips de
 // selección en el frontend, mismas claves que area_academica en programas)
 const getAreasDisponibles = asyncHandler('rutasController.getAreasDisponibles', async (req, res) => {
   const { data, error } = await supabase.from('contenido_rutas').select('area').order('area');
-  if (error) return res.status(500).json({ success: false, message: error.message });
+  if (error) return responderErrorInterno(res, 'rutasController', error);
   return res.json({ success: true, data: (data ?? []).map(r => r.area) });
 });
 
