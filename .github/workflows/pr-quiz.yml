@@ -1,0 +1,49 @@
+name: PR Quiz
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
+
+concurrency:
+  group: pr-quiz-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  generar:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    steps:
+      # pull_request_target hace checkout de la rama base: nunca se ejecuta código del PR,
+      # así nadie puede cambiar el generador en su PR para ver las respuestas.
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        env:
+          QUIZ_SECRET: ${{ secrets.QUIZ_SECRET }}
+        with:
+          script: |
+            const { generar } = await import(`${process.env.GITHUB_WORKSPACE}/scripts/pr-quiz-action.mjs`);
+            await generar({ github, context });
+
+  responder:
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/quiz')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        env:
+          QUIZ_SECRET: ${{ secrets.QUIZ_SECRET }}
+        with:
+          script: |
+            const { responder } = await import(`${process.env.GITHUB_WORKSPACE}/scripts/pr-quiz-action.mjs`);
+            await responder({ github, context });
