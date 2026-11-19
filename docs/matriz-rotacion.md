@@ -67,3 +67,16 @@ archivos de código fuente (`src/`) y excluyendo pruebas/configuración:
 Estos porcentajes son también los umbrales mínimos configurados para CI. Si se
 añaden archivos o cambia la instrumentación, volver a medir y revisar la línea
 base en equipo antes de modificar los umbrales.
+
+## Cierre de la semana 6: cobertura real y umbral del 70%
+
+Medida el 19 nov 2026 **sin** `DATABASE_URL`, que es lo que mide el CI hoy (los tests de integración se saltan). Umbral = el mayor entre 70 y la cobertura real redondeada hacia abajo.
+
+| Parte | Sentencias | Ramas | Funciones | Líneas | Umbral en CI |
+|---|---:|---:|---:|---:|---|
+| Backend (Jest) | 84.87% | 72.69% | 82.80% | 87.57% | 84 / 72 / 82 / 87 |
+| Frontend (Vitest + V8) | 81.42% | 73.01% | 75.22% | 82.21% | 81 / 73 / 75 / 82 |
+
+Antes de la Parte 4: backend ramas 67.89%; frontend ramas 62.87% y funciones 65.38%. Lo que las subió:
+- **Backend:** pruebas de los CRUD del panel admin (programas, instituciones, solicitudes de contacto) y del formulario público de contacto (`tests/controllers/catalogosYContacto.test.js`), más las reglas nuevas de DEF-05 con su test unitario.
+- **Frontend:** pruebas de seis páginas que estaban al 0% (Rutas, BannerCarousel, Perfil con GlassSelect, Broti, MisProgramas y Ajustes), y los tests de `services/servicios.test.js` que la integración del 18 nov había dejado fuera (#78).
