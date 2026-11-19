@@ -2,6 +2,7 @@ const supabase                                              = require('../config
 const { calcularDesdeRespuestas, calcularPorcentajes }      = require('../utils/perfilvocacional');
 const { generarRecomendaciones }                            = require('../utils/algoritmoRecomendacion');
 const { RECURSOS_VALIDOS, tienePermiso }                    = require('../utils/permisos');
+const { responderErrorInterno } = require('../utils/errorInterno');
 
 // ─────────────────────────────────────────────────────────────
 // GET /api/perfil/permisos — permiso efectivo del usuario logueado, para que
@@ -121,7 +122,7 @@ const obtenerCuestionario = async (req, res) => {
     });
   } catch (err) {
     console.error('perfilController.obtenerCuestionario:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
@@ -173,7 +174,7 @@ const guardarResultado = async (req, res) => {
 
     if (error) {
       console.error('perfilController.guardarResultado — insert:', error);
-      return res.status(500).json({ success: false, message: error.message });
+      return responderErrorInterno(res, 'perfilController', error);
     }
 
     // Generar recomendaciones antes de responder, así el frontend las encuentra de inmediato
@@ -183,7 +184,7 @@ const guardarResultado = async (req, res) => {
     return res.status(201).json({ success: true, message: 'Resultado guardado', data });
   } catch (err) {
     console.error('perfilController.guardarResultado:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
@@ -229,13 +230,13 @@ const obtenerResultado = async (req, res) => {
       return res.json({ success: true, data: null });
     }
     if (error) {
-      return res.status(500).json({ success: false, message: error.message });
+      return responderErrorInterno(res, 'perfilController', error);
     }
 
     return res.json({ success: true, data });
   } catch (err) {
     console.error('perfilController.obtenerResultado:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
@@ -284,7 +285,7 @@ const obtenerRecomendaciones = async (req, res) => {
       .limit(8);
 
     if (error) {
-      return res.status(500).json({ success: false, message: error.message });
+      return responderErrorInterno(res, 'perfilController', error);
     }
 
     const recomendaciones = (data ?? []).map((r) => ({
@@ -314,7 +315,7 @@ const obtenerRecomendaciones = async (req, res) => {
     return res.json({ success: true, data: recomendaciones });
   } catch (err) {
     console.error('perfilController.obtenerRecomendaciones:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
@@ -354,13 +355,13 @@ const marcarRecomendacionVista = async (req, res) => {
       .eq('id', id);
 
     if (error) {
-      return res.status(500).json({ success: false, message: error.message });
+      return responderErrorInterno(res, 'perfilController', error);
     }
 
     return res.json({ success: true });
   } catch (err) {
     console.error('perfilController.marcarRecomendacionVista:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
@@ -400,13 +401,13 @@ const eliminarResultado = async (req, res) => {
       .eq('perfil_usuario_id', perfilUsuarioId);
 
     if (error) {
-      return res.status(500).json({ success: false, message: error.message });
+      return responderErrorInterno(res, 'perfilController', error);
     }
 
     return res.json({ success: true, message: 'Resultados eliminados' });
   } catch (err) {
     console.error('perfilController.eliminarResultado:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
@@ -482,7 +483,7 @@ const obtenerPerfil = async (req, res) => {
     return res.json({ success: true, data: dataConRacha });
   } catch (err) {
     console.error('perfilController.obtenerPerfil:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
@@ -521,13 +522,13 @@ const actualizarPerfil = async (req, res) => {
       .single();
 
     if (error) {
-      return res.status(500).json({ success: false, message: error.message });
+      return responderErrorInterno(res, 'perfilController', error);
     }
 
     return res.json({ success: true, data });
   } catch (err) {
     console.error('perfilController.actualizarPerfil:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
@@ -556,13 +557,13 @@ const actualizarBroti = async (req, res) => {
       .single();
 
     if (error) {
-      return res.status(500).json({ success: false, message: error.message });
+      return responderErrorInterno(res, 'perfilController', error);
     }
 
     return res.json({ success: true, data });
   } catch (err) {
     console.error('perfilController.actualizarBroti:', err);
-    return res.status(500).json({ success: false, message: err.message });
+    return responderErrorInterno(res, 'perfilController', err);
   }
 };
 
