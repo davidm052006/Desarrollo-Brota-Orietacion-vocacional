@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const { responderErrorInterno } = require('../utils/errorInterno');
 
 const obtenerProgramas = async (req, res) => {
   const { area, search = '', page = 1, limit = 24 } = req.query;
@@ -28,7 +29,7 @@ const obtenerProgramas = async (req, res) => {
 
   const { data, error, count } = await query;
 
-  if (error) return res.status(500).json({ success: false, error: error.message });
+  if (error) return responderErrorInterno(res, 'programasController', error);
 
   return res.json({
     success: true,
@@ -67,7 +68,7 @@ const obtenerEstadisticas = async (req, res) => {
 
     return res.json({ success: true, total: total ?? 0, areas: conteos });
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    return responderErrorInterno(res, 'programasController', err);
   }
 };
 
