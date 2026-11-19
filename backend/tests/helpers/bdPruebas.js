@@ -1,0 +1,100 @@
+// ============================================================
+// BD de pruebas (semana 6): Supabase local levantado con el CLI.
+// ============================================================
+// La conexión llega SOLO por variables de entorno (ninguna credencial en
+// los tests):
+//   DATABASE_URL          postgresql://...@127.0.0.1:54322/postgres
+//   SUPABASE_URL          http://127.0.0.1:54321
+//   SUPABASE_SERVICE_KEY  llave service_role del Supabase local
+// Se cargan con `supabase status -o env` (ver README, sección Tests).
+//
+// Sin DATABASE_URL, los tests de integración se SALTAN: el CI de hoy no
+// tiene BD (llega en la semana 8) y sigue en verde.
+//
+// Protección: backend/.env apunta al Supabase remoto de desarrollo. Si
+// DATABASE_URL o SUPABASE_URL no son locales, se aborta antes de tocar
+// nada, para que un test que trunca tablas nunca corra contra esa BD.
+
+const { Pool } = require('pg');
+
+const DATABASE_URL = process.env.DATABASE_URL;
+const hayBD = Boolean(DATABASE_URL);
+
+const HOSTS_LOCALES = new Set(['127.0.0.1', 'localhost', '::1', '[::1]']);
+
+function esLocal(url) {
+  try {
+    return HOSTS_LOCALES.has(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
+if (hayBD) {
+  if (!esLocal(DATABASE_URL)) {
+    throw new Error('DATABASE_URL no apunta a una BD local: los tests de integración solo corren contra la BD de pruebas.');
+  }
+  if (!esLocal(process.env.SUPABASE_URL)) {
+    throw new Error('SUPABASE_URL no es local: carga las variables con `supabase status -o env` antes de correr la integración.');
+  }
+}
+
+/** describe que se salta cuando no hay BD de pruebas. */
+const describeBD = hayBD ? describe : describe.skip;
+
+let pool;
+function bd() {
+  if (!pool) pool = new Pool({ connectionString: DATABASE_URL, max: 2 });
+  return pool;
+}
+
+async function consultar(sql, params = []) {
+  const { rows } = await bd().query(sql, params);
+  return rows;
+}
+
+// Dominio reservado para los usuarios que crean los tests: la limpieza
+// borra solo esos, nunca otros.
+const DOMINIO_PRUEBA = 'prueba.brota.test';
+
+/**
+ * Limpieza explícita antes de cada test: vacía las tablas indicadas y borra
+ * los usuarios de Auth creados por los tests (CASCADE se lleva sus filas).
+ */
+async function limpiar(tablas = []) {
+  if (tablas.length) {
+    const lista = tablas.map((t) => `public."${t}"`).join(', ');
+    await consultar(`TRUNCATE ${lista} RESTART IDENTITY CASCADE`);
+  }
+  await consultar('DELETE FROM auth.users WHERE email LIKE $1', [`%@${DOMINIO_PRUEBA}`]);
+}
+
+/** Crea un usuario en auth.users (lo exigen las FK) y devuelve su id. */
+async function crearUsuarioAuth(nombre = 'usuario') {
+  const email = `${nombre}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@${DOMINIO_PRUEBA}`;
+  const [fila] = await consultar(
+    `INSERT INTO auth.users (id, instance_id, aud, role, email, created_at, updated_at)
+     VALUES (gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', $1, now(), now())
+     RETURNING id`,
+    [email],
+  );
+  return { id: fila.id, email };
+}
+
+async function cerrar() {
+  if (pool) {
+    await pool.end();
+    pool = undefined;
+  }
+}
+
+module.exports = {
+  hayBD,
+  describeBD,
+  esLocal,
+  consultar,
+  limpiar,
+  crearUsuarioAuth,
+  cerrar,
+  DOMINIO_PRUEBA,
+};
