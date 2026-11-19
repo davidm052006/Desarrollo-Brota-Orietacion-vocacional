@@ -22,7 +22,7 @@ async function rollbackUsuarioAuth(userId) {
  * Header: Authorization: Bearer <supabase_token>
  *
  * Crea el registro en perfiles_usuario para el usuario ya autenticado.
- * Si la validación o el insert fallan, hace rollback eliminando el usuario de Supabase Auth
+ * Si el insert falla, intenta revertir la cuenta creada en Supabase Auth
  * usando la service_role_key del backend (operación que no es segura hacer
  * desde el frontend).
  */
@@ -35,13 +35,7 @@ const registerPerfil = async (req, res) => {
       ? 'El campo nombre es requerido'
       : validarLimitesPerfil({ nombre, apellido, ciudad, nivelEducativo, grado, telefono });
     if (errorValidacion) {
-      const rollbackExitoso = await rollbackUsuarioAuth(userId);
-      if (!rollbackExitoso) {
-        return res.status(500).json({
-          success: false,
-          message: 'No pudimos completar tu registro. Por favor intenta de nuevo.',
-        });
-      }
+      // Nunca borrar una cuenta autenticada solo porque envió datos inválidos.
       return res.status(400).json({ success: false, message: errorValidacion });
     }
 
