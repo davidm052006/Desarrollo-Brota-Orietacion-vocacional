@@ -43,3 +43,7 @@ docs/notas_personales.md
 
 # graphify (output generado, regenerable localmente)
 graphify-out/
+
+# Respaldos locales de Supabase; pueden contener datos personales y auth.
+backups/
+__pycache__/
