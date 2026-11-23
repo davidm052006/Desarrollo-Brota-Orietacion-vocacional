@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Brota · Guía Docker para Windows</title>
+  <style>
+    :root{--ink:#17312b;--muted:#52665e;--paper:#f7f5ed;--card:#fffefa;--green:#147d55;--green-dark:#0b563b;--line:#d9e1d9;--lime:#d9f0ca;--sand:#f4e9d7;--coral:#c65c43;--shadow:0 18px 45px rgba(19,56,38,.08)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--green-dark);text-underline-offset:3px}a:hover{color:var(--coral)}button{font:inherit}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}code{font-size:.91em;background:#eaf0e8;padding:.12rem .3rem;border-radius:4px}pre code{background:none;padding:0;color:#eef8ed;font-size:.91rem}pre{overflow:auto;margin:0;padding:1.15rem 1.25rem;background:#163a2d;color:#eef8ed;border-radius:0 0 12px 12px;line-height:1.55;white-space:pre}h1,h2,h3{line-height:1.16;letter-spacing:-.035em}h1{font-size:clamp(2.5rem,5.3vw,5.2rem);margin:.55rem 0 1rem;max-width:800px}h2{font-size:clamp(1.7rem,2.6vw,2.35rem);margin:0 0 .8rem}h3{font-size:1.17rem;margin:1.7rem 0 .45rem}p{margin:.55rem 0 1rem}ul,ol{padding-left:1.45rem}li+li{margin-top:.42rem}small{font-size:.82rem}
+    .hero{background:radial-gradient(circle at 88% 18%,#b8dea4 0 10%,transparent 32%),linear-gradient(125deg,#e9f3df,#f7f5ed 65%);border-bottom:1px solid var(--line)}.hero-inner{max-width:1220px;margin:auto;padding:4.7rem 2rem 3.5rem}.eyebrow{display:inline-flex;align-items:center;gap:.55rem;text-transform:uppercase;letter-spacing:.16em;font-size:.74rem;font-weight:800;color:var(--green-dark)}.seed{width:12px;height:17px;border-radius:12px 12px 2px 12px;transform:rotate(-30deg);background:var(--green)}.hero p{max-width:700px;font-size:1.17rem;color:#365149}.hero-links{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.7rem}.pill{display:inline-flex;align-items:center;gap:.4rem;border:1px solid #9bc7a8;border-radius:999px;padding:.52rem .95rem;text-decoration:none;font-weight:700;background:#fffdf5}.pill.primary{color:white;background:var(--green);border-color:var(--green)}.pill:hover{transform:translateY(-2px);transition:transform .15s}
+    .layout{max-width:1220px;margin:auto;padding:2.7rem 2rem 5rem;display:grid;grid-template-columns:230px minmax(0,1fr);gap:3.2rem}.toc{align-self:start;position:sticky;top:1.5rem;border-left:2px solid var(--line);padding-left:1rem}.toc strong{display:block;font-size:.8rem;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem}.toc a{display:block;text-decoration:none;color:var(--muted);padding:.28rem 0;font-size:.91rem}.toc a:hover{color:var(--green)}main{min-width:0}.section{padding:2rem 0 2.5rem;border-bottom:1px solid var(--line);scroll-margin-top:1rem}.section:first-child{padding-top:0}.section:last-child{border-bottom:0}.section-kicker{font-size:.8rem;color:var(--coral);font-weight:800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.45rem}.lead{font-size:1.05rem;color:#38544a;max-width:760px}.card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:1.25rem 0}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.25rem;box-shadow:var(--shadow)}.card h3{margin:.1rem 0 .45rem}.card p{margin:0;color:var(--muted)}.note{border-left:4px solid var(--green);background:#eaf2e7;padding:1rem 1.15rem;border-radius:0 10px 10px 0;margin:1.25rem 0}.note.warn{border-color:var(--coral);background:#fcf0e8}.note strong{display:block;margin-bottom:.2rem}.command{margin:1rem 0 1.25rem;border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}.command-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;background:#28503c;color:#e8f5e7;padding:.5rem .75rem .5rem 1.2rem;font-size:.79rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.copy{color:#fff;background:transparent;border:1px solid #89ab92;border-radius:7px;cursor:pointer;padding:.25rem .55rem;font-size:.76rem;letter-spacing:0;text-transform:none}.copy:hover,.copy:focus-visible{background:#3f7959}.shell-windows{background:#274a63}.shell-windows+pre{background:#122c3d}.steps{counter-reset:step;list-style:none;padding:0}.steps>li{position:relative;padding-left:3.2rem;margin:1.5rem 0}.steps>li::before{counter-increment:step;content:counter(step);position:absolute;left:0;top:0;width:2rem;height:2rem;display:grid;place-items:center;border-radius:50%;background:var(--green);color:white;font-weight:800}.steps h3{margin:.05rem 0 .45rem}.path{background:#e5efdc;padding:.8rem 1rem;border-radius:8px;overflow:auto;font-family:ui-monospace,monospace;font-size:.9rem}.flow{display:flex;align-items:stretch;flex-wrap:wrap;gap:.55rem;margin:1.4rem 0}.flow span{padding:.7rem .9rem;background:var(--card);border:1px solid var(--line);border-radius:8px;font-weight:700}.flow b{align-self:center;color:var(--green)}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:block;overflow-x:auto}th,td{text-align:left;padding:.77rem .9rem;border-bottom:1px solid var(--line);vertical-align:top}th{background:#e9f1e6;color:#254b38;font-size:.85rem}tr:last-child td{border-bottom:0}td code{white-space:nowrap}.links a{display:block;margin:.4rem 0}.faq details{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:1rem 1.1rem;margin:.7rem 0}.faq summary{cursor:pointer;font-weight:750}.faq details p:last-child{margin-bottom:0}.footer{max-width:1220px;margin:auto;padding:0 2rem 2.6rem;color:var(--muted);font-size:.86rem}
+    @media(max-width:860px){.layout{grid-template-columns:1fr;gap:1rem}.toc{position:static;border-left:0;border-bottom:1px solid var(--line);padding:0 0 1rem;display:flex;flex-wrap:wrap;gap:.15rem .8rem}.toc strong{width:100%}.toc a{padding:.15rem 0}.hero-inner{padding:3rem 1.25rem}.layout{padding:1.7rem 1.25rem 3rem}.card-grid{grid-template-columns:1fr}}@media(max-width:510px){.hero-links{display:block}.pill{margin:.25rem .25rem .25rem 0}.steps>li{padding-left:2.8rem}pre{font-size:.8rem;padding:1rem}.command-head{padding:.5rem .65rem}}
+    @media print{body{background:white}.hero{background:white}.hero-inner{padding:1rem 0}.layout{display:block;padding:0}.toc,.copy,.hero-links{display:none}.section{break-inside:avoid;padding:1rem 0}pre{white-space:pre-wrap;color:#111;background:#f3f3f3}.command-head{color:#111;background:#ddd}.card{box-shadow:none}.faq details{display:block}.faq details>*{display:block}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow"><span class="seed" aria-hidden="true"></span> Rama docker-brota · Windows + WSL 2</div>
+      <h1>Brota en tu computador, paso a paso.</h1>
+      <p>Instala lo necesario una vez, clona los repositorios y arranca la demo web o la vista móvil con comandos <code>make</code>. No necesitas instalar Node.js ni Flutter en Windows para estas demos Docker.</p>
+      <div class="hero-links"><a class="pill primary" href="#preparar">Empezar desde cero ↗</a><a class="pill" href="#comandos">Ya tengo todo instalado</a></div>
+    </div>
+  </header>
+  <div class="layout">
+    <nav class="toc" aria-label="Contenido">
+      <strong>En esta guía</strong>
+      <a href="#mapa">Cómo funciona</a><a href="#preparar">1. Instalar WSL 2</a><a href="#docker">2. Docker Desktop</a><a href="#ubuntu">3. Preparar Ubuntu</a><a href="#repos">4. Clonar repositorios</a><a href="#ramas">5. Cambiar de rama</a><a href="#comandos">6. Iniciar Brota</a><a href="#uso">7. Usar y detener</a><a href="#problemas">Si algo falla</a><a href="#fuentes">Fuentes oficiales</a>
+    </nav>
+    <main>
+      <section class="section" id="mapa">
+        <div class="section-kicker">Antes de comenzar</div><h2>Qué vas a instalar y qué vas a abrir</h2>
+        <p class="lead">Windows aloja Docker Desktop. Ubuntu dentro de WSL 2 ejecuta los comandos. Las páginas se abren en el navegador normal de Windows mediante <code>127.0.0.1</code>.</p>
+        <div class="flow" aria-label="Recorrido de la demo"><span>Windows</span><b>→</b><span>Ubuntu / WSL 2</span><b>→</b><span>Docker + Supabase local</span><b>→</b><span>Navegador</span></div>
+        <div class="card-grid"><div class="card"><h3>Web · React</h3><p>Frontend en <strong>5174</strong>, API en <strong>3001</strong> y Supabase local.</p></div><div class="card"><h3>Móvil · Flutter</h3><p>Vista Flutter compilada para navegador en <strong>5175</strong>. Puedes verla con tamaño de teléfono.</p></div></div>
+        <div class="note"><strong>Una sola base local</strong>Web y móvil comparten backend, usuarios y datos de Supabase. La vista móvil en Docker no es un emulador Android ni genera una app instalable.</div>
+      </section>
+
+      <section class="section" id="preparar">
+        <div class="section-kicker">Paso 1 · En Windows</div><h2>Instalar WSL 2 y Ubuntu</h2>
+        <ol class="steps"><li><h3>Abre PowerShell como administrador</h3><p>En Inicio, busca <strong>PowerShell</strong>, haz clic derecho y elige <strong>Ejecutar como administrador</strong>.</p><div class="command"><div class="command-head shell-windows">PowerShell · administrador <button class="copy" type="button">Copiar</button></div><pre><code>wsl --install -d Ubuntu</code></pre></div><p>Reinicia Windows si te lo solicita. En el primer inicio de Ubuntu crea tu usuario y contraseña de Linux; al escribir la contraseña no se muestran caracteres.</p></li>
+        <li><h3>Comprueba la versión</h3><div class="command"><div class="command-head shell-windows">PowerShell <button class="copy" type="button">Copiar</button></div><pre><code>wsl --update
+wsl -l -v</code></pre></div><p>Ubuntu debe aparecer con <strong>VERSION 2</strong>. Si aparece 1, ejecuta <code>wsl --set-version Ubuntu 2</code> en PowerShell y espera a que termine.</p></li>
+        <li><h3>Entra a Ubuntu</h3><p>Busca <strong>Ubuntu</strong> en Inicio o escribe esto en PowerShell:</p><div class="command"><div class="command-head shell-windows">PowerShell <button class="copy" type="button">Copiar</button></div><pre><code>wsl -d Ubuntu</code></pre></div></li></ol>
+        <div class="note">Las instrucciones con etiqueta <strong>PowerShell</strong> van en Windows. Las de <strong>Ubuntu · WSL</strong> van dentro de la ventana de Ubuntu.</div>
+      </section>
+
+      <section class="section" id="docker">
+        <div class="section-kicker">Paso 2 · En Windows</div><h2>Instalar y conectar Docker Desktop</h2>
+        <ol class="steps"><li><h3>Instala Docker Desktop</h3><p>Descárgalo desde la <a href="https://docs.docker.com/desktop/setup/install/windows-install/" target="_blank" rel="noopener">página oficial de Docker</a>. Elige el motor <strong>WSL 2</strong> y abre Docker Desktop. Espera a que indique que el motor está funcionando.</p></li>
+        <li><h3>Activa la integración con Ubuntu</h3><p>En Docker Desktop abre <strong>Settings → Resources → WSL Integration</strong>, activa <strong>Ubuntu</strong> y pulsa <strong>Apply &amp; restart</strong>. En <strong>Settings → General</strong>, comprueba que esté seleccionado el motor WSL 2. Usa contenedores Linux.</p></li>
+        <li><h3>Verifica desde Ubuntu</h3><div class="command"><div class="command-head">Ubuntu · WSL <button class="copy" type="button">Copiar</button></div><pre><code>docker --version
+docker compose version
+docker info</code></pre></div><p>Si <code>docker info</code> muestra información del servidor, la conexión funciona. Mantén Docker Desktop abierto al usar Brota.</p></li></ol>
+        <div class="note warn"><strong>No instales otro Docker Engine dentro de Ubuntu</strong>Docker Desktop ya proporciona el motor a WSL 2. Dos motores pueden causar conflictos.</div>
+      </section>
+
+      <section class="section" id="ubuntu">
+        <div class="section-kicker">Paso 3 · En Ubuntu</div><h2>Preparar los comandos de desarrollo</h2>
+        <p>Instala Git, Make y curl. Ubuntu te pedirá la contraseña de Linux que creaste en el primer inicio.</p>
+        <div class="command"><div class="command-head">Ubuntu · WSL <button class="copy" type="button">Copiar</button></div><pre><code>sudo apt update
+sudo apt install -y git make curl</code></pre></div>
+        <h3>Instalar Supabase CLI para Linux</h3><p>Los scripts de Brota llaman a <code>supabase</code> directamente desde Ubuntu. Este paquete fija la versión <strong>2.114.0</strong>, usada al comprobar esta guía, y corresponde a Ubuntu x86_64.</p>
+        <div class="command"><div class="command-head">Ubuntu · WSL · x86_64 <button class="copy" type="button">Copiar</button></div><pre><code>uname -m
+curl -fL -o /tmp/supabase_2.114.0_linux_amd64.deb https://github.com/supabase/cli/releases/download/v2.114.0/supabase_2.114.0_linux_amd64.deb
+sudo apt install -y /tmp/supabase_2.114.0_linux_amd64.deb
+supabase --version</code></pre></div>
+        <p>El primer comando debe mostrar <code>x86_64</code>. Si muestra <code>aarch64</code>, busca el paquete <code>linux_arm64.deb</code> de esa versión en las <a href="https://github.com/supabase/cli/releases/tag/v2.114.0" target="_blank" rel="noopener">versiones oficiales</a> antes de instalar.</p>
+      </section>
+
+      <section class="section" id="repos">
+        <div class="section-kicker">Paso 4 · En Ubuntu</div><h2>Clonar web y móvil como carpetas hermanas</h2>
+        <p>Guarda el código dentro de Ubuntu, por ejemplo bajo <code>~/proyectos</code>. La demo móvil necesita encontrar <code>brota-flutter</code> al lado de <code>brota-web</code>.</p>
+        <div class="command"><div class="command-head">Ubuntu · WSL <button class="copy" type="button">Copiar</button></div><pre><code>mkdir -p ~/proyectos/brota
+cd ~/proyectos/brota
+git clone -b docker-brota https://github.com/davidm052006/Desarrollo-Brota-Orietacion-vocacional.git brota-web
+git clone -b develop https://github.com/davidm052006/brota-flutter-app.git brota-flutter
+cd brota-web
+pwd</code></pre></div>
+        <div class="path">~/proyectos/brota/<br>├── brota-web/ &nbsp;← ejecuta <strong>make</strong> aquí<br>└── brota-flutter/ &nbsp;← código de la vista móvil</div>
+        <p>Si GitHub pide acceso, solicita permiso al responsable del repositorio. La ruta final de <code>pwd</code> debe terminar en <code>/brota-web</code>.</p>
+        <div class="note"><strong>Dos repositorios, dos ramas</strong>La configuración Docker y esta guía están en la rama <code>docker-brota</code> del repositorio web. El repositorio móvil se clona desde su rama <code>develop</code>. Puedes consultar la <a href="https://github.com/davidm052006/Desarrollo-Brota-Orietacion-vocacional/tree/docker-brota" target="_blank" rel="noopener">rama Docker de Brota en GitHub</a>.</div>
+      </section>
+
+      <section class="section" id="ramas">
+        <div class="section-kicker">Paso 5 · Git básico</div><h2>Ver y cambiar de rama sin perder trabajo</h2>
+        <p>Cada repositorio tiene sus propias ramas. Haz estos comandos dentro de <code>brota-web</code> o <code>brota-flutter</code>, según el proyecto que quieras cambiar.</p>
+        <div class="command"><div class="command-head">Ubuntu · WSL · dentro del repositorio <button class="copy" type="button">Copiar</button></div><pre><code>git status
+git branch --show-current
+git fetch origin
+git branch -a</code></pre></div>
+        <p>Para volver a la rama de Docker en <code>brota-web</code> y traer los cambios publicados:</p>
+        <div class="command"><div class="command-head">Ubuntu · WSL <button class="copy" type="button">Copiar</button></div><pre><code>git switch develop
+git switch docker-brota
+git pull --ff-only</code></pre></div>
+        <p>En <code>brota-flutter</code>, usa <code>git switch develop</code> y <code>git pull --ff-only</code> para actualizar su rama de trabajo.</p>
+        <p>Si la rama solo existe en GitHub, créala localmente una vez. Sustituye <code>nombre-de-rama</code> por el nombre que te indique el equipo:</p>
+        <div class="command"><div class="command-head">Ubuntu · WSL <button class="copy" type="button">Copiar</button></div><pre><code>git switch --track origin/nombre-de-rama</code></pre></div>
+        <div class="note warn"><strong>Si <code>git status</code> muestra archivos modificados</strong>No cambies de rama ni ejecutes comandos de borrado a ciegas. Confirma primero con el equipo qué hacer con tus cambios. <code>git pull --ff-only</code> evita crear un merge inesperado.</div>
+      </section>
+
+      <section class="section" id="comandos">
+        <div class="section-kicker">Paso 6 · La demo</div><h2>Iniciar Brota</h2>
+        <p>Abre Docker Desktop, entra a Ubuntu y colócate en el repositorio web:</p>
+        <div class="command"><div class="command-head">Ubuntu · WSL <button class="copy" type="button">Copiar</button></div><pre><code>cd ~/proyectos/brota/brota-web</code></pre></div>
+        <div class="card-grid"><div class="card"><h3>Iniciar web</h3><p>Arranca Supabase, el backend y React.</p><div class="command"><div class="command-head">Ubuntu · WSL <button class="copy" type="button">Copiar</button></div><pre><code>make demo-brota-up</code></pre></div><a href="http://127.0.0.1:5174" target="_blank" rel="noopener">Abrir web →</a></div><div class="card"><h3>Iniciar vista móvil</h3><p>Necesita ambas carpetas hermanas. Arranca el backend y compila Flutter para navegador.</p><div class="command"><div class="command-head">Ubuntu · WSL <button class="copy" type="button">Copiar</button></div><pre><code>make demo-brota-movil-up</code></pre></div><a href="http://127.0.0.1:5175" target="_blank" rel="noopener">Abrir móvil →</a></div></div>
+        <p>Puedes ejecutar ambos comandos si quieres comparar las dos interfaces. <code>make brota-demo-up</code> es un alias de <code>make demo-brota-up</code>. La primera descarga de imágenes y la primera compilación Flutter pueden tardar varios minutos. Cuando <code>make</code> termine y vuelva el cursor, abre los enlaces en el navegador de Windows.</p>
+        <div class="note"><strong>Para ver la vista móvil como teléfono</strong>En Chrome o Edge, pulsa <code>F12</code>, activa el icono de dispositivo y elige un tamaño de teléfono. El contenedor sirve Flutter Web; no instala una APK ni inicia un emulador.</div>
+        <h3>Direcciones de la demo</h3><table><thead><tr><th>Servicio</th><th>Dirección en Windows</th><th>Para qué sirve</th></tr></thead><tbody><tr><td>Web React</td><td><a href="http://127.0.0.1:5174">127.0.0.1:5174</a></td><td>Aplicación web</td></tr><tr><td>Flutter Web</td><td><a href="http://127.0.0.1:5175">127.0.0.1:5175</a></td><td>Vista de la app móvil</td></tr><tr><td>API</td><td><a href="http://127.0.0.1:3001/api/health">127.0.0.1:3001/api/health</a></td><td>Comprobar que el backend responde</td></tr><tr><td>Supabase Studio</td><td><a href="http://127.0.0.1:55323">127.0.0.1:55323</a></td><td>Administración de datos locales</td></tr><tr><td>Correo de prueba</td><td><a href="http://127.0.0.1:55324">127.0.0.1:55324</a></td><td>Mensajes capturados localmente</td></tr></tbody></table>
+      </section>
+
+      <section class="section" id="uso">
+        <div class="section-kicker">Paso 7 · Trabajo diario</div><h2>Consultar, reiniciar datos y detener</h2>
+        <table><thead><tr><th>Qué quieres hacer</th><th>Comando desde <code>brota-web</code></th></tr></thead><tbody><tr><td>Ver direcciones y cuentas web</td><td><code>make demo-brota-info</code></td></tr><tr><td>Ver direcciones de la vista móvil</td><td><code>make demo-brota-movil-info</code></td></tr><tr><td>Comprobar contenedores</td><td><code>docker ps</code></td></tr><tr><td>Recrear los datos ficticios</td><td><code>make brota-demo-reset</code></td></tr><tr><td>Detener la demo local</td><td><code>make brota-demo-down</code></td></tr></tbody></table>
+        <p><code>make brota-demo-info</code> es un alias de <code>make demo-brota-info</code>. Las cuentas locales preparadas para la demo son <code>admin.demo@brota.local</code> y <code>estudiante.demo@brota.local</code>; la contraseña de ambas es <code>Demo123!</code>.</p>
+        <div class="note warn"><strong>El reset borra cambios locales de la base</strong><code>make brota-demo-reset</code> vuelve a aplicar migraciones y datos ficticios. Para detener sin reiniciar los datos usa <code>make brota-demo-down</code>. Nunca uses respaldos privados como seed.</div>
+        <p>Para volver otro día: abre Docker Desktop, abre Ubuntu, ejecuta <code>cd ~/proyectos/brota/brota-web</code> y luego el comando <code>make</code> de la interfaz que necesites.</p>
+      </section>
+
+      <section class="section faq" id="problemas">
+        <div class="section-kicker">Ayuda rápida</div><h2>Si algo falla</h2>
+        <details><summary>“make: command not found”</summary><p>Estás en Ubuntu y falta Make. Ejecuta <code>sudo apt update</code> y <code>sudo apt install -y make</code>. Si estás en PowerShell, abre Ubuntu: <code>wsl -d Ubuntu</code>.</p></details>
+        <details><summary>“docker: command not found” o no conecta al daemon</summary><p>Abre Docker Desktop y revisa <strong>Settings → Resources → WSL Integration → Ubuntu</strong>. Comprueba <code>wsl -l -v</code> en PowerShell: Ubuntu debe ser versión 2. Luego vuelve a Ubuntu y ejecuta <code>docker info</code>. Tras cambiar la integración, cierra Ubuntu y ejecuta <code>wsl --shutdown</code> en PowerShell antes de abrirlo de nuevo.</p></details>
+        <details><summary>“supabase: command not found”</summary><p>Instala el paquete Linux de Supabase CLI del paso 3 <em>dentro de Ubuntu</em>. Instalar la versión Windows no pone el comando en la terminal Ubuntu.</p></details>
+        <details><summary>“No se encontró ../brota-flutter”</summary><p>Revisa la estructura del paso 4. Las carpetas <code>brota-web</code> y <code>brota-flutter</code> deben estar al mismo nivel; usa exactamente esos nombres.</p></details>
+        <details><summary>“No rule to make target demo-brota-movil-up”</summary><p>Comprueba <code>pwd</code> y <code>git branch --show-current</code>. Debes estar en <code>brota-web</code>, rama <code>docker-brota</code>. Si ya tienes una copia antigua, ejecuta <code>git fetch origin</code> y <code>git switch --track origin/docker-brota</code>; si la rama local ya existe, usa <code>git switch docker-brota</code> y <code>git pull --ff-only</code>.</p></details>
+        <details><summary>Un puerto ya está ocupado o la página no abre</summary><p>Ejecuta <code>docker ps</code> y comprueba que no haya otro proyecto usando los puertos 3001, 5174, 5175 o 55321–55327. Para la API prueba <a href="http://127.0.0.1:3001/api/health">127.0.0.1:3001/api/health</a>. Consulta los logs con <code>docker compose -f compose.brota-demo.yml logs --tail=80 backend frontend</code>; para Flutter, <code>docker logs --tail=80 brota-demo-mobile-1</code>.</p></details>
+        <details><summary>¿Dónde veo los archivos Linux desde Windows?</summary><p>Desde la carpeta del proyecto en Ubuntu ejecuta <code>explorer.exe .</code>. Se abrirá el Explorador de Windows en esa ubicación. Trabaja con Git y Make desde Ubuntu para conservar el rendimiento de WSL.</p></details>
+      </section>
+
+      <section class="section links" id="fuentes"><div class="section-kicker">Referencias</div><h2>Documentación oficial</h2><a href="https://learn.microsoft.com/es-es/windows/wsl/install/" target="_blank" rel="noopener">Microsoft · Instalar WSL</a><a href="https://learn.microsoft.com/windows/wsl/reference" target="_blank" rel="noopener">Microsoft · Comandos de WSL</a><a href="https://docs.docker.com/desktop/setup/install/windows-install/" target="_blank" rel="noopener">Docker · Instalar Docker Desktop en Windows</a><a href="https://docs.docker.com/desktop/features/wsl/" target="_blank" rel="noopener">Docker · Integración con WSL 2</a><a href="https://supabase.com/docs/guides/local-development/cli/getting-started" target="_blank" rel="noopener">Supabase · CLI y desarrollo local</a></section>
+    </main>
+  </div>
+  <footer class="footer">Brota · Guía local para el equipo · Repositorio web: rama <code>docker-brota</code> · Repositorio móvil: rama <code>develop</code>.</footer>
+  <script>
+    document.querySelectorAll('.copy').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const value = button.closest('.command').querySelector('pre').innerText.trim();
+        try {
+          await navigator.clipboard.writeText(value);
+          const previous = button.textContent;
+          button.textContent = 'Copiado';
+          window.setTimeout(() => { button.textContent = previous; }, 1800);
+        } catch {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(button.closest('.command').querySelector('pre'));
+          selection.removeAllRanges();
+          selection.addRange(range);
+          button.textContent = 'Selecciona el texto';
+          window.setTimeout(() => { button.textContent = 'Copiar'; }, 2200);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

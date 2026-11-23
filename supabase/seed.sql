@@ -1,6 +1,67 @@
 -- Datos exclusivamente sintéticos para el entorno local de Brota.
 -- Nunca copiar registros desde backups/ a este archivo.
 
+-- Cuentas locales para recorrer la aplicación y las rutas protegidas. Se
+-- recrean con `supabase db reset`; no existen fuera del contenedor local.
+INSERT INTO auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+) VALUES
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '90000000-0000-4000-8000-000000000001',
+    'authenticated', 'authenticated', 'admin.demo@brota.local',
+    crypt('Demo123!', gen_salt('bf')), now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"nombre":"Admin","apellido":"Demo"}', now(), now()
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '90000000-0000-4000-8000-000000000002',
+    'authenticated', 'authenticated', 'estudiante.demo@brota.local',
+    crypt('Demo123!', gen_salt('bf')), now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"nombre":"Estudiante","apellido":"Demo"}', now(), now()
+  )
+ON CONFLICT (id) DO UPDATE SET
+  email = EXCLUDED.email,
+  encrypted_password = EXCLUDED.encrypted_password,
+  email_confirmed_at = EXCLUDED.email_confirmed_at,
+  raw_app_meta_data = EXCLUDED.raw_app_meta_data,
+  raw_user_meta_data = EXCLUDED.raw_user_meta_data,
+  updated_at = now();
+
+INSERT INTO auth.identities (
+  provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at
+) VALUES
+  (
+    '90000000-0000-4000-8000-000000000001',
+    '90000000-0000-4000-8000-000000000001',
+    '{"sub":"90000000-0000-4000-8000-000000000001","email":"admin.demo@brota.local"}',
+    'email', now(), now(), now()
+  ),
+  (
+    '90000000-0000-4000-8000-000000000002',
+    '90000000-0000-4000-8000-000000000002',
+    '{"sub":"90000000-0000-4000-8000-000000000002","email":"estudiante.demo@brota.local"}',
+    'email', now(), now(), now()
+  )
+ON CONFLICT (provider_id, provider) DO UPDATE SET
+  identity_data = EXCLUDED.identity_data,
+  updated_at = now();
+
+INSERT INTO public.perfiles_usuario (user_id, nombre, apellido, rol, ciudad, nivel_educativo)
+VALUES
+  ('90000000-0000-4000-8000-000000000001', 'Admin', 'Demo', 'admin', 'Bogotá', 'Profesional'),
+  ('90000000-0000-4000-8000-000000000002', 'Estudiante', 'Demo', 'estudiante', 'Bogotá', 'Media')
+ON CONFLICT (user_id) DO UPDATE SET
+  nombre = EXCLUDED.nombre,
+  apellido = EXCLUDED.apellido,
+  rol = EXCLUDED.rol,
+  ciudad = EXCLUDED.ciudad,
+  nivel_educativo = EXCLUDED.nivel_educativo,
+  updated_at = now();
+
 INSERT INTO public.roles (id, nombre) VALUES
   ('10000000-0000-4000-8000-000000000001', 'estudiante'),
   ('10000000-0000-4000-8000-000000000002', 'moderador'),

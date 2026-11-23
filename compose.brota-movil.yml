@@ -1,0 +1,14 @@
+services:
+  mobile:
+    build:
+      # El script crea un contexto mínimo; nunca envía .env ni el SDK local al daemon.
+      context: ${BROTA_MOBILE_CONTEXT:?Usa make demo-brota-movil-up}
+      dockerfile: Dockerfile
+      args:
+        BROTA_SUPABASE_URL: http://127.0.0.1:55321
+        BROTA_SUPABASE_ANON_KEY: ${BROTA_SUPABASE_ANON_KEY}
+        BROTA_API_URL: http://127.0.0.1:3001
+    ports:
+      - 127.0.0.1:5175:80
+    depends_on:
+      - backend
