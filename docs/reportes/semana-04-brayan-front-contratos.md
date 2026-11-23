@@ -19,7 +19,7 @@ El frontend lee los errores con `body.error || body.message` (`services/apiClien
 
 ## Hallazgo
 
-### DEF-08 (sin issue todavía): el feed del Dashboard muestra publicaciones ocultadas por moderación
+### DEF-08 (#88): el feed del Dashboard muestra publicaciones ocultadas por moderación
 - **Pasos:** un moderador oculta una pregunta (`oculta = true`). Cualquier estudiante abre `/dashboard`.
 - **Esperado:** la pregunta no aparece, igual que en Comunidad. **Obtenido:** sigue en "Últimas publicaciones".
 - **Causa:** `getForos`/`getHistorias`/`getPreguntas` filtran `.eq('oculta', false)`, pero `feedController.getFeedReciente` no lo hacía en ninguna de sus 3 consultas.
@@ -37,4 +37,4 @@ El frontend lee los errores con `body.error || body.message` (`services/apiClien
 
 - `npx jest tests/api/comunidadContratoFront.test.js tests/controllers/comunidad/feedYNotificaciones.test.js` → 20/20. ESLint sin errores.
 - Suite backend completa: 278 pasan; las 2 que fallan (`forosYModeracion`, `programasApi`) ya fallan en `develop` y las corrige #78. Cobertura backend: 80.27 / 67.66 / 77.73 / 83.51.
-- Revisión cruzada: pendiente.
+- Revisión cruzada: pendiente (según el plan, la ejecuta David).
