@@ -27,4 +27,4 @@ El plan asigna a la capa API: puntuación base, categorías normalizadas, bonifi
 
 - `npx jest tests/utils/algoritmoRecomendacion` → 19/19 (11 nuevos + 8 previos).
 - ESLint sin errores en el archivo nuevo.
-- Revisión cruzada: pendiente (según el plan, la ejecuta Julian).
+- Revisión cruzada: pendiente (según el plan, la ejecuta David).
