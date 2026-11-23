@@ -31,6 +31,12 @@ const suites = [
     env: uiEnvironment,
   },
   {
+    // Dobles de red con page.route: no necesita Supabase ni backend.
+    name: 'Formulario de contacto con dobles de red',
+    files: ['tests/contacto-route.spec.js'],
+    env: uiEnvironment,
+  },
+  {
     name: 'Búsqueda de recursos en modo demo',
     files: ['tests/recursos-navigation.spec.js'],
     env: {
