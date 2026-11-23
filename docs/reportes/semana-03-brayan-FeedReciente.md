@@ -31,4 +31,4 @@ Queries por rol (`getByRole('button', { name })`); no hizo falta corregir etique
 ## Ejecución
 
 - `npx vitest run src/pages/dashboard/components/FeedReciente.test.jsx` → 7/7, dos corridas seguidas. ESLint sin errores.
-- Revisión cruzada: pendiente (según el plan, la ejecuta Julian).
+- Revisión cruzada: pendiente (según el plan, la ejecuta David).
