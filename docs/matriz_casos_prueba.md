@@ -1,17 +1,17 @@
 # Matriz de casos de prueba — Brota
 
-> Checklist T6, ítem 8 · Responsable: Julian · Versión 1.0 · 19 nov 2026
+> Checklist T6, ítem 8 · Responsable: Julian · Versión 1.1 · 23 nov 2026 (1.0: 19 nov, 34 casos; 1.1 suma CP-35 y CP-36, de los defectos DEF-07 y DEF-08 que encontró Brayan)
 > Plan y ambientes: [`plan_pruebas.md`](./plan_pruebas.md). Cada caso está automatizado: la columna **Test** dice dónde vive y con qué nombre aparece en la salida de Jest, Vitest o Playwright.
 
 ## Resumen
 
 | | Cantidad |
 |---|---:|
-| Casos | **34** |
+| Casos | **36** |
 | Positivos | 11 |
-| Negativos (entrada inválida, sin permiso, dependencia caída, restricción violada) | **23** |
-| Ligados a un defecto (DEF-01 a DEF-06) | 11 |
-| Resultado obtenido | 34 ✅ (corrida del 19 nov 2026, ver §3) |
+| Negativos (entrada inválida, sin permiso, dependencia caída, restricción violada) | **25** |
+| Ligados a un defecto (DEF-01 a DEF-08) | 13 |
+| Resultado obtenido | 36 ✅ (CP-01 a CP-34: corrida del 19 nov; los 36: corrida del 23 nov del [reporte de ejecución](./reporte_ejecucion.md). Ver §3) |
 
 **Niveles:** U = unitario · C = componente (RTL) · A = API con Supabase simulado · I = integración con la BD real (Supabase local) · E = E2E en navegador (Playwright).
 
@@ -53,6 +53,8 @@
 | CP-32 | Sincronización MEN · RF10 | Un estudiante intenta sincronizar | Negativo | A | — | ✅ |
 | CP-33 | Comunidad | Elegir un área o el modo anónimo no publica la pregunta | Negativo (regresión) | C | DEF-02 #56 | ✅ |
 | CP-34 | Comunidad | El servidor rechaza la pregunta: se muestra el error y se puede reintentar | Negativo | C | — | ✅ |
+| CP-35 | Contacto | Formulario de contacto con el teléfono como número, no como texto | Negativo | U + I | DEF-07 #86 | ✅ |
+| CP-36 | Comunidad · moderación | Una publicación ocultada por moderación no aparece en el feed del Dashboard | Negativo (regresión) | A | DEF-08 #88 | ✅ |
 
 ## 2. Detalle de cada caso
 
@@ -312,6 +314,22 @@ Formato: **Datos** · **Pasos** · **Esperado** · **Obtenido** · **Test** (`ar
 - **Obtenido:** ✅ igual al esperado.
 - **Test:** `ModalHacerPregunta.test.jsx` › muestra el error del servidor, no confirma y deja reintentar
 
+**CP-36 · Una publicación oculta no aparece en el feed** (negativo de regresión, A · DEF-08)
+- **Datos:** en cada fuente del feed (`posts_foro`, `historias`, `preguntas_comunidad`) una publicación visible y otra con `oculta = true`; sesión de estudiante.
+- **Pasos:** `GET /api/comunidad/feed` con token.
+- **Esperado:** solo salen las 3 visibles (`Visible 1`, `Visible 2`, `Visible 3`), igual que en Comunidad. Antes salían también las 3 ocultas, porque el feed no filtraba `oculta = false`.
+- **Obtenido:** ✅ igual al esperado.
+- **Test:** `backend/tests/api/comunidadContratoFront.test.js` › DEF-08: una publicación ocultada por moderación no aparece en el feed (PR #91, Brayan)
+
+### Contacto
+
+**CP-35 · Teléfono como número** (negativo, U + I · DEF-07)
+- **Datos:** formulario válido (`Ana Pérez`, `Ana.Perez@Colegio.EDU.co`, asunto «Información general») con `"telefono": 3001234567`, número y no texto, como lo podría mandar la app móvil o un script.
+- **Pasos:** `POST /api/contacto` contra el `server.js` real y la BD de pruebas.
+- **Esperado:** 400 `{ success: false, message }` y la tabla `contactos` sigue vacía. Antes respondía 500, porque el controlador llamaba a `.trim()` sin revisar el tipo.
+- **Obtenido:** ✅ igual al esperado. La regla también rechaza `nombre`, `email`, `asunto` o `mensaje` que no sean texto.
+- **Test:** `backend/tests/integracion/contacto.api.test.js` › CON-04 (DEF-07) teléfono como número responde 400, no 500, y no guarda nada · `backend/tests/validarContacto.test.js` › rechaza tipos que no son texto (5 casos) (PR #87, Brayan)
+
 ## 3. Ejecución que respalda la columna «Obtenido»
 
 | Suite | Rama (PR) | Comando | Resultado (19 nov 2026) | Casos |
@@ -320,8 +338,9 @@ Formato: **Datos** · **Pasos** · **Esperado** · **Obtenido** · **Test** (`ar
 | Backend: `calcularEdad` (24 casos restaurados) | `fix/ci-main-integracion` (#78) | `pnpm --filter backend test` | **279/279** (24/24 de `calcularEdad`) | CP-07 a CP-10 |
 | Frontend (componente) | `fix/ci-main-integracion` (#78) | `pnpm --filter frontend test:coverage` | **475/475**, cobertura 72.67 / 62.87 / 65.45 / 73.6 | CP-02, CP-33, CP-34 |
 | E2E (Chromium) | `fix/ci-main-integracion` (#78) | `pnpm --dir e2e exec playwright test tests/login-validation.spec.js tests/login-route.spec.js tests/signup-validation.spec.js` | **5/5** | CP-01 a CP-05 |
+| **Todo, 23 nov 2026** | `develop` + los 11 PR abiertos, fusionados en local | ver [`reporte_ejecucion.md`](./reporte_ejecucion.md) §8 | **946 pasan, 0 fallan**, 3 E2E saltadas; integración 26/26 dos veces y con prueba de fuego | CP-01 a CP-36 |
 
-Los casos dependen de tres PR abiertos: **#78** (restaura los 24 casos de `calcularEdad` que la integración dejó fuera), **#79** (BD de pruebas) y **#82** (tests contra la BD real, DEF-05 y DEF-06). Al fusionarlos, todos los tests de la columna **Test** quedan en `develop`.
+Los casos dependen de PR abiertos: **#78** (restaura los 24 casos de `calcularEdad` que la integración dejó fuera), **#79** (BD de pruebas), **#82** (tests contra la BD real, DEF-05 y DEF-06), **#87** (CP-35, DEF-07) y **#91** (CP-36, DEF-08). Al fusionarlos, todos los tests de la columna **Test** quedan en `develop`.
 
 Los E2E `login-success` y `login-invalid-password` no están en la matriz porque necesitan una cuenta real de Supabase (`E2E_TEST_EMAIL`) que no se versiona. El CI tampoco los corre.
 
