@@ -1,0 +1,383 @@
+<mxfile host="app.diagrams.net" agent="claude-code" pages="4">
+  <diagram name="1. Registro y perfil" id="page1">
+    <mxGraphModel dx="1686" dy="839" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p1_ley" parent="1" style="text;html=1;fontStyle=1;fontSize=12;align=left;" value="Leyenda: azul = tabla principal · amarillo = catálogo/referencia · gris punteado = sistema externo (Supabase Auth)" vertex="1">
+          <mxGeometry height="20" width="800" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_auth" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontColor=#333333;fontSize=11;" value="&lt;b&gt;auth.users&lt;/b&gt; (Supabase Auth)&lt;br&gt;&lt;i&gt;fuera del esquema de Brota&lt;/i&gt;&lt;br&gt;id (UUID)&lt;br&gt;email, password hash&lt;br&gt;sesiones / tokens" vertex="1">
+          <mxGeometry height="140" width="260" x="40" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_pu" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="&lt;b&gt;perfiles_usuario&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;user_id (FK &amp;rarr; auth.users, CASCADE, UNIQUE)&lt;br&gt;rol: estudiante|orientador|&lt;br&gt;&amp;nbsp;&amp;nbsp;moderador|admin|institucion&lt;br&gt;nombre, apellido, edad, ciudad&lt;br&gt;nivel_educativo, grado, telefono&lt;br&gt;ultima_actividad, racha_dias&lt;br&gt;baneado_preguntas_hasta&lt;br&gt;bloqueado_hasta, permisos_override (JSONB)&lt;br&gt;institucion_id (FK &amp;rarr; instituciones, SET NULL)&lt;br&gt;institucion_contacto / institucion_descripcion&lt;br&gt;broti_config (JSONB)" vertex="1">
+          <mxGeometry height="320" width="320" x="420" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_inst" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="&lt;b&gt;instituciones&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;nombre, tipo, ciudad, departamento&lt;br&gt;direccion, telefono, email, sitio_web&lt;br&gt;costo_promedio&lt;br&gt;activa" vertex="1">
+          <mxGeometry height="160" width="280" x="840" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e1" edge="1" parent="1" source="p1_pu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.3;exitDx=0;exitDy=0;entryX=1;entryY=0.4;entryDx=0;entryDy=0;" target="p1_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e1l" parent="1" style="text;html=1;fontSize=9;align=center;" value="user_id" vertex="1">
+          <mxGeometry height="16" width="90" x="320" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e2" edge="1" parent="1" source="p1_pu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;" target="p1_inst">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e2l" parent="1" style="text;html=1;fontSize=9;align=center;" value="institucion_id" vertex="1">
+          <mxGeometry height="16" width="100" x="760" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_pathA" parent="1" style="text;html=1;fontStyle=1;fontSize=13;fontColor=#d79b00;align=left;" value="Camino A &amp;mdash; Registro exitoso" vertex="1">
+          <mxGeometry height="24" width="500" x="40" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_a1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" value="1. Persona completa&#xa;SignupCard (nombre,&#xa;email, clave, grado,&#xa;ciudad...)" vertex="1">
+          <mxGeometry height="120" width="170" x="40" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_a2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" value="2. Supabase Auth crea&#xa;la cuenta &amp;rarr; fila nueva&#xa;en auth.users (id UUID)" vertex="1">
+          <mxGeometry height="120" width="170" x="270" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_a3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" value="3. Backend crea&#xa;perfiles_usuario&#xa;(user_id = ese UUID,&#xa;rol=&#39;estudiante&#39;)" vertex="1">
+          <mxGeometry height="120" width="170" x="500" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_a4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" value="4. Si el rol es&#xa;&amp;quot;institucion&amp;quot;: se vincula&#xa;institucion_id (contacto/&#xa;descripcion propios)" vertex="1">
+          <mxGeometry height="120" width="190" x="730" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_aA" edge="1" parent="1" source="p1_a1" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" target="p1_a2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_aB" edge="1" parent="1" source="p1_a2" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" target="p1_a3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_aC" edge="1" parent="1" source="p1_a3" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" target="p1_a4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_pathB" parent="1" style="text;html=1;fontStyle=1;fontSize=13;fontColor=#b85450;align=left;" value="Camino B &amp;mdash; Falla la inserción (rollback)" vertex="1">
+          <mxGeometry height="24" width="500" x="40" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_b1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="1. Supabase Auth crea&#xa;la cuenta &amp;rarr; fila nueva&#xa;en auth.users" vertex="1">
+          <mxGeometry height="120" width="170" x="40" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_b2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="2. INSERT en&#xa;perfiles_usuario falla&#xa;(validación / constraint)" vertex="1">
+          <mxGeometry height="120" width="170" x="270" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_b3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="3. Backend revierte:&#xa;borra el usuario recién&#xa;creado en auth.users&#xa;(evita cuentas huérfanas)" vertex="1">
+          <mxGeometry height="120" width="190" x="500" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_b4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" value="4. Registro no&#xa;completado &amp;mdash; el&#xa;usuario puede&#xa;intentar de nuevo" vertex="1">
+          <mxGeometry height="120" width="170" x="750" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_bA" edge="1" parent="1" source="p1_b1" style="endArrow=block;html=1;strokeColor=#b85450;strokeWidth=2;" target="p1_b2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_bB" edge="1" parent="1" source="p1_b2" style="endArrow=block;html=1;strokeColor=#b85450;strokeWidth=2;" target="p1_b3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_bC" edge="1" parent="1" source="p1_b3" style="endArrow=block;html=1;strokeColor=#b85450;strokeWidth=2;" target="p1_b4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="2. Test vocacional y recomendaciones" id="page2">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p2_ley" value="Leyenda: azul = tabla principal · amarillo = catálogo · verde = resultado del usuario" style="text;html=1;fontStyle=1;fontSize=12;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="800" height="20" as="geometry" />
+        </mxCell>
+        <!-- Fila 1: árbol de preguntas (catálogo), de derecha a izquierda hasta instituciones -->
+        <mxCell id="p2_inst" value="&lt;b&gt;instituciones&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;nombre, ciudad&lt;br&gt;costo_promedio, activa" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="240" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_cue" value="&lt;b&gt;cuestionarios&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;nombre, version, activo&lt;br&gt;institucion_id (FK &amp;rarr; instituciones,&lt;br&gt;&amp;nbsp;&amp;nbsp;CASCADE, nullable = global)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="340" y="130" width="240" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_preg" value="&lt;b&gt;preguntas&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;cuestionario_id (FK &amp;rarr; cuestionarios,&lt;br&gt;&amp;nbsp;&amp;nbsp;CASCADE)&lt;br&gt;texto, tipo, orden&lt;br&gt;categoria, peso (decimal)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="640" y="130" width="260" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_opc" value="&lt;b&gt;opciones&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;pregunta_id (FK &amp;rarr; preguntas,&lt;br&gt;&amp;nbsp;&amp;nbsp;CASCADE)&lt;br&gt;label, icon, orden" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="960" y="130" width="240" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_pes" value="&lt;b&gt;pesos_opciones&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;opcion_id (FK &amp;rarr; opciones,&lt;br&gt;&amp;nbsp;&amp;nbsp;CASCADE)&lt;br&gt;categoria (ej. tecnologia, diseño)&lt;br&gt;puntos (&amp;gt; 0)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="130" width="240" height="130" as="geometry" />
+        </mxCell>
+        <!-- Fila 2: resultados + perfiles_usuario -->
+        <mxCell id="p2_res" value="&lt;b&gt;resultados&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;perfil_usuario_id (FK &amp;rarr;&lt;br&gt;&amp;nbsp;&amp;nbsp;perfiles_usuario, CASCADE)&lt;br&gt;cuestionario_id (FK &amp;rarr;&lt;br&gt;&amp;nbsp;&amp;nbsp;cuestionarios, CASCADE)&lt;br&gt;respuestas (JSONB)&lt;br&gt;perfil_vocacional (JSONB)&lt;br&gt;fecha_realizacion" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="340" y="420" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_pu" value="&lt;b&gt;perfiles_usuario&lt;/b&gt;&lt;br&gt;(quien responde el test)&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="680" y="420" width="240" height="90" as="geometry" />
+        </mxCell>
+        <!-- Fila 3: programas + recomendaciones -->
+        <mxCell id="p2_prog" value="&lt;b&gt;programas&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;institucion_id (FK &amp;rarr;&lt;br&gt;&amp;nbsp;&amp;nbsp;instituciones, CASCADE)&lt;br&gt;nombre, tipo, area_academica&lt;br&gt;modalidad, costo_matricula&lt;br&gt;perfil_compatible (JSONB)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="680" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_rec" value="&lt;b&gt;recomendaciones&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;programa_id (FK &amp;rarr; programas,&lt;br&gt;&amp;nbsp;&amp;nbsp;CASCADE)&lt;br&gt;resultado_id (FK &amp;rarr; resultados,&lt;br&gt;&amp;nbsp;&amp;nbsp;CASCADE)&lt;br&gt;compatibilidad (0&amp;ndash;100)&lt;br&gt;razones (JSON como texto)&lt;br&gt;vista (bool)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="340" y="680" width="280" height="200" as="geometry" />
+        </mxCell>
+        <!-- ===== RELACIONES FK ===== -->
+        <mxCell id="p2_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_cue" target="p2_inst">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_preg" target="p2_cue">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_opc" target="p2_preg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_pes" target="p2_opc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#82b366;strokeWidth=2;exitX=0.3;exitY=0;exitDx=0;exitDy=0;entryX=0.3;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_res" target="p2_cue">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#82b366;strokeWidth=2;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_res" target="p2_pu">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#82b366;strokeWidth=2;exitX=0.3;exitY=0;exitDx=0;exitDy=0;entryX=0.3;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_rec" target="p2_res">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_rec" target="p2_prog">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=0.3;exitY=0;exitDx=0;exitDy=0;entryX=0.3;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p2_prog" target="p2_inst">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- ===== CAMINO A: Responder el test (naranja) ===== -->
+        <mxCell id="p2_pathA" value="Camino A &amp;mdash; Responder el test" style="text;html=1;fontStyle=1;fontSize=13;fontColor=#d79b00;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="940" width="500" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_a1" value="1. Aprendiz elige un&#xa;cuestionario (global o&#xa;propio de su institución)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="980" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_a2" value="2. Responde cada&#xa;pregunta eligiendo una&#xa;opcion (cada opcion ya&#xa;tiene pesos_opciones&#xa;por categoria)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="980" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_a3" value="3. Al terminar: se&#xa;calcula perfil_vocacional&#xa;sumando puntos por&#xa;categoria" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="980" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_a4" value="4. Se guarda todo en&#xa;resultados (respuestas +&#xa;perfil_vocacional,&#xa;fecha_realizacion)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="770" y="980" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_aA" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p2_a1" target="p2_a2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_aB" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p2_a2" target="p2_a3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_aC" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p2_a3" target="p2_a4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- ===== CAMINO B: Algoritmo de recomendación (verde) ===== -->
+        <mxCell id="p2_pathB" value="Camino B &amp;mdash; Algoritmo de recomendación" style="text;html=1;fontStyle=1;fontSize=13;fontColor=#2e7d32;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1130" width="600" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_b1" value="1. Con perfil_vocacional&#xa;ya calculado, se toman&#xa;las 3 categorias con&#xa;más puntos" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2e7d32;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1170" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_b2" value="2. Se cruzan esas&#xa;categorias contra&#xa;programas.perfil_&#xa;compatible (JSONB)&#xa;de cada programa activo" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2e7d32;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1170" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_b3" value="3. Se calcula un&#xa;porcentaje de&#xa;compatibilidad&#xa;(0 a 100) por programa" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2e7d32;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="1170" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_b4" value="4. Se insertan los&#xa;8 programas con mayor&#xa;compatibilidad en&#xa;recomendaciones&#xa;(vista=false)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#2e7d32;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="770" y="1170" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_bA" style="endArrow=block;html=1;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="p2_b1" target="p2_b2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_bB" style="endArrow=block;html=1;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="p2_b2" target="p2_b3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_bC" style="endArrow=block;html=1;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="p2_b3" target="p2_b4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="3. Foro de preguntas" id="page3">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p3_ley" value="Leyenda: azul = tabla principal · naranja = registro de evento (respuesta/reporte) · gris punteado = externo" style="text;html=1;fontStyle=1;fontSize=12;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="800" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_auth" value="&lt;b&gt;auth.users&lt;/b&gt; (Supabase Auth)&lt;br&gt;&lt;i&gt;fuera del esquema de Brota&lt;/i&gt;&lt;br&gt;id (UUID)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="620" y="60" width="260" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_resp" value="&lt;b&gt;respuestas_pregunta&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;pregunta_id (FK &amp;rarr;&lt;br&gt;&amp;nbsp;&amp;nbsp;preguntas_comunidad, CASCADE)&lt;br&gt;user_id (FK &amp;rarr; auth.users, CASCADE)&lt;br&gt;contenido, anonimo, autor_nombre&lt;br&gt;votos&lt;br&gt;es_mejor (bool)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="260" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_preg" value="&lt;b&gt;preguntas_comunidad&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;user_id (FK &amp;rarr; auth.users, CASCADE)&lt;br&gt;titulo, area (default &#39;General&#39;)&lt;br&gt;anonimo, autor_nombre&lt;br&gt;resuelta (bool)&lt;br&gt;oculta (bool, moderación)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500" y="260" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_rep" value="&lt;b&gt;reportes_pregunta&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;pregunta_id (FK &amp;rarr;&lt;br&gt;&amp;nbsp;&amp;nbsp;preguntas_comunidad, CASCADE)&lt;br&gt;user_id (FK &amp;rarr; auth.users, CASCADE)&lt;br&gt;motivo&lt;br&gt;UNIQUE(pregunta_id, user_id)&lt;br&gt;&lt;i&gt;evita que el mismo usuario&lt;br&gt;reporte dos veces&lt;/i&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="940" y="260" width="320" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_pu" value="&lt;b&gt;perfiles_usuario&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;user_id (FK &amp;rarr; auth.users, UNIQUE)&lt;br&gt;baneado_preguntas_hasta&lt;br&gt;&lt;i&gt;se actualiza cuando el autor&lt;br&gt;acumula 3 reportes&lt;/i&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="380" y="560" width="320" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.2;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3_preg" target="p3_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#d79b00;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3_resp" target="p3_preg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#d79b00;strokeWidth=2;exitX=0.6;exitY=0;exitDx=0;exitDy=0;entryX=0.1;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3_resp" target="p3_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#d79b00;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3_rep" target="p3_preg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#d79b00;strokeWidth=2;exitX=0.4;exitY=0;exitDx=0;exitDy=0;entryX=0.9;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3_rep" target="p3_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;dashed=1;strokeColor=#666666;strokeWidth=2;exitX=0.2;exitY=0;exitDx=0;exitDy=0;entryX=0.15;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p3_pu" target="p3_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e6l" value="mismo UUID (user_id)" style="text;html=1;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="300" y="470" width="130" height="16" as="geometry" />
+        </mxCell>
+        <!-- ===== CAMINO A: Pregunta resuelta (naranja) ===== -->
+        <mxCell id="p3_pathA" value="Camino A &amp;mdash; Pregunta resuelta con mejor respuesta" style="text;html=1;fontStyle=1;fontSize=13;fontColor=#d79b00;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="760" width="600" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_a1" value="1. Aprendiz publica&#xa;una pregunta &amp;rarr; fila&#xa;en preguntas_comunidad&#xa;(resuelta=false)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_a2" value="2. Otros usuarios&#xa;publican respuestas&#xa;&amp;rarr; filas en&#xa;respuestas_pregunta" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="800" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_a3" value="3. El autor de la&#xa;pregunta marca una&#xa;respuesta como&#xa;es_mejor=true" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="520" y="800" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_a4" value="4. preguntas_comunidad.&#xa;resuelta pasa a true" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="760" y="800" width="170" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_aA" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p3_a1" target="p3_a2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_aB" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p3_a2" target="p3_a3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_aC" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p3_a3" target="p3_a4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- ===== CAMINO B: Reporte y ban automático (morado) ===== -->
+        <mxCell id="p3_pathB" value="Camino B &amp;mdash; Reporte y ban automático" style="text;html=1;fontStyle=1;fontSize=13;fontColor=#9673a6;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="950" width="600" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_b1" value="1. Un usuario reporta&#xa;la pregunta (motivo) &amp;rarr;&#xa;fila en reportes_&#xa;pregunta" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="990" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_b2" value="2. El UNIQUE(pregunta_&#xa;id, user_id) evita que&#xa;repita el reporte sobre&#xa;la misma pregunta" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="990" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_b3" value="3. Al llegar a 3&#xa;reportes distintos&#xa;sobre esa pregunta..." style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="990" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_b4" value="4. ...se actualiza&#xa;perfiles_usuario del&#xa;autor: baneado_&#xa;preguntas_hasta =&#xa;ahora + 7 días" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="770" y="990" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_bA" style="endArrow=block;html=1;strokeColor=#9673a6;strokeWidth=2;" edge="1" parent="1" source="p3_b1" target="p3_b2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_bB" style="endArrow=block;html=1;strokeColor=#9673a6;strokeWidth=2;" edge="1" parent="1" source="p3_b2" target="p3_b3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_bC" style="endArrow=block;html=1;strokeColor=#9673a6;strokeWidth=2;" edge="1" parent="1" source="p3_b3" target="p3_b4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="4. Sincronizacion MEN" id="page4">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p4_ley" value="Leyenda: azul = tabla principal · naranja = log del proceso · gris punteado = sistema externo (API MEN/SNIES)" style="text;html=1;fontStyle=1;fontSize=12;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="800" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_api" value="&lt;b&gt;API MEN / SNIES&lt;/b&gt; (datos.gov.co)&lt;br&gt;&lt;i&gt;fuente externa&lt;/i&gt;&lt;br&gt;catálogo oficial de instituciones&lt;br&gt;y programas de educación superior" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="540" y="80" width="320" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_inst" value="&lt;b&gt;instituciones&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;nombre, tipo, ciudad&lt;br&gt;departamento, costo_promedio&lt;br&gt;activa" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="300" width="280" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_prog" value="&lt;b&gt;programas&lt;/b&gt;&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK)&lt;br&gt;institucion_id (FK &amp;rarr;&lt;br&gt;&amp;nbsp;&amp;nbsp;instituciones, CASCADE)&lt;br&gt;nombre, tipo, area_academica&lt;br&gt;modalidad, costo_matricula" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="620" y="300" width="280" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_sync" value="&lt;b&gt;men_sincronizacion&lt;/b&gt; (log)&lt;br&gt;&lt;u&gt;id&lt;/u&gt; (PK, SERIAL)&lt;br&gt;ejecutada_en, remote_timestamp&lt;br&gt;programas_importados&lt;br&gt;instituciones_importadas&lt;br&gt;estado: exitosa|fallida&lt;br&gt;error&lt;br&gt;&lt;i&gt;sin FK real — registra cada&lt;br&gt;corrida del proceso, no filas&lt;/i&gt;" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="420" y="560" width="300" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;strokeWidth=2;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p4_prog" target="p4_inst">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;strokeColor=#666666;strokeWidth=2;exitX=0.3;exitY=0;exitDx=0;exitDy=0;entryX=0.2;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p4_inst" target="p4_api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;dashed=1;strokeColor=#666666;strokeWidth=2;exitX=0.7;exitY=0;exitDx=0;exitDy=0;entryX=0.8;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p4_prog" target="p4_api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e2l" value="sincroniza desde" style="text;html=1;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="300" y="220" width="110" height="16" as="geometry" />
+        </mxCell>
+        <!-- ===== CAMINO A: Sincronización exitosa (naranja) ===== -->
+        <mxCell id="p4_pathA" value="Camino A &amp;mdash; Sincronización exitosa" style="text;html=1;fontStyle=1;fontSize=13;fontColor=#d79b00;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="600" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_a1" value="1. Backend llama la&#xa;API del MEN (SNIES) y&#xa;descarga el catálogo&#xa;completo" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="840" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_a2" value="2. Inserta las&#xa;instituciones y&#xa;programas nuevos" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="290" y="840" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_a3" value="3. Borra las&#xa;instituciones y&#xa;programas de la&#xa;corrida anterior" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="840" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_a4" value="4. perfiles_usuario.&#xa;institucion_id de cuentas&#xa;vinculadas a una&#xa;institución borrada&#xa;queda en NULL (SET NULL)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="770" y="840" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_a5" value="5. Se inserta una fila&#xa;en men_sincronizacion&#xa;(estado=&#39;exitosa&#39;,&#xa;con los contadores)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="840" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_aA" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p4_a1" target="p4_a2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_aB" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p4_a2" target="p4_a3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_aC" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p4_a3" target="p4_a4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_aD" style="endArrow=block;html=1;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1" source="p4_a4" target="p4_a5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- ===== CAMINO B: Sincronización fallida (rojo) ===== -->
+        <mxCell id="p4_pathB" value="Camino B &amp;mdash; Sincronización fallida" style="text;html=1;fontStyle=1;fontSize=13;fontColor=#b85450;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="990" width="600" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_b1" value="1. Error al llamar la&#xa;API o al parsear la&#xa;respuesta" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1030" width="180" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_b2" value="2. instituciones y&#xa;programas existentes&#xa;NO se tocan &amp;mdash;&#xa;quedan intactos" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1030" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_b3" value="3. Se inserta una fila&#xa;en men_sincronizacion&#xa;(estado=&#39;fallida&#39;,&#xa;error=mensaje)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="1030" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_bA" style="endArrow=block;html=1;strokeColor=#b85450;strokeWidth=2;" edge="1" parent="1" source="p4_b1" target="p4_b2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_bB" style="endArrow=block;html=1;strokeColor=#b85450;strokeWidth=2;" edge="1" parent="1" source="p4_b2" target="p4_b3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

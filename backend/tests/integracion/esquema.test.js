@@ -12,12 +12,15 @@ describeBD('BD de pruebas (Supabase local)', () => {
     expect(Math.floor(Number(v) / 10000)).toBe(17);
   });
 
-  it('tiene las 22 tablas del esquema de producción', async () => {
+  // El esquema sale del respaldo de producción del 21 nov 2026: 22 tablas en
+  // uso + 4 huérfanas (perfiles, roles, programa_categorias,
+  // perfiles_vocacionales; ver docs/modelo_datos.md) + 2 del tablero del equipo.
+  it('tiene las 28 tablas del esquema de producción', async () => {
     const filas = await consultar(
       "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY 1",
     );
     const tablas = filas.map((f) => f.table_name);
-    expect(tablas).toHaveLength(22);
+    expect(tablas).toHaveLength(28);
     expect(tablas).toEqual(expect.arrayContaining([
       'perfiles_usuario', 'programas', 'instituciones', 'cuestionarios',
       'preguntas_comunidad', 'men_sincronizacion',

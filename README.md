@@ -67,7 +67,7 @@ pnpm --filter brota-e2e test
 
 ### Integración contra la BD de pruebas (Supabase local)
 
-Los tests de `backend/tests/integracion/` corren contra un Supabase local en Docker (Postgres 17, puerto **54322**), separado del Supabase remoto de desarrollo. El esquema se construye con las migraciones de `supabase/migrations/`, igual que producción. Sin `DATABASE_URL` esos tests se saltan, por eso el CI sigue en verde. Necesitas Docker Desktop abierto. En Git Bash, desde la raíz:
+Los tests de `backend/tests/integracion/` corren contra un Supabase local en Docker (Postgres 17, puerto **55322**, el mismo stack `brota-demo` de `DEMO_LOCAL.md`), separado del Supabase remoto de desarrollo. El esquema se construye con las migraciones de `supabase/migrations/`, igual que producción. Sin `DATABASE_URL` esos tests se saltan, por eso el CI sigue en verde. Necesitas Docker Desktop abierto. En Git Bash, desde la raíz:
 
 ```bash
 # 1. Levantar la BD de pruebas y aplicar las migraciones desde cero
@@ -81,6 +81,8 @@ pnpm --filter backend test:integracion
 # 3. Apagar y borrar los datos (equivale a `docker compose down -v`)
 npx supabase stop --no-backup
 ```
+
+**Ojo:** la BD de pruebas y el demo local comparten el stack `brota-demo`. Los tests vacían las tablas que usan y `supabase db reset` borra los datos del demo; para volver al demo después de probar, `make brota-demo-reset`.
 
 Si `DATABASE_URL` o `SUPABASE_URL` no apuntan a `127.0.0.1`/`localhost`, los tests abortan antes de tocar la BD. El plan completo está en [`docs/plan_pruebas.md`](./docs/plan_pruebas.md).
 

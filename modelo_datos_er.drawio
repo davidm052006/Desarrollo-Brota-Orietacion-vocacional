@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-10-22T00:00:00.000Z" agent="claude-code" version="24.0.0" type="device">
+  <diagram name="Modelo de datos Brota" id="er-brota">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="2200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="n2" value="&lt;b&gt;perfiles_usuario&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;rol, nombre, apellido, edad&lt;br&gt;ciudad, nivel_educativo, grado, telefono&lt;br&gt;condiciones_socioeconomicas JSONB&lt;br&gt;ultima_actividad, racha_dias&lt;br&gt;baneado_preguntas_hasta, bloqueado_hasta&lt;br&gt;permisos_override JSONB&lt;br&gt;FK institucion_id -&gt; instituciones&lt;br&gt;institucion_contacto, institucion_descripcion&lt;br&gt;broti_config JSONB&lt;br&gt;created_at, updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="160" width="260" height="242" as="geometry"/>
+</mxCell><mxCell id="n3" value="&lt;b&gt;cuestionarios&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;nombre, version, descripcion&lt;br&gt;activo&lt;br&gt;FK institucion_id -&gt; instituciones (NULL=global)&lt;br&gt;created_at, updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="462" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n4" value="&lt;b&gt;preguntas&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK cuestionario_id -&gt; cuestionarios&lt;br&gt;texto, tipo, orden, categoria, peso&lt;br&gt;opciones JSONB (legado)&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="638" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n5" value="&lt;b&gt;opciones&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK pregunta_id -&gt; preguntas&lt;br&gt;label, icon, orden" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="814" width="260" height="80" as="geometry"/>
+</mxCell><mxCell id="n6" value="&lt;b&gt;pesos_opciones&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK opcion_id -&gt; opciones&lt;br&gt;categoria, puntos" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="954" width="260" height="80" as="geometry"/>
+</mxCell><mxCell id="n7" value="&lt;b&gt;resultados&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK perfil_usuario_id -&gt; perfiles_usuario&lt;br&gt;FK cuestionario_id -&gt; cuestionarios&lt;br&gt;respuestas JSONB&lt;br&gt;perfil_vocacional JSONB&lt;br&gt;fecha_realizacion" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#dae8fc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="1094" width="260" height="134" as="geometry"/>
+</mxCell><mxCell id="n8" value="&lt;b&gt;instituciones&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;nombre, tipo, ciudad, departamento&lt;br&gt;direccion, telefono, email, sitio_web&lt;br&gt;costo_promedio, activa&lt;br&gt;created_at, updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="400" y="160" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n9" value="&lt;b&gt;programas&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK institucion_id -&gt; instituciones&lt;br&gt;nombre, tipo, area_academica, categoria&lt;br&gt;duracion, modalidad, descripcion, requisitos&lt;br&gt;costo_matricula, perfil_compatible JSONB&lt;br&gt;activo&lt;br&gt;created_at, updated_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="400" y="336" width="260" height="152" as="geometry"/>
+</mxCell><mxCell id="n10" value="&lt;b&gt;men_sincronizacion&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id SERIAL&lt;br&gt;ejecutada_en, remote_timestamp&lt;br&gt;programas_importados, instituciones_importadas&lt;br&gt;estado, error" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="400" y="548" width="260" height="98" as="geometry"/>
+</mxCell><mxCell id="n11" value="&lt;b&gt;recomendaciones&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK programa_id -&gt; programas&lt;br&gt;FK resultado_id -&gt; resultados&lt;br&gt;compatibilidad, razones, vista&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#d5e8d4;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="400" y="706" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n12" value="&lt;b&gt;foros&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id TEXT&lt;br&gt;icon, nombre, descripcion&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="160" width="260" height="80" as="geometry"/>
+</mxCell><mxCell id="n13" value="&lt;b&gt;posts_foro&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK foro_id -&gt; foros&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;titulo, contenido, anonimo, autor_nombre&lt;br&gt;votos, oculta&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="290" width="260" height="134" as="geometry"/>
+</mxCell><mxCell id="n14" value="&lt;b&gt;votos_post&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK post_id -&gt; posts_foro&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;direccion (up/down)&lt;br&gt;UNIQUE(post_id,user_id)&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="474" width="260" height="134" as="geometry"/>
+</mxCell><mxCell id="n15" value="&lt;b&gt;respuestas_post&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK post_id -&gt; posts_foro&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;contenido, anonimo, autor_nombre&lt;br&gt;votos, es_mejor_respuesta&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="658" width="260" height="134" as="geometry"/>
+</mxCell><mxCell id="n16" value="&lt;b&gt;historias&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;titulo, contenido, area, carrera, institucion&lt;br&gt;anonimo, autor_nombre&lt;br&gt;publicada, oculta, likes&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="842" width="260" height="134" as="geometry"/>
+</mxCell><mxCell id="n17" value="&lt;b&gt;likes_historia&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK historia_id -&gt; historias&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;UNIQUE(historia_id,user_id)&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="1026" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n18" value="&lt;b&gt;preguntas_comunidad&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;titulo, area, anonimo, autor_nombre&lt;br&gt;resuelta, oculta&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="1192" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n19" value="&lt;b&gt;respuestas_pregunta&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK pregunta_id -&gt; preguntas_comunidad&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;contenido, anonimo, autor_nombre&lt;br&gt;votos, es_mejor&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="1358" width="260" height="134" as="geometry"/>
+</mxCell><mxCell id="n20" value="&lt;b&gt;reportes_pregunta&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;FK pregunta_id -&gt; preguntas_comunidad&lt;br&gt;FK user_id -&gt; auth.users&lt;br&gt;motivo&lt;br&gt;UNIQUE(pregunta_id,user_id)&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#ffe6cc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="1542" width="260" height="134" as="geometry"/>
+</mxCell><mxCell id="n21" value="&lt;b&gt;convocatorias&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;tipo, titulo, institucion, ciudad&lt;br&gt;descripcion, detalles JSONB, url&lt;br&gt;fecha_cierre, activa&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="1180" y="160" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n22" value="&lt;b&gt;contactos&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;nombre, email, telefono&lt;br&gt;asunto, mensaje&lt;br&gt;estado (pendiente/leido/respondido/archivado)&lt;br&gt;notas_admin, created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="1180" y="336" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n23" value="&lt;b&gt;contenido_rutas&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;area UNIQUE&lt;br&gt;materias_comunes JSONB, temas_previos JSONB&lt;br&gt;proyectos JSONB, recursos JSONB&lt;br&gt;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#f8cecc;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="1180" y="512" width="260" height="116" as="geometry"/>
+</mxCell><mxCell id="n24" value="&lt;b&gt;auth.users&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;(gestionada por Supabase Auth)&lt;br&gt;tabla: auth.users" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="40" y="0" width="260" height="80" as="geometry"/>
+</mxCell><mxCell id="n25" value="&lt;b&gt;auth.users&lt;/b&gt;&lt;br&gt;&lt;hr size=1&gt;PK id UUID&lt;br&gt;(gestionada por Supabase Auth)&lt;br&gt;tabla: auth.users — misma tabla que arriba" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fillColor=#e1d5e7;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+  <mxGeometry x="780" y="0" width="260" height="80" as="geometry"/>
+</mxCell><mxCell id="e1" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n2" target="n24">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e2" value="institucion_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.333;" edge="1" parent="1" source="n2" target="n8">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e3" value="institucion_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.667;" edge="1" parent="1" source="n3" target="n8">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e4" value="cuestionario_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n4" target="n3">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e5" value="pregunta_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n5" target="n4">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e6" value="opcion_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n6" target="n5">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e7" value="perfil_usuario_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=0;exitY=0.5;entryX=0;entryY=0.500;" edge="1" parent="1" source="n7" target="n2">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e8" value="cuestionario_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=0;exitY=0.5;entryX=0;entryY=0.500;" edge="1" parent="1" source="n7" target="n3">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e9" value="institucion_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n9" target="n8">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e10" value="programa_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.500;" edge="1" parent="1" source="n11" target="n9">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e11" value="resultado_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=0;exitY=0.5;entryX=1;entryY=0.500;" edge="1" parent="1" source="n11" target="n7">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e12" value="foro_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n13" target="n12">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e13" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n13" target="n25">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e14" value="post_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n14" target="n13">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e15" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.125;" edge="1" parent="1" source="n14" target="n25">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e16" value="post_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=0;exitY=0.5;entryX=0;entryY=0.500;" edge="1" parent="1" source="n15" target="n13">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e17" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.250;" edge="1" parent="1" source="n15" target="n25">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e18" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.375;" edge="1" parent="1" source="n16" target="n25">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e19" value="historia_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n17" target="n16">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e20" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.500;" edge="1" parent="1" source="n17" target="n25">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e21" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.625;" edge="1" parent="1" source="n18" target="n25">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e22" value="pregunta_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;" edge="1" parent="1" source="n19" target="n18">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e23" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.750;" edge="1" parent="1" source="n19" target="n25">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e24" value="pregunta_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=0;exitY=0.5;entryX=0;entryY=0.500;" edge="1" parent="1" source="n20" target="n18">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell><mxCell id="e25" value="user_id" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;endSize=8;fontSize=9;labelBackgroundColor=#ffffff;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.875;" edge="1" parent="1" source="n20" target="n25">
+  <mxGeometry relative="1" as="geometry"/>
+</mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
