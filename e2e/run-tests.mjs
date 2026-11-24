@@ -25,6 +25,8 @@ const suites = [
     files: [
       'tests/login-validation.spec.js',
       'tests/signup-validation.spec.js',
+      // page.route sobre Supabase Auth (ROUTE-01 a 03); con la URL falsa no entra en modo demo.
+      'tests/login-route.spec.js',
       'tests/login-invalid-password.spec.js',
       'tests/login-success.spec.js',
     ],
