@@ -125,9 +125,11 @@ describe('Contrato API consumido por el frontend de programas', () => {
 
     expect(response.status).toBe(500);
     expect(response.headers['content-type']).toMatch(/^application\/json/);
+    // DEF-04 (#59): el 500 no expone el mensaje de Supabase; el frontend
+    // (programasService) lee json.error || json.message
     expect(response.body).toEqual({
       success: false,
-      error: 'Servicio de datos no disponible',
+      message: 'Error interno del servidor',
     });
   });
 });
