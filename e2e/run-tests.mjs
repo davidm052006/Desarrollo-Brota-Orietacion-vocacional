@@ -40,6 +40,24 @@ const suites = [
   },
 ];
 
+if (process.env.E2E_LOCAL_DB === '1') {
+  for (const value of [process.env.E2E_SUPABASE_URL, process.env.E2E_API_URL || 'http://localhost:3001']) {
+    if (!value || !['localhost', '127.0.0.1'].includes(new URL(value).hostname)) {
+      throw new Error('S6 requiere exclusivamente URLs locales');
+    }
+  }
+  suites.splice(0, suites.length, {
+    name: 'Semana 6: Supabase local',
+    files: ['tests/semana-06-david-local.spec.js'],
+    env: {
+      VITE_SUPABASE_URL: process.env.E2E_SUPABASE_URL,
+      VITE_SUPABASE_ANON_KEY: process.env.E2E_SUPABASE_ANON_KEY,
+      VITE_API_URL: process.env.E2E_API_URL || 'http://localhost:3001',
+      VITE_API_PROXY_TARGET: process.env.E2E_API_URL || 'http://localhost:3001',
+    },
+  });
+}
+
 for (const suite of suites) {
   console.log(`\nE2E: ${suite.name}`);
   const result = await new Promise((resolve, reject) => {
