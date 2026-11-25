@@ -7,7 +7,7 @@ API REST en Node.js + Express 5 (CommonJS) para la plataforma de orientación vo
 ## 🚀 Requisitos Previos
 
 - **Node.js**: versión 20.19 o superior recomendada para mantener compatibilidad con el workspace (el frontend usa Vite 7).
-- Un proyecto de Supabase (URL + `service_role_key`) — o usar las credenciales de desarrollo ya incluidas en `.env.example` para arrancar rápido en cualquier máquina (ver nota de seguridad más abajo).
+- **Docker Desktop**, para la Supabase local (`npx supabase start`). `.env.example` ya apunta a ella con sus claves de demostración, que son públicas. Para un proyecto de Supabase en la nube, pide la URL y la `service_role_key` por privado.
 
 ---
 
@@ -18,11 +18,15 @@ API REST en Node.js + Express 5 (CommonJS) para la plataforma de orientación vo
    ```bash
    pnpm install
    ```
-3. **Configurá las variables de entorno**:
+3. **Configurá las variables de entorno.** `pnpm install` crea `backend/.env` desde `.env.example` si no existe. Si no, a mano:
    ```bash
    cp .env.example .env
    ```
-4. **Si es una base de datos nueva**, corré `setup_database.sql` contra tu proyecto de Supabase (SQL Editor → pegar el contenido completo del archivo) — crea las 22 tablas, índices, triggers y políticas RLS.
+4. **Levantá la Supabase local** (Docker Desktop abierto). Crea la BD desde `supabase/migrations/` y carga `supabase/seed.sql`:
+   ```bash
+   npx supabase start
+   ```
+   Para un proyecto de Supabase en la nube que esté vacío, corré `setup_database.sql` en su SQL Editor: crea las tablas, índices, triggers y políticas RLS.
 5. **Iniciá el servidor de desarrollo** desde la raíz del repositorio (con recarga automática vía `nodemon`):
    ```bash
    pnpm --filter backend dev
@@ -66,17 +70,17 @@ Usa Jest y `supertest` para las peticiones HTTP. Los tests corren contra el Supa
 
 ## 🔑 Variables de Entorno
 
-Ver `.env.example` para la lista completa. Las principales:
+Las variables están en `.env.example`:
 
-| Variable | Para qué |
-|---|---|
-| `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | Conexión a la base de datos (bypassea RLS — nunca exponer al frontend) |
-| `PORT` | Puerto del servidor (default `3001`) |
-| `FRONTEND_URL` | Origen permitido por CORS — debe apuntar a donde corre el frontend (incluye túneles de prueba) |
-| `SMTP_*` | Envío de correos (recuperación de contraseña, contacto) |
-| `JWT_SECRET` | **Variable muerta** — la autenticación usa `supabase.auth.getUser(token)`, no un JWT propio. Queda por inercia, se puede quitar en la limpieza de credenciales previa a producción |
+| Variable | Para qué | Valor en `.env.example` |
+|---|---|---|
+| `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | Conexión a la base de datos (bypassea RLS: nunca exponer al frontend) | Supabase local y su service key de demostración (`npx supabase status`) |
+| `PORT` | Puerto del servidor | `3001` |
+| `FRONTEND_URL` | Origen permitido por CORS: donde corre el frontend (incluye túneles de prueba) | `http://localhost:5173` |
 
-> ⚠️ `.env.example` trae credenciales reales de desarrollo (decisión consciente del equipo, para facilitar el arranque durante la fase de desarrollo — ver `CLAUDE.md`). Antes de producción hay que rotar todo y sacar los secretos del repo.
+> 🔒 `.env.example` no tiene secretos: solo los valores públicos de la Supabase local. Las credenciales de un proyecto en la nube (y las de Railway y Vercel) se comparten por privado, nunca en el repo, que es público. Hasta el 25 nov 2026 este archivo traía credenciales reales de desarrollo, que hay que rotar (#29) porque siguen en el historial de Git.
+>
+> `JWT_SECRET` y `SMTP_*` ya no aparecen porque ningún código las usa: la autenticación valida con `supabase.auth.getUser(token)` y los correos (recuperación de contraseña) los manda Supabase Auth.
 
 ---
 

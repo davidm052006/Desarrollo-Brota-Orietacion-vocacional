@@ -40,10 +40,10 @@ jobs:
       - name: Lint
         run: pnpm --filter backend exec eslint .
 
-      # backend/.env.example trae credenciales reales de desarrollo a propósito
-      # (ver CLAUDE.md, "Credenciales reales expuestas en el repo" — decisión
-      # consciente para la fase de desarrollo) así que sirven tal cual para CI,
-      # sin necesitar GitHub Secrets todavía.
+      # backend/.env.example apunta a la Supabase local con sus claves de
+      # demostración (públicas). Los tests unitarios y de API usan un Supabase
+      # simulado, y los de integración se saltan sin DATABASE_URL, así que
+      # nada de esto se conecta de verdad.
       - name: Preparar variables de entorno
         working-directory: backend
         run: cp .env.example .env
@@ -115,10 +115,17 @@ jobs:
 
       # login-route.spec.js necesita VITE_SUPABASE_URL para que la app no entre
       # en modo demo; igual nunca llega a Supabase: page.route corta y simula
-      # todas las peticiones a *.supabase.co.
+      # todas las peticiones a *.supabase.co. Por eso se usa una URL ficticia de
+      # ese dominio (la misma de e2e/run-tests.mjs) y no la Supabase local del
+      # .env.local.example, que en CI no está corriendo.
       - name: Preparar variables de entorno del frontend
         working-directory: frontend
-        run: cp .env.local.example .env.local
+        run: |
+          {
+            echo "VITE_SUPABASE_URL=https://example.supabase.co"
+            echo "VITE_SUPABASE_ANON_KEY=e2e-public-test-key"
+            echo "VITE_API_URL=http://localhost:3001"
+          } > .env.local
 
       - name: E2E sin credenciales externas
         run: pnpm --dir e2e exec playwright test tests/login-validation.spec.js tests/login-route.spec.js
