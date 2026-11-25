@@ -132,10 +132,10 @@ describe('publicar', () => {
   });
 
   // Comportamiento actual (defecto, mismo patrón que DEF-02 #56): los chips de
-  // área y el interruptor de anónimo son <button> sin type dentro del <form>,
-  // así que elegir un área ENVÍA la historia. Al corregirlo (type="button"),
-  // esta prueba debe pasar a esperar que crearHistoria NO se llame.
-  it('elegir un área con el formulario lleno publica la historia (defecto)', async () => {
+  // área y el interruptor de anónimo eran <button> sin type dentro del <form>,
+  // así que elegir un área ENVIABA la historia (DEF-02, #56). Corregido con
+  // type="button": elegir un área solo la selecciona.
+  it('elegir un área con el formulario lleno no publica la historia (DEF-02)', async () => {
     api.crearHistoria.mockResolvedValue(ok());
     const user = montar();
     await user.click(await screen.findByRole('button', { name: 'Historias reales' }));
@@ -143,9 +143,8 @@ describe('publicar', () => {
     await user.type(screen.getByPlaceholderText('¿Cómo fue tu camino?'), 'Título');
     await user.type(screen.getByPlaceholderText('Cuéntanos cómo fue tu proceso…'), 'Texto');
     await user.click(screen.getByRole('button', { name: 'Salud' }));
-    await waitFor(() => expect(api.crearHistoria).toHaveBeenCalledTimes(1));
-    // ...y se envía con el área anterior: la que eligió la persona ni alcanza a guardarse
-    expect(api.crearHistoria).toHaveBeenCalledWith(expect.objectContaining({ area: 'Artes' }));
+    expect(api.crearHistoria).not.toHaveBeenCalled();
+    expect(screen.getByPlaceholderText('¿Cómo fue tu camino?')).toHaveValue('Título');
   });
 
   it('el botón flotante abre el modal de historia o de pregunta según la pestaña', async () => {
