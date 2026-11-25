@@ -3,8 +3,8 @@
 // ============================================================
 // La conexión llega SOLO por variables de entorno (ninguna credencial en
 // los tests):
-//   DATABASE_URL          postgresql://...@127.0.0.1:54322/postgres
-//   SUPABASE_URL          http://127.0.0.1:54321
+//   DATABASE_URL          postgresql://...@127.0.0.1:55322/postgres
+//   SUPABASE_URL          http://127.0.0.1:55321
 //   SUPABASE_SERVICE_KEY  llave service_role del Supabase local
 // Se cargan con `supabase status -o env` (ver README, sección Tests).
 //

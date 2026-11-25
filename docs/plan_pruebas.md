@@ -44,14 +44,15 @@ El punto clave del plan: **las pruebas nunca escriben en la BD de desarrollo ni 
 |---|---|---|---|
 | Producción | Supabase en la nube | Usuarios reales (Railway + Vercel) | Nunca se prueba contra él |
 | Desarrollo | Supabase en la nube (proyecto de desarrollo) | El equipo al programar (`backend/.env`) | No se usa en tests automatizados |
-| **Pruebas** | **Supabase local en Docker**: Postgres 17, puerto 54322, `project_id = brota_test` | Tests de integración | Se crea vacío con `supabase/migrations/`, el mismo esquema que producción |
+| **Pruebas** | **Supabase local en Docker**: Postgres 17, puerto 55322, `project_id = brota-demo` (el mismo stack del demo local, ver `DEMO_LOCAL.md`) | Tests de integración | Se crea vacío con `supabase/migrations/`, el mismo esquema que producción |
 | CI (GitHub Actions) | Ninguna | Cada PR | Unitarias, componente y API con fakes; la integración se salta sin `DATABASE_URL` (la BD llega al CI en la semana 8) |
 
 **Por qué Supabase local y no un Postgres solo:** el esquema tiene llaves foráneas a `auth.users` y políticas RLS para `service_role`, y eso solo existe en un Postgres de Supabase. El CLI levanta la misma versión mayor que producción (17) y aplica las migraciones en orden:
 
-1. `20260801000000_esquema_base.sql`: esquema consolidado (copia de `backend/setup_database.sql`).
+1. `20260801000000_esquema_base_desde_respaldo_20261121.sql`: esquema del respaldo de producción del 21 nov 2026 (volcado del entorno demo de David). Va primero para que las dos migraciones siguientes encuentren las tablas.
 2. `20260924000000_add_updated_at_to_preguntas.sql`
 3. `20260930000000_test_vocacional_seleccion_unica.sql`
+4. `supabase/seed.sql`: datos sintéticos del demo (no son de producción). Los tests vacían las tablas que usan antes de cada caso.
 
 **Protecciones:**
 - La conexión llega solo por variables de entorno (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`), que se sacan de `supabase status -o env`. Ningún archivo de test tiene credenciales.
