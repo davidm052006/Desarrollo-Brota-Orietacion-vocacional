@@ -1,0 +1,33 @@
+name: brota-demo
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    environment:
+      PORT: 3001
+      FRONTEND_URL: http://127.0.0.1:5174
+      SUPABASE_URL: ${BROTA_SUPABASE_INTERNAL_URL}
+      SUPABASE_SERVICE_KEY: ${BROTA_SUPABASE_SERVICE_ROLE_KEY}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - 127.0.0.1:3001:3001
+    volumes:
+      - ./backend/src:/app/src
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.dev
+    environment:
+      VITE_API_URL: http://127.0.0.1:3001
+      VITE_SUPABASE_URL: http://127.0.0.1:55321
+      VITE_SUPABASE_ANON_KEY: ${BROTA_SUPABASE_ANON_KEY}
+    ports:
+      - 127.0.0.1:5174:5174
+    volumes:
+      - ./frontend/src:/app/src
+    depends_on:
+      - backend
