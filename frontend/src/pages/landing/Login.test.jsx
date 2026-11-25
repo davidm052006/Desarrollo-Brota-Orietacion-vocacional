@@ -78,9 +78,12 @@ describe('Registro', () => {
     return user;
   }
 
-  it('Crear cuenta está deshabilitado hasta completar el formulario', async () => {
-    await irARegistro();
-    expect(screen.getByRole('button', { name: 'Crear cuenta' })).toBeDisabled();
+  it('Crear cuenta con el formulario vacío muestra la validación y no registra', async () => {
+    const user = await irARegistro();
+    await user.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    expect(await screen.findByText('El nombre es requerido')).toBeInTheDocument();
+    expect(screen.getByText('La contraseña es requerida')).toBeInTheDocument();
+    expect(auth.signUpWithEmail).not.toHaveBeenCalled();
   });
 
   it('completa el formulario, elige ciudad del autocompletado y crea la cuenta', async () => {

@@ -65,6 +65,27 @@ pnpm --filter brota-e2e exec playwright install chromium
 pnpm --filter brota-e2e test
 ```
 
+### Integración contra la BD de pruebas (Supabase local)
+
+Los tests de `backend/tests/integracion/` corren contra un Supabase local en Docker (Postgres 17, puerto **55322**, el mismo stack `brota-demo` de `DEMO_LOCAL.md`), separado del Supabase remoto de desarrollo. El esquema se construye con las migraciones de `supabase/migrations/`, igual que producción. Sin `DATABASE_URL` esos tests se saltan, por eso el CI sigue en verde. Necesitas Docker Desktop abierto. En Git Bash, desde la raíz:
+
+```bash
+# 1. Levantar la BD de pruebas y aplicar las migraciones desde cero
+npx supabase start -x studio,imgproxy,mailpit,realtime,storage-api,edge-runtime,logflare,vector,supavisor,postgres-meta
+npx supabase db reset
+
+# 2. Correr la integración (las variables salen del Supabase local, no de backend/.env)
+eval "$(npx supabase status -o env --override-name db.url=DATABASE_URL --override-name api.url=SUPABASE_URL --override-name auth.service_role_key=SUPABASE_SERVICE_KEY | grep -E '^(DATABASE_URL|SUPABASE_URL|SUPABASE_SERVICE_KEY)=' | sed 's/^/export /')"
+pnpm --filter backend test:integracion
+
+# 3. Apagar y borrar los datos (equivale a `docker compose down -v`)
+npx supabase stop --no-backup
+```
+
+**Ojo:** la BD de pruebas y el demo local comparten el stack `brota-demo`. Los tests vacían las tablas que usan y `supabase db reset` borra los datos del demo; para volver al demo después de probar, `make brota-demo-reset`.
+
+Si `DATABASE_URL` o `SUPABASE_URL` no apuntan a `127.0.0.1`/`localhost`, los tests abortan antes de tocar la BD. El plan completo está en [`docs/plan_pruebas.md`](./docs/plan_pruebas.md).
+
 La cobertura actual y las pruebas pendientes están documentadas en [`docs/estrategia_pruebas.md`](./docs/estrategia_pruebas.md).
 
 ## Estructura del repo
