@@ -14,19 +14,21 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setupTests.js',
+    // Las pruebas de formularios con user-event (muchos clics y teclas)
+    // superaban los 5 s por defecto al correr con cobertura y todos los
+    // archivos en paralelo: fallaban por tiempo, no por el comportamiento.
+    testTimeout: 15000,
     coverage: {
       include: ['src/**/*.{js,jsx}'],
       exclude: ['src/**/*.{test,spec}.{js,jsx}', 'src/test/**'],
       reporter: ['text', 'lcov'],
-      // Regla del plan (semana 5): max(60, cobertura real redondeada hacia
-      // abajo). Medido el 16-nov-2026: 70.9 / 60.73 / 63.58 / 71.99.
-      // Tras la integración del 18 nov entró código sin pruebas: se fija el piso
-      // en lo real para que main no retroceda. Funciones sigue bajo el 60% (pendiente).
+      // Semana 6: umbral = max(70, cobertura real redondeada hacia abajo).
+      // Medido el 19-nov-2026: 81.42 / 73.01 / 75.22 / 82.21.
       thresholds: {
-        statements: 60,
-        branches: 60,
-        functions: 58,
-        lines: 60,
+        statements: 81,
+        branches: 73,
+        functions: 75,
+        lines: 82,
       },
     },
   },
