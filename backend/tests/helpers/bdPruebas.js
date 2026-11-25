@@ -58,13 +58,16 @@ async function consultar(sql, params = []) {
 const DOMINIO_PRUEBA = 'prueba.brota.test';
 
 /**
- * Limpieza explícita antes de cada test: vacía las tablas indicadas y borra
- * los usuarios de Auth creados por los tests (CASCADE se lleva sus filas).
+ * Limpieza explícita antes de cada test: vacía las tablas indicadas, en ese
+ * orden (hijas primero), y borra los usuarios de Auth creados por los tests.
+ * Se usa DELETE y no TRUNCATE ... CASCADE porque TRUNCATE en cascada vaciaría
+ * también tablas que solo referencian a estas (p. ej. vaciar `instituciones`
+ * se llevaría `perfiles_usuario` y `cuestionarios`, incluido el test
+ * vocacional que crea la migración). DELETE respeta el ON DELETE de cada FK.
  */
 async function limpiar(tablas = []) {
-  if (tablas.length) {
-    const lista = tablas.map((t) => `public."${t}"`).join(', ');
-    await consultar(`TRUNCATE ${lista} RESTART IDENTITY CASCADE`);
+  for (const tabla of tablas) {
+    await consultar(`DELETE FROM public."${tabla}"`);
   }
   await consultar('DELETE FROM auth.users WHERE email LIKE $1', [`%@${DOMINIO_PRUEBA}`]);
 }
@@ -81,6 +84,28 @@ async function crearUsuarioAuth(nombre = 'usuario') {
   return { id: fila.id, email };
 }
 
+/**
+ * Crea un usuario real en el Auth local (contraseña aleatoria, generada
+ * acá) e inicia sesión, para llamar rutas con verificarAuth. Devuelve el
+ * id y el access_token.
+ */
+async function crearUsuarioConSesion(nombre = 'sesion') {
+  const { createClient } = require('@supabase/supabase-js');
+  const opciones = { auth: { persistSession: false, autoRefreshToken: false } };
+  const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, opciones);
+  const email = `${nombre}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@${DOMINIO_PRUEBA}`;
+  const password = `P-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+
+  const creado = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+  if (creado.error) throw creado.error;
+
+  const cliente = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, opciones);
+  const sesion = await cliente.auth.signInWithPassword({ email, password });
+  if (sesion.error) throw sesion.error;
+
+  return { id: creado.data.user.id, email, token: sesion.data.session.access_token };
+}
+
 async function cerrar() {
   if (pool) {
     await pool.end();
@@ -95,6 +120,7 @@ module.exports = {
   consultar,
   limpiar,
   crearUsuarioAuth,
+  crearUsuarioConSesion,
   cerrar,
   DOMINIO_PRUEBA,
 };
