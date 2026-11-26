@@ -73,7 +73,7 @@ Reemplaza al túnel de la sección anterior para la fase de beta con el equipo (
 **Variables de entorno:**
 - Railway (backend): `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SMTP_*`, `FRONTEND_URL` (la URL real de Vercel, sin barra final). `PORT` la inyecta Railway solo, no seteársela a mano.
 - Vercel (frontend): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL` (la URL real de Railway, sin `/api` al final — los services ya arman `${API_URL}/api/...`).
-- **No reutilizar los valores de `backend/.env.example`** — son credenciales de desarrollo aceptadas como expuestas a propósito (ver sección de credenciales más abajo), no deben terminar siendo las de producción/beta.
+- **No usar en Railway/Vercel los valores de los `.env.example`**: apuntan a la Supabase local. Las credenciales viejas que traía el archivo están expuestas en el historial de Git y se rotan en el issue #29 (ver la sección de credenciales más abajo).
 
 **Orden de despliegue** (hay dependencia circular de URLs): desplegar primero el backend en Railway sin `FRONTEND_URL` todavía → tomar la URL que asigna Railway → desplegar el frontend en Vercel con `VITE_API_URL` apuntando a esa URL → tomar la URL de Vercel → volver a Railway y setear `FRONTEND_URL` con la URL real de Vercel (un cambio de variable de entorno dispara redeploy solo).
 
@@ -270,22 +270,21 @@ Causaban que el test vocacional mostrara el perfil de áreas pero ningún progra
 
 ## Variables de entorno — arranque rápido
 
-Los archivos example tienen credenciales reales de desarrollo. Para arrancar en cualquier máquina:
+Desde el 25 nov 2026 (T6 ítem 4), los archivos example apuntan a la **Supabase local** (`npx supabase start`) con sus claves de demostración, que son públicas e iguales en toda instalación local. No llevan ningún secreto. Para arrancar en cualquier máquina:
 ```bash
-cp backend/.env.example backend/.env
+npx supabase start   # Docker Desktop abierto
+cp backend/.env.example backend/.env              # pnpm install ya lo hace si no existe
 cp frontend/.env.local.example frontend/.env.local
 ```
 
-**Backend** (`backend/.env`): `SUPABASE_URL` (sin `/rest/v1/`), `SUPABASE_SERVICE_KEY`, `JWT_SECRET`, `SMTP_*`, `PORT=3001`, `FRONTEND_URL`
+**Backend** (`backend/.env`): `SUPABASE_URL` (sin `/rest/v1/`), `SUPABASE_SERVICE_KEY`, `PORT=3001`, `FRONTEND_URL`. `JWT_SECRET` y `SMTP_*` se quitaron porque ningún código las usa.
 
-**Frontend** (`frontend/.env.local`): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL=http://localhost:3001`
+**Frontend** (`frontend/.env.local`): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL=http://localhost:3001`. Tiene que ser el mismo proyecto de Supabase que el backend: si no, el backend rechaza los tokens.
 
-> ⚠️ En producción reemplazar TODAS las credenciales de los example antes de deployar.
+Con Docker, `127.0.0.1` dentro del contenedor no llega a la Supabase local: usar `make brota-demo-up` (ver `DEMO_LOCAL.md`), que la traduce a `host.docker.internal`.
 
-### ⚠️ Credenciales reales expuestas en el repo (decisión consciente, no reportar como hallazgo nuevo)
-`backend/.env.example` tiene la `SUPABASE_SERVICE_KEY` real, el `JWT_SECRET` y el `SMTP_PASS` (Gmail app password) hardcodeados, en un repo **público** de GitHub. (`backend/scripts/import_snies.js` y `seed_instituciones.js` también las tenían hardcodeadas, pero ambos scripts se eliminaron en la limpieza de código muerto de agosto 2026 — esa key ya no vive ahí; sigue expuesta en `.env.example`.)
-Decisión del usuario (2026-07-11): se mantiene así **durante la fase de desarrollo** a propósito, para facilitar el arranque en cualquier máquina sin gestionar secretos. Antes de ir a producción se rotarán todas las credenciales (Supabase service_role key, SMTP app password, JWT_SECRET) y se sacarán del repo (placeholders + `.env` real fuera de git).
-**No volver a reportar esto como hallazgo urgente ni intentar "arreglarlo" de forma proactiva** — es un riesgo aceptado temporalmente. Sí se puede recordar como pendiente si se habla de checklist de despliegue a producción.
+### Credenciales del proyecto en la nube
+Hasta el 25 nov 2026, `backend/.env.example` traía la `SUPABASE_SERVICE_KEY` real, el `JWT_SECRET` y el `SMTP_PASS` (contraseña de aplicación de Gmail) en un repo **público**. Fue una decisión consciente durante el desarrollo (2026-07-11), con la condición de rotarlas antes de la entrega final. Se sacaron del archivo, pero **siguen en el historial de Git**: la rotación está en el issue #29 (David, dueño de Supabase y Gmail). Las credenciales de la nube, Railway y Vercel se comparten por privado y nunca van al repo.
 
 ### RLS (Row Level Security)
 Todas las tablas de `public` tienen RLS habilitado con una policy `"solo_service_role"` (`FOR ALL TO service_role`) — el backend con `SUPABASE_SERVICE_KEY` bypassea RLS igual, así que es defensa en profundidad, no algo que cambie el comportamiento actual. El frontend nunca hace `.from()` directo (solo `supabase.auth.*`), así que no hace falta ninguna policy para `anon`/`authenticated`. **Si se crea una tabla nueva, agregarle RLS en el mismo lugar donde se define** (`ALTER TABLE x ENABLE ROW LEVEL SECURITY` + la policy de `service_role`, ver el bloque `DO $$ ... FOREACH t IN ARRAY [...]` al final de `backend/setup_database.sql` como plantilla — agrega la tabla nueva a ese array) — 10 tablas se quedaron sin esto por varias migraciones seguidas (agosto 2026) hasta que el linter de seguridad de Supabase lo marcó. Detalle histórico en `backend/scripts/historico/migration_rls_comunidad_rutas.sql`.

@@ -14,11 +14,20 @@ Plataforma de orientación vocacional para estudiantes colombianos de colegio (1
 
 ## Arrancar con Docker Compose
 
-Requiere Docker Desktop con Docker Compose v2. Supabase sigue siendo un servicio externo: configura sus credenciales antes de iniciar los contenedores.
+Requiere Docker Desktop con Docker Compose v2.
+
+**Con la Supabase local (sin ningún secreto):** levanta Supabase, la BD con datos de ejemplo, el backend y el frontend. Detalle en [`DEMO_LOCAL.md`](./DEMO_LOCAL.md).
+
+```bash
+make brota-demo-up
+```
+
+**Con un proyecto de Supabase en la nube:** pide la URL y las claves por privado y ponlas en `backend/.env` y `frontend/.env.local`. Los `.env.example` apuntan a la Supabase local, y dentro de un contenedor `127.0.0.1` no llega a ella.
 
 ```bash
 cp backend/.env.example backend/.env
 cp frontend/.env.local.example frontend/.env.local
+# editar los dos archivos con los valores del proyecto en la nube
 docker compose up --build
 ```
 
@@ -28,12 +37,18 @@ Para detener los servicios, ejecuta `docker compose down`. Esto conserva los vol
 
 ## Arrancar sin Docker
 
-Requiere Node.js 20.19+ y una cuenta de Supabase (o correr en **modo demo**, sin Supabase, ver más abajo). Vite 7 requiere esta versión mínima de Node.js.
+Requiere Node.js 20.19+ (Vite 7 pide esa versión mínima) y Docker Desktop para la Supabase local. También se puede correr en **modo demo**, sin Supabase (ver más abajo).
 
 ```bash
 git clone <este repo>
 cd Documentacion_Brota
-pnpm install           # instala backend/, frontend/ y e2e/
+pnpm install           # instala backend/, frontend/ y e2e/, y crea los .env desde los .env.example
+npx supabase start     # Supabase local: BD desde supabase/migrations + supabase/seed.sql
+```
+
+Los `.env.example` ya apuntan a esa Supabase local con sus claves de demostración (públicas), así que no hace falta ningún secreto. Si `pnpm install` no creó los `.env`, cópialos a mano:
+
+```bash
 cp backend/.env.example backend/.env
 cp frontend/.env.local.example frontend/.env.local
 ```
