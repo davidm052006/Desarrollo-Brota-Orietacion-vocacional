@@ -1,30 +1,16 @@
 const supabase = require('../config/supabase');
-
-const ASUNTOS_VALIDOS = [
-  'Información general',
-  'Soporte técnico',
-  'Consulta sobre resultados',
-  'Alianzas institucionales',
-  'Otro',
-];
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const { validarContacto } = require('../utils/validarContacto');
 
 const crearContacto = async (req, res) => {
   try {
+    // DEF-07: la validación (incluido el tipo de cada campo) va antes de
+    // cualquier .trim(), para responder 400 y no 500.
+    const errorValidacion = validarContacto(req.body);
+    if (errorValidacion) {
+      return res.status(400).json({ success: false, message: errorValidacion });
+    }
+
     const { nombre, email, telefono, asunto, mensaje } = req.body;
-
-    if (!nombre?.trim() || !email?.trim() || !asunto?.trim() || !mensaje?.trim()) {
-      return res.status(400).json({ success: false, message: 'Campos requeridos incompletos.' });
-    }
-
-    if (!EMAIL_REGEX.test(email)) {
-      return res.status(400).json({ success: false, message: 'Correo electrónico inválido.' });
-    }
-
-    if (!ASUNTOS_VALIDOS.includes(asunto)) {
-      return res.status(400).json({ success: false, message: 'Asunto inválido.' });
-    }
 
     const { error } = await supabase.from('contactos').insert({
       nombre:   nombre.trim().substring(0, 200),
