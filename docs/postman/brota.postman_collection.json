@@ -1,0 +1,419 @@
+{
+  "info": {
+    "name": "Brota API",
+    "description": "Colección de pruebas de la API de Brota (T6 ítem 9).\n\nSe corre de arriba a abajo: la carpeta 0 crea un usuario de prueba nuevo en Supabase Auth (correo @prueba.brota.test, el mismo dominio que borra la limpieza de las pruebas de integración) y su perfil, y guarda el token y el id en variables de la colección. Así no depende de ningún usuario real.\n\nEl login no pasa por el backend: Brota inicia sesión directo contra Supabase Auth, así que las dos peticiones de login usan {{supabaseUrl}}.\n\nInstrucciones en docs/postman/README.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "testEmail", "value": "" },
+    { "key": "accessToken", "value": "" },
+    { "key": "userId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Preparación",
+      "description": "Crea el usuario de prueba y su fila en perfiles_usuario. No son casos de la lista T6, pero sin ellas no hay con quién iniciar sesión.",
+      "item": [
+        {
+          "name": "Registro en Supabase Auth (usuario de prueba)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Correo único por corrida para poder repetirla sin chocar con usuarios anteriores.",
+                  "const sufijo = Date.now() + '-' + Math.random().toString(36).slice(2, 8);",
+                  "pm.collectionVariables.set('testEmail', `postman-${sufijo}@prueba.brota.test`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('Devuelve el usuario creado', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  const usuario = cuerpo.user ?? cuerpo;",
+                  "  pm.expect(usuario.id).to.be.a('string');",
+                  "  pm.expect(usuario.email).to.eql(pm.collectionVariables.get('testEmail'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "apikey", "value": "{{supabaseAnonKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{supabaseUrl}}/auth/v1/signup",
+              "host": ["{{supabaseUrl}}"],
+              "path": ["auth", "v1", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Login inicial y creación del perfil",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// register-perfil necesita el token del usuario: se pide aquí con el mismo login de Supabase.",
+                  "pm.sendRequest({",
+                  "  url: pm.environment.get('supabaseUrl') + '/auth/v1/token?grant_type=password',",
+                  "  method: 'POST',",
+                  "  header: { apikey: pm.environment.get('supabaseAnonKey'), 'Content-Type': 'application/json' },",
+                  "  body: { mode: 'raw', raw: JSON.stringify({",
+                  "    email: pm.collectionVariables.get('testEmail'),",
+                  "    password: pm.environment.get('testPassword'),",
+                  "  }) },",
+                  "}, (err, res) => {",
+                  "  if (err || res.code !== 200) throw new Error('No se pudo iniciar sesión con el usuario de prueba');",
+                  "  pm.collectionVariables.set('accessToken', res.json().access_token);",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 201', () => pm.response.to.have.status(201));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('success es true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Postman\",\n  \"apellido\": \"Prueba\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register-perfil",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register-perfil"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Login (Supabase Auth)",
+      "item": [
+        {
+          "name": "Login correcto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('Devuelve access_token y el usuario', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  pm.expect(cuerpo.access_token).to.be.a('string').and.not.be.empty;",
+                  "  pm.expect(cuerpo.user.email).to.eql(pm.collectionVariables.get('testEmail'));",
+                  "  pm.collectionVariables.set('accessToken', cuerpo.access_token);",
+                  "  pm.collectionVariables.set('userId', cuerpo.user.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "apikey", "value": "{{supabaseAnonKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{supabaseUrl}}/auth/v1/token?grant_type=password",
+              "host": ["{{supabaseUrl}}"],
+              "path": ["auth", "v1", "token"],
+              "query": [{ "key": "grant_type", "value": "password" }]
+            }
+          }
+        },
+        {
+          "name": "Login con clave mala",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 400', () => pm.response.to.have.status(400));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "// Supabase Auth no usa el campo message de nuestra API: el texto del error viene en msg.",
+                  "pm.test('Trae el mensaje de error (msg) de credenciales inválidas', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  pm.expect(cuerpo.msg).to.be.a('string').and.not.be.empty;",
+                  "  pm.expect(cuerpo.error_code).to.eql('invalid_credentials');",
+                  "});",
+                  "pm.test('No entrega token', () => pm.expect(pm.response.json()).to.not.have.property('access_token'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "apikey", "value": "{{supabaseAnonKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"clave-equivocada-123\"\n}"
+            },
+            "url": {
+              "raw": "{{supabaseUrl}}/auth/v1/token?grant_type=password",
+              "host": ["{{supabaseUrl}}"],
+              "path": ["auth", "v1", "token"],
+              "query": [{ "key": "grant_type", "value": "password" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Perfil",
+      "description": "El backend no tiene GET /api/perfil a secas: el perfil propio se pide en GET /api/perfil/:userId (con otro id responde 403).",
+      "item": [
+        {
+          "name": "GET /api/perfil/:userId con token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('Devuelve el perfil del usuario autenticado', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  pm.expect(cuerpo.success).to.eql(true);",
+                  "  pm.expect(cuerpo.data.user_id).to.eql(pm.collectionVariables.get('userId'));",
+                  "  pm.expect(cuerpo.data.nombre).to.eql('Postman');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/perfil/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "perfil", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/perfil/:userId sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 401', () => pm.response.to.have.status(401));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('Trae el campo message', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  pm.expect(cuerpo.success).to.eql(false);",
+                  "  pm.expect(cuerpo.message).to.eql('Token de autenticación requerido');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/perfil/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "perfil", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Programas",
+      "item": [
+        {
+          "name": "GET /api/programas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('Devuelve la lista paginada', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  pm.expect(cuerpo.success).to.eql(true);",
+                  "  pm.expect(cuerpo.data).to.be.an('array');",
+                  "  pm.expect(cuerpo.total).to.be.a('number');",
+                  "  pm.expect(cuerpo.page).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/programas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "programas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Contacto",
+      "description": "Ojo: /api/contacto permite 5 envíos cada 15 minutos por IP. Esta carpeta usa 3, así que la colección completa se puede correr una vez cada 15 minutos sin recibir 429.",
+      "item": [
+        {
+          "name": "POST /api/contacto válido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 200', () => pm.response.to.have.status(200));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('Confirma el envío', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  pm.expect(cuerpo.success).to.eql(true);",
+                  "  pm.expect(cuerpo.message).to.eql('Solicitud enviada correctamente.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Postman Prueba\",\n  \"email\": \"{{testEmail}}\",\n  \"telefono\": \"3001234567\",\n  \"asunto\": \"Información general\",\n  \"mensaje\": \"Mensaje enviado por la colección de Postman.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/contacto",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacto"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/contacto con asunto inválido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Código 400', () => pm.response.to.have.status(400));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('Trae el campo message', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  pm.expect(cuerpo.success).to.eql(false);",
+                  "  pm.expect(cuerpo.message).to.eql('Asunto inválido.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Postman Prueba\",\n  \"email\": \"{{testEmail}}\",\n  \"asunto\": \"Asunto que no está en la lista\",\n  \"mensaje\": \"El asunto no es uno de los permitidos.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/contacto",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacto"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/contacto con telefono numérico (DEF-07, 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// DEF-07: antes del arreglo, un telefono numérico rompía .trim() y respondía 500.",
+                  "pm.test('Código 400 (no 500)', () => pm.response.to.have.status(400));",
+                  "pm.test('El cuerpo es JSON', () => pm.response.to.be.json);",
+                  "pm.test('Trae el campo message', () => {",
+                  "  const cuerpo = pm.response.json();",
+                  "  pm.expect(cuerpo.success).to.eql(false);",
+                  "  pm.expect(cuerpo.message).to.eql('Formato de datos inválido.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Postman Prueba\",\n  \"email\": \"{{testEmail}}\",\n  \"telefono\": 3001234567,\n  \"asunto\": \"Información general\",\n  \"mensaje\": \"El teléfono va como número, no como texto.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/contacto",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contacto"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
