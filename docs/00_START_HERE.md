@@ -15,6 +15,8 @@ Punto de entrada a la documentación técnica y de producto. Para contexto de de
 - [`guion_sustentacion.md`](guion_sustentacion.md) — Guion de los 15 minutos de exposición, repartido por persona.
 
 ## Arquitectura y operación
+- [`arquitectura.md`](arquitectura.md) — Arquitectura lógica del sistema actual.
+- [`cierre_T6.md`](cierre_T6.md) — Estado de cierre y pendientes para T7.
 - [`guia_deploy.md`](guia_deploy.md) — Arquitectura de despliegue objetivo (Docker/K8s, Datacenter SENA CGMLTI).
 - [`crud_panel_admin.md`](crud_panel_admin.md) — Cómo está implementado el CRUD del panel de administración.
 

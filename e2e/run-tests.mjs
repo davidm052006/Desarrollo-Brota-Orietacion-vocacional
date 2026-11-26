@@ -25,9 +25,17 @@ const suites = [
     files: [
       'tests/login-validation.spec.js',
       'tests/signup-validation.spec.js',
+      // page.route sobre Supabase Auth (ROUTE-01 a 03).
+      'tests/login-route.spec.js',
       'tests/login-invalid-password.spec.js',
       'tests/login-success.spec.js',
     ],
+    env: uiEnvironment,
+  },
+  {
+    // Dobles de red con page.route: no necesita Supabase ni backend.
+    name: 'Formulario de contacto con dobles de red',
+    files: ['tests/contacto-route.spec.js'],
     env: uiEnvironment,
   },
   {
@@ -39,6 +47,24 @@ const suites = [
     },
   },
 ];
+
+if (process.env.E2E_LOCAL_DB === '1') {
+  for (const value of [process.env.E2E_SUPABASE_URL, process.env.E2E_API_URL || 'http://localhost:3001']) {
+    if (!value || !['localhost', '127.0.0.1'].includes(new URL(value).hostname)) {
+      throw new Error('S6 requiere exclusivamente URLs locales');
+    }
+  }
+  suites.splice(0, suites.length, {
+    name: 'Semana 6: Supabase local',
+    files: ['tests/semana-06-david-local.spec.js'],
+    env: {
+      VITE_SUPABASE_URL: process.env.E2E_SUPABASE_URL,
+      VITE_SUPABASE_ANON_KEY: process.env.E2E_SUPABASE_ANON_KEY,
+      VITE_API_URL: process.env.E2E_API_URL || 'http://localhost:3001',
+      VITE_API_PROXY_TARGET: process.env.E2E_API_URL || 'http://localhost:3001',
+    },
+  });
+}
 
 for (const suite of suites) {
   console.log(`\nE2E: ${suite.name}`);

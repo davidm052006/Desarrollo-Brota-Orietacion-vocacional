@@ -3,6 +3,7 @@ const { calcularDesdeRespuestas, calcularPorcentajes }      = require('../utils/
 const { generarRecomendaciones }                            = require('../utils/algoritmoRecomendacion');
 const { RECURSOS_VALIDOS, tienePermiso }                    = require('../utils/permisos');
 const { responderErrorInterno } = require('../utils/errorInterno');
+const { validarActualizacionPerfil } = require('../utils/validarCampos');
 
 // ─────────────────────────────────────────────────────────────
 // GET /api/perfil/permisos — permiso efectivo del usuario logueado, para que
@@ -510,13 +511,25 @@ const actualizarPerfil = async (req, res) => {
       institucion_contacto, institucion_descripcion, telefono,
     } = req.body;
 
+    // DEF-05 (#80): las restricciones de la tabla se validan acá → 400.
+    const errorValidacion = validarActualizacionPerfil(req.body);
+    if (errorValidacion) {
+      return res.status(400).json({ success: false, message: errorValidacion });
+    }
+
+    const cambios = {
+      nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
+      institucion_contacto, institucion_descripcion, telefono,
+    };
+    // DEF-06 (#81): un PATCH sin `edad` (PerfilInstitucion no la envía) no
+    // debe borrarla. Vacía o null sí la borra a propósito.
+    if (edad !== undefined) {
+      cambios.edad = edad === '' || edad === null ? null : Number(edad);
+    }
+
     const { data, error } = await supabase
       .from('perfiles_usuario')
-      .update({
-        nombre, apellido, ciudad, nivel_educativo, condiciones_socioeconomicas,
-        edad: edad ? parseInt(edad) : null,
-        institucion_contacto, institucion_descripcion, telefono,
-      })
+      .update(cambios)
       .eq('user_id', userId)
       .select()
       .single();

@@ -1,33 +1,16 @@
-const supabase = require('../config/supabase');
+const programasRepository = require('../repositories/programasRepository');
 const { responderErrorInterno } = require('../utils/errorInterno');
 
 const obtenerProgramas = async (req, res) => {
   const { area, search = '', page = 1, limit = 24 } = req.query;
   const offset = (parseInt(page) - 1) * parseInt(limit);
 
-  let query = supabase
-    .from('programas')
-    .select(
-      `id, nombre, tipo, area_academica, duracion, modalidad, costo_matricula,
-       instituciones(nombre, tipo, ciudad, telefono, email, sitio_web)`,
-      { count: 'exact' }
-    )
-    .eq('activo', true)
-    .not('area_academica', 'is', null);
-
-  if (area && area !== 'todos') {
-    query = query.eq('area_academica', area);
-  }
-
-  if (search.trim()) {
-    query = query.ilike('nombre', `%${search.trim()}%`);
-  }
-
-  query = query
-    .order('nombre')
-    .range(offset, offset + parseInt(limit) - 1);
-
-  const { data, error, count } = await query;
+  const { data, error, count } = await programasRepository.listarActivos({
+    area,
+    search,
+    offset,
+    limit: parseInt(limit),
+  });
 
   if (error) return responderErrorInterno(res, 'programasController', error);
 
@@ -51,20 +34,12 @@ const obtenerEstadisticas = async (req, res) => {
   try {
     const conteos = await Promise.all(
       AREAS.map(async (area) => {
-        const { count } = await supabase
-          .from('programas')
-          .select('*', { count: 'exact', head: true })
-          .eq('activo', true)
-          .eq('area_academica', area);
+        const { count } = await programasRepository.contarActivos(area);
         return { area, count: count ?? 0 };
       })
     );
 
-    const { count: total } = await supabase
-      .from('programas')
-      .select('*', { count: 'exact', head: true })
-      .eq('activo', true)
-      .not('area_academica', 'is', null);
+    const { count: total } = await programasRepository.contarActivos();
 
     return res.json({ success: true, total: total ?? 0, areas: conteos });
   } catch (err) {

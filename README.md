@@ -14,11 +14,20 @@ Plataforma de orientación vocacional para estudiantes colombianos de colegio (1
 
 ## Arrancar con Docker Compose
 
-Requiere Docker Desktop con Docker Compose v2. Supabase sigue siendo un servicio externo: configura sus credenciales antes de iniciar los contenedores.
+Requiere Docker Desktop con Docker Compose v2.
+
+**Con la Supabase local (sin ningún secreto):** levanta Supabase, la BD con datos de ejemplo, el backend y el frontend. Detalle en [`DEMO_LOCAL.md`](./DEMO_LOCAL.md).
+
+```bash
+make brota-demo-up
+```
+
+**Con un proyecto de Supabase en la nube:** pide la URL y las claves por privado y ponlas en `backend/.env` y `frontend/.env.local`. Los `.env.example` apuntan a la Supabase local, y dentro de un contenedor `127.0.0.1` no llega a ella.
 
 ```bash
 cp backend/.env.example backend/.env
 cp frontend/.env.local.example frontend/.env.local
+# editar los dos archivos con los valores del proyecto en la nube
 docker compose up --build
 ```
 
@@ -28,12 +37,18 @@ Para detener los servicios, ejecuta `docker compose down`. Esto conserva los vol
 
 ## Arrancar sin Docker
 
-Requiere Node.js 20.19+ y una cuenta de Supabase (o correr en **modo demo**, sin Supabase, ver más abajo). Vite 7 requiere esta versión mínima de Node.js.
+Requiere Node.js 20.19+ (Vite 7 pide esa versión mínima) y Docker Desktop para la Supabase local. También se puede correr en **modo demo**, sin Supabase (ver más abajo).
 
 ```bash
 git clone <este repo>
 cd Documentacion_Brota
-pnpm install           # instala backend/, frontend/ y e2e/
+pnpm install           # instala backend/, frontend/ y e2e/, y crea los .env desde los .env.example
+npx supabase start     # Supabase local: BD desde supabase/migrations + supabase/seed.sql
+```
+
+Los `.env.example` ya apuntan a esa Supabase local con sus claves de demostración (públicas), así que no hace falta ningún secreto. Si `pnpm install` no creó los `.env`, cópialos a mano:
+
+```bash
 cp backend/.env.example backend/.env
 cp frontend/.env.local.example frontend/.env.local
 ```
@@ -64,6 +79,27 @@ Los comandos de cobertura aplican los umbrales mínimos de CI. El E2E requiere C
 pnpm --filter brota-e2e exec playwright install chromium
 pnpm --filter brota-e2e test
 ```
+
+### Integración contra la BD de pruebas (Supabase local)
+
+Los tests de `backend/tests/integracion/` corren contra un Supabase local en Docker (Postgres 17, puerto **55322**, el mismo stack `brota-demo` de `DEMO_LOCAL.md`), separado del Supabase remoto de desarrollo. El esquema se construye con las migraciones de `supabase/migrations/`, igual que producción. Sin `DATABASE_URL` esos tests se saltan, por eso el CI sigue en verde. Necesitas Docker Desktop abierto. En Git Bash, desde la raíz:
+
+```bash
+# 1. Levantar la BD de pruebas y aplicar las migraciones desde cero
+npx supabase start -x studio,imgproxy,mailpit,realtime,storage-api,edge-runtime,logflare,vector,supavisor,postgres-meta
+npx supabase db reset
+
+# 2. Correr la integración (las variables salen del Supabase local, no de backend/.env)
+eval "$(npx supabase status -o env --override-name db.url=DATABASE_URL --override-name api.url=SUPABASE_URL --override-name auth.service_role_key=SUPABASE_SERVICE_KEY | grep -E '^(DATABASE_URL|SUPABASE_URL|SUPABASE_SERVICE_KEY)=' | sed 's/^/export /')"
+pnpm --filter backend test:integracion
+
+# 3. Apagar y borrar los datos (equivale a `docker compose down -v`)
+npx supabase stop --no-backup
+```
+
+**Ojo:** la BD de pruebas y el demo local comparten el stack `brota-demo`. Los tests vacían las tablas que usan y `supabase db reset` borra los datos del demo; para volver al demo después de probar, `make brota-demo-reset`.
+
+Si `DATABASE_URL` o `SUPABASE_URL` no apuntan a `127.0.0.1`/`localhost`, los tests abortan antes de tocar la BD. El plan completo está en [`docs/plan_pruebas.md`](./docs/plan_pruebas.md).
 
 La cobertura actual y las pruebas pendientes están documentadas en [`docs/estrategia_pruebas.md`](./docs/estrategia_pruebas.md).
 
