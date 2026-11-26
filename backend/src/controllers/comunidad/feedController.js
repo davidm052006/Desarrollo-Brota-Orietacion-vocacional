@@ -5,17 +5,22 @@ const { timeAgo } = require('../../utils/comunidadHelpers');
 // GET /api/comunidad/feed — últimas publicaciones de toda la comunidad
 // (posts de foro, historias publicadas, preguntas), para el feed del
 // Dashboard. Mezcla las 3 fuentes y corta a 8, más reciente primero.
+// DEF-08: igual que los listados de foros/historias/preguntas, no muestra lo
+// que moderación ocultó (oculta = true).
 const getFeedReciente = asyncHandler('comunidad/feedController.getFeedReciente', async (req, res) => {
   const [posts, historias, preguntas] = await Promise.all([
     supabase.from('posts_foro')
       .select('id, titulo, anonimo, autor_nombre, created_at')
+      .eq('oculta', false)
       .order('created_at', { ascending: false }).limit(5),
     supabase.from('historias')
       .select('id, titulo, anonimo, autor_nombre, created_at')
       .eq('publicada', true)
+      .eq('oculta', false)
       .order('created_at', { ascending: false }).limit(5),
     supabase.from('preguntas_comunidad')
       .select('id, titulo, anonimo, autor_nombre, created_at')
+      .eq('oculta', false)
       .order('created_at', { ascending: false }).limit(5),
   ]);
 
